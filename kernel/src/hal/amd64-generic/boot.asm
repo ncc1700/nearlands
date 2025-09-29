@@ -1,15 +1,16 @@
 section .bss
     align 16
-stackBottom:
+kstackbottom:
     resb 256000
-stackTop:
+kstacktop:
 
 section .text
 
 extern kernel_entry
 global kernel_load_entry
 kernel_load_entry:
-    mov rsp, stackTop
+    
+    mov rsp, kstacktop
     call kernel_entry
 loop:
     jmp loop
