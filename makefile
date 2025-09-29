@@ -1,5 +1,5 @@
 build-amd64-generic-image:
-	cd kernel && xmake build kernel-amd64-generic
+	cd kernel && xmake build kernel-amd64-generic-all-drivers
 	qemu-img create -f raw image.img 1440K
 	mformat -i image.img -f 1440 ::
 	mmd -i image.img ::/EFI
