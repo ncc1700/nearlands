@@ -1,4 +1,5 @@
 #include "core/tools/debugtools.h"
+#include "hal/includes/halinit.h"
 #include "limine.h"
 #include <stddef.h>
 
@@ -74,6 +75,8 @@ int memcmp(const void *s1, const void *s2, size_t n) {
 
 void kernel_entry(void) {
     DKPRINTLN("Kernel Entrypoint Reached");
+    setup_hal();
+    DKPRINTLN("Kernel HAL loaded successfully");
     if(LIMINE_BASE_REVISION_SUPPORTED == 0){
         DKPRINTLN("UNKNOWN BASE REVISION");
         while(1){continue;}
@@ -84,6 +87,7 @@ void kernel_entry(void) {
     if(framebuffer_request.response->framebuffer_count < 1){
         while(1){continue;}
     }
+    
     struct limine_framebuffer* fb = framebuffer_request.response->framebuffers[0];
     for(int x = 0; x < 10; x++){
         for(int y = 0; y < 30; y++){

@@ -4,6 +4,7 @@ target("kernel-amd64-generic")
     set_targetdir("../bin/SYSTEM/")
     add_files("src/*.c", "src/core/*.c", "src/core/**/*.c");
     add_files("src/hal/amd64-generic/*.c", "src/hal/amd64-generic/*.asm")
+    add_files("src/hal/amd64-generic/**/*.c", "src/hal/amd64-generic/**/*.asm")
     add_cflags("-target x86_64-pc-none-elf", "-ffreestanding", "-nostdlib", "-fno-exceptions", "-fno-rtti", {force = true})
     add_cxxflags("-target x86_64-pc-none-elf", "-ffreestanding", "-nostdlib", "-fno-exceptions", "-fno-rtti", {force = true})
     add_asflags("-f elf64") 
