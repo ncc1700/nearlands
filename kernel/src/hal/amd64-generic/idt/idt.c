@@ -1,9 +1,6 @@
 #include "idt.h"
 #include "../../../core/tools/debugtools.h"
 
-
-
-
 #define IDTSIZE 256
 
 typedef struct _intdesc {
@@ -30,10 +27,10 @@ static inline void create_int(uint8_t i, void (*handler)(), uint16_t selector, u
     uint64_t handleraddr = (uint64_t)handler;
     desc[i].offsetone = handleraddr & 0xFFFF;
     desc[i].selector = selector;
-    desc[i].ist = ist;
+    desc[i].ist = ist & 0x07;
     desc[i].typeattributes = typeattributes;
-    desc[i].offsettwo = (handleraddr << 16) & 0xFFFF;
-    desc[i].offsetthree = (handleraddr << 32) & 0xFFFF;
+    desc[i].offsettwo = (handleraddr >> 16) & 0xFFFF;
+    desc[i].offsetthree = (handleraddr >> 32) & 0xFFFFFFFF;
     desc[i].zero = 0;
 }
 
@@ -56,6 +53,6 @@ void setup_idt(){
         create_int(i, unknown_software, 0x08, 0, 0x8E);
     }
     idt.base = (uint64_t)desc;
-    idt.limit = sizeof(desc) - 1;
+    idt.limit = (sizeof(intdesc) * IDTSIZE) - 1;
     load_idt(&idt);
 }

@@ -5,11 +5,11 @@
 #include "hal/includes/misc.h"
 #include "limine.h"
 #include <stddef.h>
+#include <stdint.h>
 
 
 __attribute__((used, section(".limine_requests")))
 static volatile LIMINE_BASE_REVISION(3);
-
 
 __attribute__((used, section(".limine_requests_start")))
 static volatile LIMINE_REQUESTS_START_MARKER;
@@ -19,8 +19,7 @@ static volatile LIMINE_REQUESTS_END_MARKER;
 
 
 void kernel_entry(void) {
-    DKPRINTLN("Loading kernel");
-    
+    DKPRINTLN("Loading kernel"); 
     setup_hal();
     setup_generic_devices();
 

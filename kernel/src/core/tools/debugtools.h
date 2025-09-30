@@ -22,4 +22,8 @@ void DKPRINTTEXTANDHEXLN(char* text, uint64_t hex);
 void DKPRINTMULTIPLESTRINGSLN(char** text);
 void DKPRINTTEXTANDHEXWITHSPACE(char* text, uint64_t hex);
 void DKPRINTTEXTANDHEXWITHSPACELN(char* text, uint64_t hex);
+void DKPRINTTEXTANDDECWITHSPACE(char* text, uint64_t hex);
+void DKPRINTTEXTANDDECWITHSPACELN(char* text, uint64_t hex);
+void DKPRINTDEC(uint64_t decimal);
+void DKPRINTDECLN(uint64_t decimal);
 #endif

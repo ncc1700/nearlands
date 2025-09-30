@@ -53,6 +53,18 @@ void DKPRINTTEXTANDHEXWITHSPACELN(char* text, uint64_t hex){
     DKPRINTHEXLN(hex);
 }
 
+void DKPRINTTEXTANDDECWITHSPACE(char* text, uint64_t hex){
+    DKPRINT(text);
+    DKPRINT(":");
+    DKPRINTDEC(hex);
+}
+
+void DKPRINTTEXTANDDECWITHSPACELN(char* text, uint64_t hex){
+    DKPRINT(text);
+    DKPRINT(":");
+    DKPRINTDECLN(hex);
+}
+
 void DKPRINTMULTIPLESTRINGS(char** text){
     while(*text != NULL){
         DKPRINT(*text);
