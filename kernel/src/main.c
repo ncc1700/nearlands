@@ -2,6 +2,7 @@
 #include "drivers/displaymodel/displaymodel.h"
 #include "drivers/setupgeneric.h"
 #include "hal/includes/halinit.h"
+#include "hal/includes/mem.h"
 #include "hal/includes/misc.h"
 #include "limine.h"
 #include <stddef.h>
@@ -18,16 +19,16 @@ __attribute__((used, section(".limine_requests_end")))
 static volatile LIMINE_REQUESTS_END_MARKER;
 
 
+
 void kernel_entry(void) {
     DKPRINTLN("Loading kernel"); 
     setup_hal();
     setup_generic_devices();
-
+    chunk_allocator_setup();
     if(LIMINE_BASE_REVISION_SUPPORTED == 0){
         DKPRINTLN("UNKNOWN BASE REVISION");
         halt_core();
     }
-    
     
     for(int x = 90; x < 200; x++){
         for(int y = 100; y < 300; y++){
@@ -40,6 +41,13 @@ void kernel_entry(void) {
             draw_pixel(0, x, y, 0x00ffff);
         }
     }
-    
+
+    char* h = allocate_single_chunk();
+    DKPRINTTEXTANDHEXLN("first: ", (uint64_t)h);
+    char* p = allocate_single_chunk();
+    DKPRINTTEXTANDHEXLN("second: ", (uint64_t)p);
+    free_single_chunk(p);
+    char* f = allocate_single_chunk();
+    DKPRINTTEXTANDHEXLN("third: ", (uint64_t)f);
     halt_core();
 }
