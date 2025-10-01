@@ -1,14 +1,18 @@
+/*
+    Simple chunk allocator, pretty broken, needs to be fixed
+*/
+
 #include "../../includes/mem.h"
 #include "../../../limine.h"
 #include <stdint.h>
 #include "../../../core/tools/debugtools.h"
-#include "../../includes/misc.h"
 
-
-static uint64_t curMem = 0;
+#define CHUNK_SIZE 0x400
 
 static struct limine_memmap_entry** memmap;
 static uint64_t memmap_amount;
+
+#define ALIGN_UP(x, a) (((x) + (a - 1)) & ~(a - 1))
 
 __attribute__((used, section(".limine_requests")))
 static volatile struct limine_memmap_request memmap_request = {
@@ -22,6 +26,21 @@ static volatile struct limine_hhdm_request hhdm_request = {
     0
 };
 
+typedef struct _mem_detail {
+    uint64_t loc_with_mem_detail;
+    uint64_t base;
+    uint64_t curIndex;
+    uint64_t size;
+} mem_detail;
+
+
+
+static mem_detail* mem_det_map;
+static uint64_t mem_det_size_all;
+
+static void** free_list = NULL;
+
+
 uint8_t chunk_allocator_setup(){
     if(memmap_request.response == NULL){
         return 1;
@@ -31,70 +50,107 @@ uint8_t chunk_allocator_setup(){
     }
     memmap = memmap_request.response->entries;
     memmap_amount = memmap_request.response->entry_count;
-    curMem = 0;
+    mem_det_size_all = memmap_amount * sizeof(mem_detail);
+    uint8_t setup = 0;
+    uint64_t setup_index = 0;
+    for(int i = 0; i < memmap_amount; i++){
+        if(memmap[i]->type != LIMINE_MEMMAP_USABLE 
+            && memmap[i]->type != LIMINE_MEMMAP_BOOTLOADER_RECLAIMABLE) continue;
+        if(memmap[i]->length <= mem_det_size_all){
+            continue;
+        }
+        if(setup == 0){
+            setup_index = i;
+            mem_det_map = (mem_detail*)(memmap[i]->base + hhdm_request.response->offset);
+            DKPRINTHEXLN((uint64_t)mem_det_map);
+            setup = 1;
+        }
+        
+        if(i == setup_index){
+            mem_det_map[i].base = (memmap[i]->base + hhdm_request.response->offset 
+                                    + (memmap_amount * sizeof(mem_detail)));
+            mem_det_map[i].loc_with_mem_detail = 1;
+        } else {
+            mem_det_map[i].base = (memmap[i]->base 
+                                    + hhdm_request.response->offset);
+            mem_det_map[i].loc_with_mem_detail = 0;
+        }
+        mem_det_map[i].curIndex = mem_det_map[i].base;
+        mem_det_map[i].size = 0;
+    }      
     return 0;
 }
 
 void* allocate_single_chunk(){
+    if(free_list){
+        void* chunk = free_list;
+        free_list = *(void**)free_list;
+        return chunk;
+    }
     for(int i = 0; i < memmap_amount; i++){
         if(memmap[i]->type != LIMINE_MEMMAP_USABLE 
-            && memmap[i]->type != LIMINE_MEMMAP_BOOTLOADER_RECLAIMABLE) continue;
-
-        uint64_t memaddr = memmap[i]->base + hhdm_request.response->offset;
-        for(uint64_t i = memaddr; i < curMem; i+=0x400){
-            if(*(volatile uint64_t*)i == 0){
-                *(volatile uint64_t*)i = 1;
-                uint64_t res = i + 8;
-                return (void*)res;
-            }
-        }
-        // if(curMem >= memmap[i]->length){
-        //     curMem = 0;
-        //     continue;
-        // }
-        if(curMem == 0){
-            curMem = memaddr;
-            *(volatile uint64_t*)curMem = 0;
+            && memmap[i]->type != LIMINE_MEMMAP_BOOTLOADER_RECLAIMABLE){
+                DKPRINTLN("Invalid Area, skipping");
+                continue;
         } 
-        curMem += 0x400;
-        *(volatile uint64_t*)curMem = 1;
-        uint64_t res = curMem + 8;
+        
+        uint64_t length;
+        if(mem_det_map[i].loc_with_mem_detail == 1){
+            length = (mem_det_map[i].curIndex - mem_det_map[i].base) + 
+                                (memmap_amount * sizeof(mem_detail));  
+        } else {
+            length = (mem_det_map[i].curIndex - mem_det_map[i].base);
+        }  
+        if((length + CHUNK_SIZE) >= memmap[i]->length){
+            DKPRINTLN("Size overflow, moving up!");
+            continue;
+        } 
+        
+        //DKPRINTHEXLN(mem_det_map[i].size);
+        //DKPRINTLN("----------------------------");
+        DKPRINTHEXLN(i);
+        mem_det_map[i].curIndex = ALIGN_UP(mem_det_map[i].curIndex, 16);
+        mem_det_map[i].curIndex += CHUNK_SIZE;
+        uint64_t res = mem_det_map[i].curIndex;
+        mem_det_map[i].size = (mem_det_map[i].curIndex - mem_det_map->base);
         return (void*)res;
     }
     return NULL;
 }
 
 void free_single_chunk(void* address){
-    *(volatile uint64_t*)(address - 8) = 0; 
+    *(void**)address = free_list;
+    free_list = address;
 }
 
 void* allocate_multiple_chunks(uint64_t amount){
-    // for(uint64_t i = memaddr; i < curMem; i+=0x400){
+    // for(uint64_t i = memaddr; i < curMem; i+=CHUNK_SIZE){
     //     if(*(volatile uint64_t*)i == 0){
     //         uint64_t valid = 1;
-    //         for(uint64_t j = i; j < i + amount * 0x400; j+=0x400){
+    //         for(uint64_t j = i; j < i + amount * CHUNK_SIZE; j+=CHUNK_SIZE){
     //             if(*(volatile uint64_t*)j != 0){
     //                 valid = 0;
     //                 break;
     //             }
     //         }
     //         if(valid != 1) continue;
-    //         for(uint64_t j = i; j < i + amount * 0x400; j+=0x400){
+    //         for(uint64_t j = i; j < i + amount * CHUNK_SIZE; j+=CHUNK_SIZE){
     //             *(volatile uint64_t*)j = 1;
     //         }
     //         return (void*)i + 8;
     //     }
     // }
-    // uint64_t return_value = curMem += 0x400;
+    // uint64_t return_value = curMem += CHUNK_SIZE;
     // for (uint64_t j = 0; j < amount; j++) {
     //     *(volatile uint64_t*)curMem = 1;
-    //     curMem += 0x400;
+    //     curMem += CHUNK_SIZE;
     // }
     // return (void*)return_value + 8;
+    return NULL;
 }
 
 void free_multiple_chunks(void* address, uint64_t amount){
-    for(uint64_t i = (uint64_t)address; i < (uint64_t)address + amount * 0x400; i+=0x400){
+    for(uint64_t i = (uint64_t)address; i < (uint64_t)address + amount * CHUNK_SIZE; i+=CHUNK_SIZE){
         *(volatile uint64_t*)(i - 8) = 0; 
     }
 }

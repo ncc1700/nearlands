@@ -42,12 +42,15 @@ void kernel_entry(void) {
         }
     }
 
+
     char* h = allocate_single_chunk();
     DKPRINTTEXTANDHEXLN("first: ", (uint64_t)h);
+
     char* p = allocate_single_chunk();
     DKPRINTTEXTANDHEXLN("second: ", (uint64_t)p);
     free_single_chunk(p);
     char* f = allocate_single_chunk();
     DKPRINTTEXTANDHEXLN("third: ", (uint64_t)f);
+
     halt_core();
 }

@@ -12,7 +12,7 @@ build-amd64-generic-image:
 run-amd64-generic:
 	qemu-system-x86_64 -bios resources/UEFI/amd64/OVMF.fd \
 	-device virtio-gpu-pci -display sdl \
-	-drive file=image.img,format=raw -m 4G -serial mon:stdio
+	-drive file=image.img,format=raw -m 96M -serial mon:stdio
 
 amd64-generic:
 	make build-amd64-generic-image
