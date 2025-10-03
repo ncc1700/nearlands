@@ -16,7 +16,6 @@ load_idt:
 
     lidt [rel rdi]
 
-
     mov rsp, rbp
     pop rbp
     ret

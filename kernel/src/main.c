@@ -4,6 +4,7 @@
 #include "hal/includes/halinit.h"
 #include "hal/includes/mem.h"
 #include "hal/includes/misc.h"
+#include "hal/includes/smp.h"
 #include "limine.h"
 #include <stddef.h>
 #include <stdint.h>
@@ -25,6 +26,8 @@ void kernel_entry(void) {
     setup_hal();
     setup_generic_devices();
     chunk_allocator_setup();
+    setup_smp();
+    
     if(LIMINE_BASE_REVISION_SUPPORTED == 0){
         DKPRINTLN("UNKNOWN BASE REVISION");
         halt_core();
@@ -42,10 +45,8 @@ void kernel_entry(void) {
         }
     }
 
-
     char* h = allocate_single_chunk();
     DKPRINTTEXTANDHEXLN("first: ", (uint64_t)h);
-
     char* p = allocate_single_chunk();
     DKPRINTTEXTANDHEXLN("second: ", (uint64_t)p);
     free_single_chunk(p);

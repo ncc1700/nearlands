@@ -41,7 +41,7 @@ void unknown_hardware(){
 
 void unknown_software(int idk, int idkk){
     DKPRINTLN("UNKNOWN SOFTWARE INTERRUPT");
-    //halt_core();
+    halt_core();
 }
 
 

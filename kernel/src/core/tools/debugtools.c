@@ -1,14 +1,18 @@
 #include "debugtools.h"
 #include "../../hal/includes/serial.h"
 #include "../klibc/string.h"
+#include "../../hal/includes/spinlock.h"
+#include <stdatomic.h>
 
-
+static atomic_flag lock = ATOMIC_FLAG_INIT;
 
 void DKPRINT(char* string){
+    sl_acquire(&lock);
     while(*string != '\0'){
         print_char_to_serial(*string);
         string++;
     }
+    sl_release(&lock);
 }
 
 void DKPRINTLN(char* string){

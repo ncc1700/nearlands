@@ -1,3 +1,4 @@
+
 target("kernel-amd64-generic-all-drivers")
     set_toolchains("clangelfamd64")
     set_filename("kernel.elf")
@@ -19,9 +20,11 @@ toolchain("clangelfamd64")
     set_toolset("ld", "ld.lld")
 toolchain_end();
 
+-- not used, will be used for a port later on
 toolchain("clangaarch64")
     set_kind("standalone")
     set_toolset("cc", "clang")
     set_toolset("as", "clang")
     set_toolset("ld", "ld.lld")
 toolchain_end();
+

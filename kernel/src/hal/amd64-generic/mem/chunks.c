@@ -6,12 +6,12 @@
 #include "../../../limine.h"
 #include <stdint.h>
 #include "../../../core/tools/debugtools.h"
-
+#include "../../includes/spinlock.h"
 #define CHUNK_SIZE 0x400
 
 static struct limine_memmap_entry** memmap;
 static uint64_t memmap_amount;
-
+static atomic_flag lock = ATOMIC_FLAG_INIT;
 #define ALIGN_UP(x, a) (((x) + (a - 1)) & ~(a - 1))
 
 __attribute__((used, section(".limine_requests")))
@@ -62,7 +62,6 @@ uint8_t chunk_allocator_setup(){
         if(setup == 0){
             setup_index = i;
             mem_det_map = (mem_detail*)(memmap[i]->base + hhdm_request.response->offset);
-            DKPRINTHEXLN((uint64_t)mem_det_map);
             setup = 1;
         }
         
@@ -82,18 +81,21 @@ uint8_t chunk_allocator_setup(){
 }
 
 void* allocate_single_chunk(){
+    sl_acquire(&lock);
     if(free_list){
         void* chunk = free_list;
         free_list = *(void**)free_list;
+        sl_release(&lock);
         return chunk;
     }
     for(int i = 0; i < memmap_amount; i++){
         if(memmap[i]->type != LIMINE_MEMMAP_USABLE 
-            && memmap[i]->type != LIMINE_MEMMAP_BOOTLOADER_RECLAIMABLE){
-                DKPRINTLN("Invalid Area, skipping");
-                continue;
+            && memmap[i]->type != LIMINE_MEMMAP_BOOTLOADER_RECLAIMABLE)
+        {
+            DKPRINTTEXTANDDECWITHSPACE(__FILE__, __LINE__);
+            DKPRINTLN(" Invalid Area, skipping");
+            continue;
         } 
-        
         uint64_t length;
         if(mem_det_map[i].loc_with_mem_detail == 1){
             length = (mem_det_map[i].curIndex - mem_det_map[i].base) + 
@@ -102,55 +104,84 @@ void* allocate_single_chunk(){
             length = (mem_det_map[i].curIndex - mem_det_map[i].base);
         }  
         if((length + CHUNK_SIZE) >= memmap[i]->length){
-            DKPRINTLN("Size overflow, moving up!");
+            DKPRINTTEXTANDDECWITHSPACE(__FILE__, __LINE__);
+            DKPRINTLN(" Size overflow, moving up!");
             continue;
         } 
-        
-        //DKPRINTHEXLN(mem_det_map[i].size);
-        //DKPRINTLN("----------------------------");
-        DKPRINTHEXLN(i);
         mem_det_map[i].curIndex = ALIGN_UP(mem_det_map[i].curIndex, 16);
         mem_det_map[i].curIndex += CHUNK_SIZE;
         uint64_t res = mem_det_map[i].curIndex;
         mem_det_map[i].size = (mem_det_map[i].curIndex - mem_det_map->base);
+        sl_release(&lock);
         return (void*)res;
     }
+    sl_release(&lock);
     return NULL;
 }
 
 void free_single_chunk(void* address){
+    sl_acquire(&lock);
     *(void**)address = free_list;
     free_list = address;
+    sl_release(&lock);
 }
 
 void* allocate_multiple_chunks(uint64_t amount){
-    // for(uint64_t i = memaddr; i < curMem; i+=CHUNK_SIZE){
-    //     if(*(volatile uint64_t*)i == 0){
-    //         uint64_t valid = 1;
-    //         for(uint64_t j = i; j < i + amount * CHUNK_SIZE; j+=CHUNK_SIZE){
-    //             if(*(volatile uint64_t*)j != 0){
-    //                 valid = 0;
-    //                 break;
-    //             }
-    //         }
-    //         if(valid != 1) continue;
-    //         for(uint64_t j = i; j < i + amount * CHUNK_SIZE; j+=CHUNK_SIZE){
-    //             *(volatile uint64_t*)j = 1;
-    //         }
-    //         return (void*)i + 8;
-    //     }
-    // }
-    // uint64_t return_value = curMem += CHUNK_SIZE;
-    // for (uint64_t j = 0; j < amount; j++) {
-    //     *(volatile uint64_t*)curMem = 1;
-    //     curMem += CHUNK_SIZE;
-    // }
-    // return (void*)return_value + 8;
+    sl_acquire(&lock);
+    if(free_list){
+        void* start = free_list;
+        void* cur = start;
+        for(uint8_t i = 1; i < amount; i++){
+            void* expected = (void*)((uint64_t)start + i * CHUNK_SIZE);
+            void* next = *(void**)cur;
+            if(next != cur){
+                goto ALLOCATE_NEW;
+            }
+            cur = next;
+        }
+        free_list = *(void**)cur;
+        sl_release(&lock);
+        return start;
+    }
+    ALLOCATE_NEW:
+    for(int i = 0; i < memmap_amount; i++){
+        if(memmap[i]->type != LIMINE_MEMMAP_USABLE 
+            && memmap[i]->type != LIMINE_MEMMAP_BOOTLOADER_RECLAIMABLE)
+        {
+            DKPRINTTEXTANDDECWITHSPACE(__FILE__, __LINE__);
+            DKPRINTLN(" Invalid Area, skipping");
+            continue;
+        } 
+        uint64_t length;
+        if(mem_det_map[i].loc_with_mem_detail == 1){
+            length = (mem_det_map[i].curIndex - mem_det_map[i].base) + 
+                                (memmap_amount * sizeof(mem_detail));  
+        } else {
+            length = (mem_det_map[i].curIndex - mem_det_map[i].base);
+        }  
+        if((length + CHUNK_SIZE) >= memmap[i]->length){
+            DKPRINTTEXTANDDECWITHSPACE(__FILE__, __LINE__);
+            DKPRINTLN(" Size overflow, moving up!");
+            continue;
+        } 
+        mem_det_map[i].curIndex = ALIGN_UP(mem_det_map[i].curIndex, 16);
+        mem_det_map[i].curIndex += CHUNK_SIZE;
+        uint64_t res = mem_det_map[i].curIndex;
+        mem_det_map[i].size = (mem_det_map[i].curIndex - mem_det_map->base);
+        sl_release(&lock);
+        return (void*)res;
+    }
+    sl_release(&lock);
     return NULL;
 }
 
 void free_multiple_chunks(void* address, uint64_t amount){
-    for(uint64_t i = (uint64_t)address; i < (uint64_t)address + amount * CHUNK_SIZE; i+=CHUNK_SIZE){
-        *(volatile uint64_t*)(i - 8) = 0; 
+    sl_acquire(&lock);
+    for (uint64_t i = 0; i < amount; i++) {
+        void* chunk = (void*)((uint64_t)address + i * CHUNK_SIZE);
+        *(void**)chunk = free_list;
+        free_list = chunk;
     }
+    sl_release(&lock);
+    return;
 }

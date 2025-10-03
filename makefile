@@ -14,9 +14,18 @@ run-amd64-generic:
 	-device virtio-gpu-pci -display sdl \
 	-drive file=image.img,format=raw -m 96M -serial mon:stdio
 
+run-amd64-generic-smp:
+	qemu-system-x86_64 -bios resources/UEFI/amd64/OVMF.fd \
+	-device virtio-gpu-pci -display sdl \
+	-drive file=image.img,format=raw -m 96M -serial mon:stdio -smp sockets=1,cores=2,threads=2
+
 amd64-generic:
 	make build-amd64-generic-image
 	make run-amd64-generic
+
+amd64-generic-smp:
+	make build-amd64-generic-image
+	make run-amd64-generic-smp
 
 setup:
 	git clone https://codeberg.org/Limine/Limine.git --branch=v10.x-binary --depth=1
