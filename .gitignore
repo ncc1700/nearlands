@@ -1,3 +1,4 @@
 Limine/
 *.img
 bin/
+*.vmdk
