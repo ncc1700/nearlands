@@ -8,7 +8,7 @@
 void halt_core(){
     while(1){
         term_write_status(INFO, "halting system");
-        asm volatile("hlt");
+        asm volatile("wfi");
         continue;
     }
 }

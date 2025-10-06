@@ -26,7 +26,7 @@ void cpu_entry(struct limine_smp_info *smp_info){
     //DKPRINTTEXTANDDECWITHSPACE(__FILE__, __LINE__);
     
     sl_release(&lock);
-    while(1){__asm__ __volatile__("hlt"); continue;}
+    while(1){__asm__ __volatile__("wfi"); continue;}
 }
 
 extern void lloop();

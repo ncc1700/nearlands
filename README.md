@@ -1,0 +1,18 @@
+# How to build
+
+you will need clang, nasm (for amd64 builds), xmake, make, mtools and QEMU (the entire suit, including qemu-img and its many emulators)
+
+when done so, clone this repo and run `make setup`, this will fetch limine (our bootloader) and anything else that is needed
+
+after this, you have two choices, you can either build the amd64-generic image or the aarch64-virt image
+
+so far, amd64-generic is more complete so we would advice you build that
+
+
+for AMD64-GENERIC run:
+    `make amd64-generic`
+for AARCH64-VIRT run:
+    `make aarch64-virt`
+
+
+itll compile the kernel and everything else, build an image and then start the QEMU emulator

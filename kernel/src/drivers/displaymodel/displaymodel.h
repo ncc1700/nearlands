@@ -13,14 +13,16 @@
 typedef struct _ddf {
     uint32_t reserved; // key
     uint8_t (*draw_pixel)(uint32_t display, uint32_t x, uint32_t y, uint64_t color);
+    uint64_t (*get_width)(uint32_t display);
+    uint64_t (*get_height)(uint32_t display);
 } ddf;
 
 
 uint32_t add_display_driver(ddf* func);
 uint8_t switch_to_display_driver(uint32_t key);
 uint8_t draw_pixel(uint32_t display, uint32_t x, uint32_t y, uint64_t color);
-
-
+uint64_t get_width(uint32_t display);
+uint64_t get_height(uint32_t display);
 
 
 

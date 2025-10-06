@@ -1,4 +1,4 @@
-#include "core/tools/debugtools.h"
+#include "core/term/term.h"
 #include "drivers/displaymodel/displaymodel.h"
 #include "drivers/setupgeneric.h"
 #include "hal/includes/halinit.h"
@@ -22,36 +22,22 @@ static volatile LIMINE_REQUESTS_END_MARKER;
 
 
 void kernel_entry(void) {
-    DKPRINTLN("Loading kernel"); 
+    draw_pixel(0, 10, 10, 0xfffffff);
+    //DKPRINTLN("Loading kernel"); 
     setup_hal();
     setup_generic_devices();
     chunk_allocator_setup();
     setup_smp();
     
     if(LIMINE_BASE_REVISION_SUPPORTED == 0){
-        DKPRINTLN("UNKNOWN BASE REVISION");
+        term_write_status(ERROR,"Unknown Base Revision");
         halt_core();
     }
-    
-    for(int x = 90; x < 200; x++){
-        for(int y = 100; y < 300; y++){
-            draw_pixel(0, x, y, 0xff00ff);
-        }
+    for(int i = 0; i < 10000; i++){
+        term_write_status(ERROR, "h");
     }
 
-    for(int x = 500; x < 700; x++){
-        for(int y = 400; y < 500; y++){
-            draw_pixel(0, x, y, 0x00ffff);
-        }
-    }
 
-    char* h = allocate_single_chunk();
-    DKPRINTTEXTANDHEXLN("first: ", (uint64_t)h);
-    char* p = allocate_single_chunk();
-    DKPRINTTEXTANDHEXLN("second: ", (uint64_t)p);
-    free_single_chunk(p);
-    char* f = allocate_single_chunk();
-    DKPRINTTEXTANDHEXLN("third: ", (uint64_t)f);
 
     halt_core();
 }

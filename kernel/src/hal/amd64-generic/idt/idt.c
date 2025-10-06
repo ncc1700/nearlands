@@ -1,5 +1,5 @@
 #include "idt.h"
-#include "../../../core/tools/debugtools.h"
+#include "../../../core/term/term.h"
 #include "../../includes/misc.h"
 #define IDTSIZE 256
 
@@ -35,12 +35,12 @@ static inline void create_int(uint8_t i, void (*handler)(), uint16_t selector, u
 }
 
 void unknown_hardware(){
-    DKPRINTLN("UNKNOWN HARDWARE INTERRUPT");
+    term_write_status(ERROR, "Unknown Hardware Interrupt");
     halt_core();
 }
 
 void unknown_software(int idk, int idkk){
-    DKPRINTLN("UNKNOWN SOFTWARE INTERRUPT");
+    term_write_status(ERROR, "Unknown Software Interrupt");
     halt_core();
 }
 
