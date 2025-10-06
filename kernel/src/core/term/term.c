@@ -1,5 +1,5 @@
 #include "term.h"
-#include "external/font8x16.h"
+#include "external/font8x8_basic.h"
 #include <stdint.h>
 #include "../../drivers/displaymodel/displaymodel.h"
 #include "../klibc/string.h"
@@ -23,7 +23,7 @@ void term_putchar_anywhere_display(uint32_t display, char c, uint32_t x, uint32_
     if (c < 32 || c > 126) {
         return;
     }
-    const uint8_t *bitmap = kfont[c - 32]; 
+    const uint8_t *bitmap = font8x8_basic[c - 32]; 
     for (int i = 0; i < 8; i++) {
         for (int j = 0; j < 6; j++) {
             if (bitmap[i] & (1 << j)) { 

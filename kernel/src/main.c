@@ -33,7 +33,7 @@ void kernel_entry(void) {
         term_write_status(ERROR,"Unknown Base Revision");
         halt_core();
     }
-    for(int i = 0; i < 10000; i++){
+    for(int i = 0; i < 10; i++){
         term_write_status(ERROR, "h");
     }
 
