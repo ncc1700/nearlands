@@ -40,11 +40,11 @@ uint8_t setup_basic_display(){
         // if this ends up being flagged (or the other under) 
         // my goal is to begin a UART interface instead
 
-        term_write_status(ERROR, "Framebuffer Request failed");
+        //term_write_status(ERROR, "Framebuffer Request failed");
         return 1;
     }
     if(framebuffer_request.response->framebuffer_count < 1){
-        term_write_status(ERROR, "Framebuffer count less then one");
+        //term_write_status(ERROR, "Framebuffer count less then one");
         return 2;
     }
     amount_of_display = framebuffer_request.response->framebuffer_count;

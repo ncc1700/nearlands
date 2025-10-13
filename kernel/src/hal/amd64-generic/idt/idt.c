@@ -35,12 +35,12 @@ static inline void create_int(uint8_t i, void (*handler)(), uint16_t selector, u
 }
 
 void unknown_hardware(){
-    term_write_status(ERROR, "Unknown Hardware Interrupt");
+    term_write_printf(ERROR, "Unknown Hardware Interrupt");
     halt_core();
 }
 
 void unknown_software(int idk, int idkk){
-    term_write_status(ERROR, "Unknown Software Interrupt");
+    term_write_printf(ERROR, "Unknown Hardware Interrupt");
     halt_core();
 }
 

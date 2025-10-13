@@ -14,8 +14,8 @@
 
 
 
-void sl_acquire(atomic_flag* lock);
-void sl_release(atomic_flag* lock);
+void sl_acquire(volatile atomic_flag* lock);
+void sl_release(volatile atomic_flag* lock);
 
 
 

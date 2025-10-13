@@ -4,6 +4,7 @@
 #include "hal/includes/halinit.h"
 #include "hal/includes/mem.h"
 #include "hal/includes/misc.h"
+#include "hal/includes/serial.h"
 #include "hal/includes/smp.h"
 #include "limine.h"
 #include <stddef.h>
@@ -22,22 +23,30 @@ static volatile LIMINE_REQUESTS_END_MARKER;
 
 
 void kernel_entry(void) {
-    draw_pixel(0, 10, 10, 0xfffffff);
+    print_char_to_serial('h');
+    if(LIMINE_BASE_REVISION_SUPPORTED == 0){
+        halt_core();
+    }
+
+
+
     //DKPRINTLN("Loading kernel"); 
     setup_hal();
     setup_generic_devices();
-    chunk_allocator_setup();
+    bitmap_init();
     setup_smp();
-    
-    if(LIMINE_BASE_REVISION_SUPPORTED == 0){
-        term_write_status(ERROR,"Unknown Base Revision");
-        halt_core();
-    }
-    for(int i = 0; i < 10; i++){
-        term_write_status(ERROR, "h");
-    }
 
-
+    // char* a = allocate_multiple_bitmaps(10);
+    // a[0] = 'h';
+    // term_write_printf(INFO, "a is in memory location 0x%x", a);
+    // char* b = allocate_multiple_bitmaps(5);
+    // b[0] = 'h';
+    // term_write_printf(INFO, "b is in memory location 0x%x", b);
+    // free_multiple_bitmaps(a, 10);
+    // char* c = allocate_multiple_bitmaps(20);
+    // c[0] = 'h';
+    // term_write_printf(INFO, "c is in memory location 0x%x", c);
+    //         print_char_to_serial('h');
 
     halt_core();
 }
