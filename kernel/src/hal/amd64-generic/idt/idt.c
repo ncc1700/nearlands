@@ -1,6 +1,8 @@
 #include "idt.h"
 #include "../../../core/term/term.h"
 #include "../../includes/misc.h"
+#include "../../includes/serial.h"
+
 #define IDTSIZE 256
 
 typedef struct _intdesc {
@@ -35,6 +37,8 @@ static inline void create_int(uint8_t i, void (*handler)(), uint16_t selector, u
 }
 
 void unknown_hardware(){
+        print_char_to_serial('p');
+
     term_write_printf(ERROR, "Unknown Hardware Interrupt");
     halt_core();
 }

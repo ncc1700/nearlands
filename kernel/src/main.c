@@ -1,5 +1,3 @@
-#include "core/term/term.h"
-#include "drivers/displaymodel/displaymodel.h"
 #include "drivers/setupgeneric.h"
 #include "hal/includes/halinit.h"
 #include "hal/includes/mem.h"
@@ -25,6 +23,7 @@ static volatile LIMINE_REQUESTS_END_MARKER;
 void kernel_entry(void) {
     print_char_to_serial('h');
     if(LIMINE_BASE_REVISION_SUPPORTED == 0){
+        
         halt_core();
     }
 
@@ -32,10 +31,11 @@ void kernel_entry(void) {
 
     //DKPRINTLN("Loading kernel"); 
     setup_hal();
-    setup_generic_devices();
     bitmap_init();
-    setup_smp();
+    setup_generic_devices();
 
+
+    setup_smp();
     // char* a = allocate_multiple_bitmaps(10);
     // a[0] = 'h';
     // term_write_printf(INFO, "a is in memory location 0x%x", a);

@@ -11,8 +11,6 @@ uint8_t switch_to_display_driver(uint32_t key){
         return 1;
     }
     // TODO: clear screen before switching
-    //DKPRINTTEXTANDDECWITHSPACE(__FILE__, __LINE__);
-    //DKPRINTTEXTANDHEXLN(" Switching display to ", key);
     cur_driver = key;
     return 0;
 }
@@ -23,12 +21,9 @@ uint32_t add_display_driver(ddf* func){
     ddf_drivers[amount].get_height = func->get_height;
 
     ddf_drivers[amount].reserved = amount;
-    //DKPRINTTEXTANDDECWITHSPACE(__FILE__, __LINE__);
-    //DKPRINTTEXTANDHEX(" New display driver with a key of ", amount);
-    //DKPRINTLN(" has been added");
     amount++;
     if(amount - 1 == 0){
-        //switch_to_display_driver(amount - 1);
+        switch_to_display_driver(amount - 1);
     }
     return amount - 1;
 }

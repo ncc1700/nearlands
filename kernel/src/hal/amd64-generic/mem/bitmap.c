@@ -2,7 +2,6 @@
 #include <stdatomic.h>
 #include <stdint.h>
 #include "../../../limine.h"
-#include "../../../core/term/term.h"
 #include "../../includes/spinlock.h"
 
 #define PAGE_SIZE 0x1000
@@ -47,13 +46,11 @@ uint8_t bitmap_init(){
             bitmapSize++;
         }
     }
-    term_write_printf(INFO, "Bitmap Amount is %d", bitmapSize);
     for(uint64_t i = 0; i < memmap->entry_count; i++){
         if(memmap->entries[i]->type != LIMINE_MEMMAP_USABLE 
             && memmap->entries[i]->type != LIMINE_MEMMAP_BOOTLOADER_RECLAIMABLE) continue;
         if(bitmapSize * sizeof(BitmapInfo) < memmap->entries[i]->length){
             bmpinfo = (BitmapInfo*)(hhdm->offset + memmap->entries[i]->base);
-            term_write_printf(INFO, "Bitmap Memory Location is 0x%x", (uint64_t)bmpinfo);
             memmap->entries[i]->base += bitmapSize * sizeof(BitmapInfo);
             memmap->entries[i]->length -= bitmapSize * sizeof(BitmapInfo);
             break;
