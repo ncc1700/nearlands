@@ -53,7 +53,7 @@ uint8_t setup_basic_display(){
     amount_of_display = framebuffer_request.response->framebuffer_count;
     fbp = framebuffer_request.response->framebuffers;
    
-    ddf* bdisplaydf = allocate_single_bitmap();
+    ddf* bdisplaydf = allocate_single_map();
 
     bdisplaydf->reserved = 0;
     bdisplaydf->draw_pixel = basic_display_draw_pixel;

@@ -6,11 +6,11 @@
 
 #define PAGE_SIZE 0x1000
 
-typedef struct _BitmapInfo {
+typedef struct _mapInfo {
     uint64_t address;
     uint64_t entry;
     uint8_t isFree;
-} BitmapInfo;
+} mapInfo;
 
 __attribute__((used, section(".limine_requests")))
 static volatile struct limine_memmap_request memmap_request = {
@@ -24,12 +24,12 @@ static volatile struct limine_hhdm_request hhdm_request = {
     0
 };
 
-static BitmapInfo* bmpinfo = NULL;
-static uint64_t bitmapSize = 0;
+static mapInfo* bmpinfo = NULL;
+static uint64_t mapSize = 0;
 static struct limine_memmap_response* memmap = NULL;
 static struct limine_hhdm_response* hhdm = NULL;
 
-uint8_t bitmap_init(){
+uint8_t map_init(){
     if(memmap_request.response == NULL || hhdm_request.response == NULL){
         return 1;
     }
@@ -43,16 +43,16 @@ uint8_t bitmap_init(){
         uint64_t base = memmap->entries[i]->base;
         for(uint64_t j = base; j < (base + entrySize); j+=PAGE_SIZE){
             
-            bitmapSize++;
+            mapSize++;
         }
     }
     for(uint64_t i = 0; i < memmap->entry_count; i++){
         if(memmap->entries[i]->type != LIMINE_MEMMAP_USABLE 
             && memmap->entries[i]->type != LIMINE_MEMMAP_BOOTLOADER_RECLAIMABLE) continue;
-        if(bitmapSize * sizeof(BitmapInfo) < memmap->entries[i]->length){
-            bmpinfo = (BitmapInfo*)(hhdm->offset + memmap->entries[i]->base);
-            memmap->entries[i]->base += bitmapSize * sizeof(BitmapInfo);
-            memmap->entries[i]->length -= bitmapSize * sizeof(BitmapInfo);
+        if(mapSize * sizeof(mapInfo) < memmap->entries[i]->length){
+            bmpinfo = (mapInfo*)(hhdm->offset + memmap->entries[i]->base);
+            memmap->entries[i]->base += mapSize * sizeof(mapInfo);
+            memmap->entries[i]->length -= mapSize * sizeof(mapInfo);
             break;
         }
     }
@@ -75,9 +75,9 @@ uint8_t bitmap_init(){
     return 0;
 }
 static volatile atomic_flag alloc = ATOMIC_FLAG_INIT;
-void* allocate_single_bitmap(){
+void* allocate_single_map(){
     sl_acquire(&alloc);
-    for(uint64_t i = 0; i < bitmapSize; i++){
+    for(uint64_t i = 0; i < mapSize; i++){
         if(bmpinfo[i].isFree == 1){
             bmpinfo[i].isFree = 0;
             sl_release(&alloc);
@@ -89,9 +89,9 @@ void* allocate_single_bitmap(){
     return NULL;
 }
 static volatile atomic_flag free = ATOMIC_FLAG_INIT;
-void free_single_bitmap(void* address){
+void free_single_map(void* address){
     sl_acquire(&free);
-    for(uint64_t i = 0; i < bitmapSize; i++){
+    for(uint64_t i = 0; i < mapSize; i++){
         if(bmpinfo[i].address == (uint64_t)address){
             if(bmpinfo[i].isFree == 1) return;
             bmpinfo[i].isFree = 1;
@@ -100,10 +100,10 @@ void free_single_bitmap(void* address){
     sl_release(&free);
 }
 
-void* allocate_multiple_bitmaps(uint64_t amount){
+void* allocate_multiple_maps(uint64_t amount){
     sl_acquire(&alloc);
-    for(uint64_t i = 0; i < bitmapSize; i++){
-        if(i + amount >= bitmapSize) break;
+    for(uint64_t i = 0; i < mapSize; i++){
+        if(i + amount >= mapSize) break;
         uint8_t isValid = 0;
         for(uint64_t j = 0; j < amount; j++){
             if(bmpinfo[i].entry != bmpinfo[i + j].entry){
@@ -130,10 +130,10 @@ void* allocate_multiple_bitmaps(uint64_t amount){
     return NULL;
 }
 
-void free_multiple_bitmaps(void* address, uint64_t amount){
+void free_multiple_maps(void* address, uint64_t amount){
     sl_acquire(&free);
-    for(uint64_t i = 0; i < bitmapSize; i++){
-        if(i + amount >= bitmapSize) break;
+    for(uint64_t i = 0; i < mapSize; i++){
+        if(i + amount >= mapSize) break;
         for(int j = 0; j < amount; j++){
             if(bmpinfo[i].address == (uint64_t)address){
                 if(bmpinfo[i + j].isFree == 1) return;
