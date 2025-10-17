@@ -1,3 +1,4 @@
+#include "core/term/term.h"
 #include "drivers/setupgeneric.h"
 #include "hal/includes/halinit.h"
 #include "hal/includes/mem.h"
@@ -34,7 +35,7 @@ void kernel_entry(void) {
     bitmap_init();
     setup_generic_devices();
 
-
+    term_write_printf(INFO, "Loaded Core Utilites");
     setup_smp();
     // char* a = allocate_multiple_bitmaps(10);
     // a[0] = 'h';

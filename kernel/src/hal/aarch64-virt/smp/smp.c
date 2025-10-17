@@ -37,7 +37,6 @@ uint8_t setup_smp(){
     }
     if(smp_request.response->cpu_count <= 1){
         //DKPRINTTEXTANDDECWITHSPACE(__FILE__, __LINE__);
-        term_write_status(INFO, "CPU has only one core, returning");
         //DKPRINTLN("CPU only has one core, returning....");
         return 0;
     }
