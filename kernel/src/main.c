@@ -24,7 +24,6 @@ static volatile LIMINE_REQUESTS_END_MARKER;
 void kernel_entry(void) {
     print_char_to_serial('h');
     if(LIMINE_BASE_REVISION_SUPPORTED == 0){
-        
         halt_core();
     }
 
@@ -37,17 +36,17 @@ void kernel_entry(void) {
 
     term_write_printf(INFO, "Loaded Core Utilites");
     setup_smp();
-    // char* a = allocate_multiple_bitmaps(10);
-    // a[0] = 'h';
-    // term_write_printf(INFO, "a is in memory location 0x%x", a);
-    // char* b = allocate_multiple_bitmaps(5);
-    // b[0] = 'h';
-    // term_write_printf(INFO, "b is in memory location 0x%x", b);
-    // free_multiple_bitmaps(a, 10);
-    // char* c = allocate_multiple_bitmaps(20);
-    // c[0] = 'h';
-    // term_write_printf(INFO, "c is in memory location 0x%x", c);
-    //         print_char_to_serial('h');
+
+    char* a = allocate_multiple_bitmaps(10);
+    a[0] = 'h';
+    term_write_printf(INFO, "a is in memory location 0x%x", a);
+    char* b = allocate_multiple_bitmaps(5);
+    b[0] = 'h';
+    term_write_printf(INFO, "b is in memory location 0x%x", b);
+    free_multiple_bitmaps(a, 10);
+    char* c = allocate_multiple_bitmaps(5);
+    c[0] = 'h';
+    term_write_printf(INFO, "c is in memory location 0x%x", c);
 
     halt_core();
 }

@@ -9,7 +9,7 @@
 
 void sl_acquire(volatile atomic_flag* lock){
     while(atomic_flag_test_and_set_explicit(lock, memory_order_acquire)){
-        //__asm__ __volatile__("pause");
+        __asm__ __volatile__("yield");
     }
 }
 

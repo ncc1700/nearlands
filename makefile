@@ -44,10 +44,18 @@ run-aarch64-virt-debug:
 		-drive if=none,file=image.img,format=raw,id=hd0 \
   		-device virtio-blk-device,drive=hd0 \
 		-serial mon:stdio -s -S
+
 run-amd64-generic-smp:
 	qemu-system-x86_64 -bios resources/UEFI/amd64/OVMF.fd \
 	-device virtio-gpu-pci -display sdl \
 	-drive file=image.img,format=raw -m 96M -serial mon:stdio -smp sockets=1,cores=2,threads=2
+
+run-aarch64-virt-smp:
+	qemu-system-aarch64 -bios resources/UEFI/aarch64/OVMF.fd \
+		-machine virt -cpu cortex-a57 -m 512M -device ramfb -device usb-ehci -device usb-kbd -display sdl \
+		-drive if=none,file=image.img,format=raw,id=hd0 \
+  		-device virtio-blk-device,drive=hd0 \
+		-serial mon:stdio -smp sockets=1,cores=2,threads=2
 
 amd64-generic:
 	make build-amd64-generic-image
@@ -60,6 +68,11 @@ aarch64-virt:
 amd64-generic-smp:
 	make build-amd64-generic-image
 	make run-amd64-generic-smp
+
+aarch64-virt-smp:
+	make build-aarch64-virt-image
+	make run-aarch64-virt-smp
+
 
 setup:
 	git clone https://codeberg.org/Limine/Limine.git --branch=v10.x-binary --depth=1
