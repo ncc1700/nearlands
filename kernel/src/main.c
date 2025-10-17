@@ -1,3 +1,4 @@
+#include "core/kalloc.h"
 #include "core/term/term.h"
 #include "drivers/setupgeneric.h"
 #include "hal/includes/halinit.h"
@@ -29,7 +30,6 @@ void kernel_entry(void) {
 
 
 
-    //DKPRINTLN("Loading kernel"); 
     setup_hal();
     map_init();
     setup_generic_devices();
@@ -37,14 +37,13 @@ void kernel_entry(void) {
     term_write_printf(INFO, "Loaded Core Utilites");
     setup_smp();
 
-    char* a = allocate_multiple_maps(10);
+    char* a = kalloc(10);
     a[0] = 'h';
     term_write_printf(INFO, "a is in memory location 0x%x", a);
-    char* b = allocate_multiple_maps(5);
+    char* b = kalloc(5);
     b[0] = 'h';
     term_write_printf(INFO, "b is in memory location 0x%x", b);
-    free_multiple_maps(a, 10);
-    char* c = allocate_multiple_maps(5);
+    char* c = kalloc(5);
     c[0] = 'h';
     term_write_printf(INFO, "c is in memory location 0x%x", c);
 
