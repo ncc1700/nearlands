@@ -61,6 +61,9 @@ uint8_t setup_basic_display(){
     bdisplaydf->get_height = basic_display_get_height;
 
     uint32_t key = add_display_driver(bdisplaydf);
+    if(key == 14){
+        return 3;
+    }
     switch_to_display_driver(key);
     return 0;
 }

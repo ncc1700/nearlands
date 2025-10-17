@@ -1,8 +1,10 @@
 #include "displaymodel.h"
 
-// currently an array and a counter, will make a linked list when i get a
-// memory allocator (virtual or physical) working
-static ddf ddf_drivers[13];
+#define DISPLAY_AMOUNT 13
+
+
+// allows up to 13 display driver to be loaded
+static ddf ddf_drivers[DISPLAY_AMOUNT];
 static uint32_t amount = 0;
 static uint32_t cur_driver = 0;
 
@@ -10,12 +12,16 @@ uint8_t switch_to_display_driver(uint32_t key){
     if(key >= amount){
         return 1;
     }
-    // TODO: clear screen before switching
     cur_driver = key;
     return 0;
 }
 
 uint32_t add_display_driver(ddf* func){
+    if(amount >=DISPLAY_AMOUNT){
+        // will return 14, which is out of bounds meaning
+        // of course, it failed. Unless some magic happened =D
+        return 14;
+    }
     ddf_drivers[amount].draw_pixel = func->draw_pixel;
     ddf_drivers[amount].get_width = func->get_width;
     ddf_drivers[amount].get_height = func->get_height;

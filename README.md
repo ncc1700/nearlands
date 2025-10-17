@@ -4,7 +4,7 @@ this is a small project I made to continue the ideas I got from furtherium with 
 
 goals is to be a portable, easily extendable and simple operating system for learning
 
-# External Projects this uses
+# External Projects Nearlands uses
 
 [Limine](https://codeberg.org/limine/limine) (the bootloader)
 
