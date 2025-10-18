@@ -4,14 +4,7 @@
 
 #define PAGE_SIZE 0x1000
 
-typedef struct _freeblock {
-    struct _freeblock* next;
-    uint64_t size;
-} freeblock;
 
-static void* freelist = NULL;
-static freeblock* fblock = NULL;
-static freeblock* initial = NULL;
 static void* cur_memory = NULL;
 static uint64_t cur_size = 0;
 
@@ -45,6 +38,5 @@ void* kalloc(uint64_t size){
 
 // not impl, dont use
 void kfree(void* address, uint64_t size){
-    fblock = (freeblock*)address;
-    fblock->size = size;
+    return;
 }

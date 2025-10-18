@@ -17,7 +17,7 @@ uint8_t switch_to_display_driver(uint32_t key){
 }
 
 uint32_t add_display_driver(ddf* func){
-    if(amount >=DISPLAY_AMOUNT){
+    if(amount >= DISPLAY_AMOUNT){
         // will return 14, which is out of bounds meaning
         // of course, it failed. Unless some magic happened =D
         return 14;

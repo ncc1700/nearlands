@@ -35,6 +35,7 @@ void kernel_entry(void) {
     setup_generic_devices();
 
     term_write_printf(INFO, "Loaded Core Utilites");
+
     setup_smp();
 
     char* a = kalloc(10);

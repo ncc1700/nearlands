@@ -1,7 +1,6 @@
 #include "../displaymodel/displaymodel.h"
 #include "../../limine.h"
 #include <stdint.h>
-#include "../../hal/includes/mem.h"
 #include "../../core/kalloc.h"
 // our generic display driver is using the framebuffer limine provides us
 
