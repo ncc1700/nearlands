@@ -37,7 +37,7 @@ void kernel_entry(void) {
     term_write_printf(INFO, "Loaded Core Utilites");
 
     setup_smp();
-
+    
     char* a = kalloc(10);
     a[0] = 'h';
     term_write_printf(INFO, "a is in memory location 0x%x", a);

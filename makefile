@@ -87,3 +87,6 @@ clean-all:
 	rm -rf Limine
 	cd kernel && make clean
 	rm -rf bin
+
+img-to-vmdk:
+	qemu-img convert -f raw -O vmdk image.img image.vmdk

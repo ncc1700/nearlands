@@ -18,7 +18,7 @@ goals is to be a portable, easily extendable and simple operating system for lea
 
 # How to build
 
-you will need clang, nasm (for amd64 builds), xmake, make, mtools and QEMU (the entire suit, including qemu-img and its many emulators)
+you will need clang, nasm (for amd64 builds), xmake, make, mtools and QEMU (the entire suite, including qemu-img and its many emulators)
 
 when done so, clone this repo and run `make setup`, this will fetch limine (our bootloader) and anything else that is needed
 
@@ -28,8 +28,11 @@ so far, amd64-generic is more complete so we would advice you build that
 
 
 for AMD64-GENERIC run:
+
     `make amd64-generic`
+    
 for AARCH64-VIRT run:
+
     `make aarch64-virt`
 
 

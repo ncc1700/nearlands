@@ -24,7 +24,7 @@ static volatile struct limine_hhdm_request hhdm_request = {
     0
 };
 
-static mapInfo* bmpinfo = NULL;
+static mapInfo* info = NULL;
 static uint64_t mapSize = 0;
 static struct limine_memmap_response* memmap = NULL;
 static struct limine_hhdm_response* hhdm = NULL;
@@ -50,13 +50,13 @@ uint8_t map_init(){
         if(memmap->entries[i]->type != LIMINE_MEMMAP_USABLE 
             && memmap->entries[i]->type != LIMINE_MEMMAP_BOOTLOADER_RECLAIMABLE) continue;
         if(mapSize * sizeof(mapInfo) < memmap->entries[i]->length){
-            bmpinfo = (mapInfo*)(hhdm->offset + memmap->entries[i]->base);
+            info = (mapInfo*)(hhdm->offset + memmap->entries[i]->base);
             memmap->entries[i]->base += mapSize * sizeof(mapInfo);
             memmap->entries[i]->length -= mapSize * sizeof(mapInfo);
             break;
         }
     }
-    if(bmpinfo == NULL){
+    if(info == NULL){
         return 1;
     }
     uint64_t k = 0;
@@ -66,51 +66,50 @@ uint8_t map_init(){
         uint64_t entrySize = memmap->entries[i]->length;
         uint64_t base = memmap->entries[i]->base;
         for(uint64_t j = base; j < (base + entrySize); j+=PAGE_SIZE){
-            bmpinfo[k].address = (hhdm->offset + j);
-            bmpinfo[k].isFree = 1; 
-            bmpinfo[k].entry = i;
+            info[k].address = (hhdm->offset + j);
+            info[k].isFree = 1; 
+            info[k].entry = i;
             k++;
         }
     }
     return 0;
 }
-static volatile atomic_flag alloc = ATOMIC_FLAG_INIT;
+static volatile atomic_flag flag = ATOMIC_FLAG_INIT;
 void* allocate_single_map(){
-    sl_acquire(&alloc);
+    sl_acquire(&flag);
     for(uint64_t i = 0; i < mapSize; i++){
-        if(bmpinfo[i].isFree == 1){
-            bmpinfo[i].isFree = 0;
-            sl_release(&alloc);
-            return (void*)bmpinfo[i].address;
+        if(info[i].isFree == 1){
+            info[i].isFree = 0;
+            sl_release(&flag);
+            return (void*)info[i].address;
         }
     }
-    sl_release(&alloc);
+    sl_release(&flag);
     // we ran out of memory =(
     return NULL;
 }
-static volatile atomic_flag free = ATOMIC_FLAG_INIT;
 void free_single_map(void* address){
-    sl_acquire(&free);
+    sl_acquire(&flag);
     for(uint64_t i = 0; i < mapSize; i++){
-        if(bmpinfo[i].address == (uint64_t)address){
-            if(bmpinfo[i].isFree == 1) return;
-            bmpinfo[i].isFree = 1;
+        if(info[i].address == (uint64_t)address){
+            if(info[i].isFree == 1) return;
+            info[i].isFree = 1;
         }
     }
-    sl_release(&free);
+    sl_release(&flag);
 }
 
 void* allocate_multiple_maps(uint64_t amount){
-    sl_acquire(&alloc);
+    sl_acquire(&flag);
     for(uint64_t i = 0; i < mapSize; i++){
         if(i + amount >= mapSize) break;
         uint8_t isValid = 0;
         for(uint64_t j = 0; j < amount; j++){
-            if(bmpinfo[i].entry != bmpinfo[i + j].entry){
+            if(info[i].entry != info[i + j].entry){
                 isValid = 0;
                 break;
             }
-            if(bmpinfo[i + j].isFree == 1){
+            if(info[i + j].isFree == 1){
                 isValid = 1;
             } else {
                 isValid = 0;
@@ -119,27 +118,27 @@ void* allocate_multiple_maps(uint64_t amount){
         }
         if(isValid == 1){
             for(uint64_t j = 0; j < amount; j++){
-                bmpinfo[i + j].isFree = 0;
+                info[i + j].isFree = 0;
             }
-            sl_release(&alloc);
-            return (void*)bmpinfo[i].address;
+            sl_release(&flag);
+            return (void*)info[i].address;
         } 
     }
-    sl_release(&alloc);
+    sl_release(&flag);
     // we ran out of memory =(
     return NULL;
 }
 
 void free_multiple_maps(void* address, uint64_t amount){
-    sl_acquire(&free);
+    sl_acquire(&flag);
     for(uint64_t i = 0; i < mapSize; i++){
         if(i + amount >= mapSize) break;
         for(int j = 0; j < amount; j++){
-            if(bmpinfo[i].address == (uint64_t)address){
-                if(bmpinfo[i + j].isFree == 1) return;
-                bmpinfo[i + j].isFree = 1;
+            if(info[i].address == (uint64_t)address){
+                if(info[i + j].isFree == 1) return;
+                info[i + j].isFree = 1;
             }
         }   
     }
-    sl_release(&free);
+    sl_release(&flag);
 }
