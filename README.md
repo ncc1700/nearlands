@@ -28,11 +28,8 @@ so far, amd64-generic is more complete so we would advice you build that
 
 
 for AMD64-GENERIC run:
-
     `make amd64-generic`
-    
 for AARCH64-VIRT run:
-
     `make aarch64-virt`
 
 

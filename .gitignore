@@ -1,4 +1,2 @@
-Limine/
-*.img
 bin/
-*.vmdk
+image.img
