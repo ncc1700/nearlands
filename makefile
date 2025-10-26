@@ -19,7 +19,22 @@ build-img-amd64-debug:
 	mmd -i image.img ::/SYSTEM
 	mcopy -i image.img bin/ldr/BOOTX64.EFI ::/EFI/BOOT
 	mcopy -i image.img bin/system/nearkrnl ::/SYSTEM
-	mcopy -i image.img nearldr.conf ::/SYSTEM
+	mcopy -i image.img nearldr.conf ::/
+
+build-img-aarch64-debug:
+	mkdir -p bin
+	mkdir -p bin/ldr
+	mkdir -p bin/system
+	cp nearldr/target/aarch64-unknown-uefi/debug/nearldr.efi bin/ldr/BOOTAA64.EFI
+	cp nearkrnl/target/aarch64-unknown-none/debug/nearkrnl bin/system/nearkrnl
+	qemu-img create -f raw image.img 1440K
+	mformat -i image.img -f 1440 ::
+	mmd -i image.img ::/EFI
+	mmd -i image.img ::/EFI/BOOT
+	mmd -i image.img ::/SYSTEM
+	mcopy -i image.img bin/ldr/BOOTAA64.EFI ::/EFI/BOOT
+	mcopy -i image.img bin/system/nearkrnl ::/SYSTEM
+	mcopy -i image.img nearldr.conf ::/
 
 
 run-amd64:
@@ -27,11 +42,22 @@ run-amd64:
 	-device virtio-gpu-pci -display sdl \
 	-drive file=image.img,format=raw -m 96M -serial mon:stdio
 
+run-aarch64:
+	qemu-system-aarch64 -bios resources/UEFI/aarch64/OVMF.fd \
+		-machine virt -cpu cortex-a57 -m 512M -device ramfb -device usb-ehci -device usb-kbd -display sdl \
+		-drive if=none,file=image.img,format=raw,id=hd0 \
+  		-device virtio-blk-device,drive=hd0 \
+		-serial mon:stdio -smp sockets=1,cores=2,threads=2
 
 amd64-debug:
 	make all-amd64-debug
 	make build-img-amd64-debug
 	make run-amd64
+
+aarch64-debug:
+	make all-aarch64-debug
+	make build-img-aarch64-debug
+	make run-aarch64
 
 
 clean:

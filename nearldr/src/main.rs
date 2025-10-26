@@ -10,7 +10,7 @@ mod fileio;
 
 
 extern crate alloc;
-use alloc::{string::ToString, vec::Vec};
+use alloc::vec::Vec;
 
 
 
@@ -24,14 +24,14 @@ fn main() -> Status {
     let firmware = uefi::system::firmware_vendor();
     info!("Running on firmware {} revision {}", firmware, uefi::system::firmware_revision());
 
-    if fileio::check_if_file_exists(uefi::cstr16!("\\SYSTEM\\nearldr.conf")) == false {
+    if fileio::check_if_file_exists(uefi::cstr16!("\\nearldr.conf")) == false {
         error!("config file doesn't exist, system shutting down in 10 seconds");
         uefi::boot::stall(Duration::from_secs(10));
         uefi::runtime::reset(ResetType::SHUTDOWN, Status::SUCCESS, None);
     }
     let file: FileHandle;
     let content: Vec<u8>;
-    let fileres = fileio::open_file(uefi::cstr16!("\\SYSTEM\\nearldr.conf"));
+    let fileres = fileio::open_file(uefi::cstr16!("\\nearldr.conf"));
     
     match fileres {
         Ok(f) => {

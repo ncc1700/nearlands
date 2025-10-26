@@ -3,5 +3,5 @@ linker = "ld"
 rustflags = ["-C", "link-arg=-nostdlib", "-C", "link-arg=-Tlinkers/link-amd64.ld"]
 
 [target.aarch64-unknown-none]
-linker = "ld"
+linker = "ld.lld"
 rustflags = ["-C", "link-arg=-nostdlib", "-C", "link-arg=-Tlinkers/link-aarch64.ld"]
