@@ -25,9 +25,9 @@ fn main() -> Status {
     info!("Entering NearLDR");
     let firmware = uefi::system::firmware_vendor();
     info!(
-        "Running on firmware {} revision {}",
+        "Running on {} | UEFI revision {}",
         firmware,
-        uefi::system::firmware_revision()
+        uefi::system::uefi_revision()
     );
 
     if fileio::check_if_file_exists(uefi::cstr16!("\\nearldr.conf")) == false {
