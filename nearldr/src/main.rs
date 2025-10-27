@@ -71,8 +71,14 @@ fn main() -> Status {
         boot::open_protocol_exclusive::<GraphicsOutput>(gop_handle).expect("Couldn't Open the GOP");
     let (width, height) = gop.current_mode_info().resolution();
     let mut buffer = graphics::GraphicsBuffer::new(width, height);
-    //buffer.draw_rectangle(0, 0, width, height, (100, 100, 100));
-    buffer.draw_text("Hello!", 100, 100, 3);
-    buffer.blit(&mut gop);
+    buffer.draw_text("NearLDR Build 0.0", 10, 10, 1);
+        buffer.blit(&mut gop);
+
+    buffer.draw_text("Boot Options:", 10, 50, 1);
+        buffer.blit(&mut gop);
+
+    buffer.draw_text("Boot Normally", 10, 70, 1);
+        buffer.blit(&mut gop);
+
     loop {}
 }

@@ -49,7 +49,7 @@ impl GraphicsBuffer {
         let beginy = y;
         let endx = x + sizex;
 
-        let endy = x + sizey;
+        let endy = y + sizey;
         
         for numx in beginx..endx {
             for numy in beginy..endy {
@@ -76,10 +76,10 @@ impl GraphicsBuffer {
             for j in 0..8 {
                 if (bitmap[i] & (1 << j)) != 0 {
                     self.draw_rectangle(x + j * size, y + i * size, size, size, (255,255, 255));
-                } 
-                else {
-                    self.draw_rectangle(x + j * size, y + i * size, size, size, (0,0, 0));
                 }
+                // else {
+                //     self.draw_rectangle(x + j * size, y + i * size, size, size, (0,0, 0));
+                // }
             }
         }
         Ok(())
@@ -105,6 +105,7 @@ impl GraphicsBuffer {
         self.draw_character(' ', x + ((xadd * size) * 8), y, size);
         xadd += 1;
         for c in text.chars() {
+
             self.draw_character(c, x + ((xadd * size) * 8), y, size);
             xadd+=1;
         }
