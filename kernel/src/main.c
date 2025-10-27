@@ -9,7 +9,7 @@
 #include "limine.h"
 #include <stddef.h>
 #include <stdint.h>
-
+#include "drivers/basicdisplay/basicdisplay.h"
 
 __attribute__((used, section(".limine_requests")))
 static volatile LIMINE_BASE_REVISION(3);
@@ -28,15 +28,15 @@ void kernel_entry(void) {
         halt_core();
     }
 
-
-
+    
     setup_hal();
+    
     map_init();
     setup_generic_devices();
 
     term_write_printf(INFO, "Loaded Core Utilites");
 
-    setup_smp();
+    //setup_smp();
     
     char* a = kalloc(10);
     a[0] = 'h';
@@ -47,6 +47,6 @@ void kernel_entry(void) {
     char* c = kalloc(5);
     c[0] = 'h';
     term_write_printf(INFO, "c is in memory location 0x%x", c);
-
+    term_write_printf(ERROR, "Nothing else to do, ending systen");
     halt_core();
 }

@@ -48,7 +48,7 @@ run-aarch64-virt-debug:
 run-amd64-generic-smp:
 	qemu-system-x86_64 -bios resources/UEFI/amd64/OVMF.fd \
 	-device virtio-gpu-pci -display sdl \
-	-drive file=image.img,format=raw -m 96M -serial mon:stdio -smp sockets=1,cores=2,threads=2
+	-drive file=image.img,format=raw -m 16G -serial mon:stdio -smp sockets=1,cores=2
 
 run-aarch64-virt-smp:
 	qemu-system-aarch64 -bios resources/UEFI/aarch64/OVMF.fd \

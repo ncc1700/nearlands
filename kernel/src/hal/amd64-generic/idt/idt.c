@@ -37,13 +37,15 @@ static inline void create_int(uint8_t i, void (*handler)(), uint16_t selector, u
 }
 
 void unknown_hardware(){
-        print_char_to_serial('p');
+    print_char_to_serial('p');
 
     term_write_printf(ERROR, "Unknown Hardware Interrupt");
     halt_core();
 }
 
-void unknown_software(int idk, int idkk){
+void unknown_software(){
+    print_char_to_serial('j');
+
     term_write_printf(ERROR, "Unknown Hardware Interrupt");
     halt_core();
 }

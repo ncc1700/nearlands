@@ -28,7 +28,7 @@ static inline void term_putchar_anywhere_display(uint32_t display, char c, uint3
     }
     const uint8_t *bitmap = font8x8_basic[c - 32]; 
     for (int i = 0; i < 8; i++) {
-        for (int j = 0; j < 6; j++) {
+        for (int j = 0; j < 8; j++) {
             if (bitmap[i] & (1 << j)) { 
                 draw_rect(display, x + j * size, y + i * size, size, size, color);
             }

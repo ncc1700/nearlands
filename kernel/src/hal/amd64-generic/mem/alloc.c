@@ -142,3 +142,11 @@ void free_multiple_maps(void* address, uint64_t amount){
     }
     sl_release(&flag);
 }
+
+struct limine_memmap_response* get_memmap(){
+    return memmap;
+}
+
+struct limine_hhdm_response* get_hhdm(){
+    return hhdm;
+}

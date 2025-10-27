@@ -4,6 +4,7 @@
 
 #define PAGE_SIZE 0x1000
 
+// simple bump memory allocator 
 
 static void* cur_memory = NULL;
 static uint64_t cur_size = 0;
