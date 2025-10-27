@@ -7,8 +7,8 @@ use uefi::Error;
 mod fonts;
 
 pub struct GraphicsBuffer {
-    width: usize,
-    height: usize,
+    pub width: usize,
+    pub height: usize,
     pbuffer: Vec<BltPixel>,
 }
 
@@ -23,18 +23,6 @@ impl GraphicsBuffer {
 
     pub fn get_pixel(&mut self, x: usize, y: usize) -> Option<&mut BltPixel> {
         return self.pbuffer.get_mut(y * self.width + x);
-    }
-    pub fn draw_pixel(&self, x: usize, y: usize, gop: &mut GraphicsOutput) -> Result<(), Error> {
-        gop.blt(BltOp::BufferToVideo {
-            buffer: &self.pbuffer,
-            src: BltRegion::SubRectangle {
-                coords: (x, y),
-                px_stride: self.width,
-            },
-            dest: (x, y),
-            dims: (1, 1),
-        });
-        Ok(())
     }
     pub fn blit(&self, gop: &mut GraphicsOutput) -> Result<(), Error> {
         gop.blt(BltOp::BufferToVideo {
@@ -60,11 +48,11 @@ impl GraphicsBuffer {
             }
         }
     }
-    pub fn draw_rectangle_and_blit(&mut self, x: usize, y: usize, sizex: usize, sizey: usize, gop: &mut GraphicsOutput, color: (u8, u8, u8)) -> Result<(), Error> {
+    pub fn _draw_rectangle_and_blit(&mut self, x: usize, y: usize, sizex: usize, sizey: usize, gop: &mut GraphicsOutput, color: (u8, u8, u8)) -> Result<(), Error> {
         self.draw_rectangle(x, y, sizex, sizey, color);
         self.blit(gop)
     }
-    pub fn draw_character(&mut self, c: char, x: usize, y: usize, size: usize) -> Result<(), &'static str> {
+    pub fn draw_character(&mut self, c: char, x: usize, y: usize, size: usize, color: (u8, u8, u8)) -> Result<(), &'static str> {
         if ((c as usize) < 32) || ((c as usize) > 126) {
             return Err("Invalid Size");
         }
@@ -75,40 +63,32 @@ impl GraphicsBuffer {
         for i in 0..8 {
             for j in 0..8 {
                 if (bitmap[i] & (1 << j)) != 0 {
-                    self.draw_rectangle(x + j * size, y + i * size, size, size, (255,255, 255));
+                    self.draw_rectangle(x + j * size, y + i * size, size, size, color);
                 }
-                // else {
-                //     self.draw_rectangle(x + j * size, y + i * size, size, size, (0,0, 0));
-                // }
             }
         }
         Ok(())
     }
-    pub fn draw_character_and_blit(&mut self, c: char, x: usize, y: usize, size: usize, gop: &mut GraphicsOutput) -> Result<(), &'static str> {
-        self.draw_character(c, x, y, size);
-        self.blit(gop);
+    pub fn _draw_character_and_blit(&mut self, c: char, x: usize, y: usize, size: usize, gop: &mut GraphicsOutput, color: (u8, u8, u8)) -> Result<(), &'static str> {
+        self.draw_character(c, x, y, size, color).expect("Couldn't Draw Character");
+        self.blit(gop).expect("Couldn't draw Into buffer");
         Ok(())
     }
 
-    pub fn draw_text(&mut self, text: &str, x: usize, y: usize, size: usize) {
+    pub fn draw_text(&mut self, text: &str, x: usize, y: usize, size: usize, color: (u8, u8, u8)) {
         let mut xadd: usize = 0;
-        self.draw_character(' ', x + ((xadd * size) * 8), y, size);
-        xadd += 1;
         for c in text.chars() {
-            self.draw_character(c, x + ((xadd * size) * 8), y, size);
+            self.draw_character(c, x + ((xadd * size) * 8), y, size, color).expect("Couldn't Draw Character");
             xadd+=1;
         }
     }
 
-    pub fn draw_text_and_blit(&mut self, text: &str, x: usize, y: usize, size: usize, gop: &mut GraphicsOutput) {
-        let mut xadd: usize = 0;
-        self.draw_character(' ', x + ((xadd * size) * 8), y, size);
-        xadd += 1;
-        for c in text.chars() {
+    pub fn _draw_text_and_blit(&mut self, text: &str, x: usize, y: usize, size: usize, gop: &mut GraphicsOutput, color: (u8, u8, u8)) {
+        self.draw_text(text, x, y, size, color);
+        self.blit(gop).expect("Couldn't draw Into buffer");
+    }
 
-            self.draw_character(c, x + ((xadd * size) * 8), y, size);
-            xadd+=1;
-        }
-        self.blit(gop);
+    pub fn measure_text(&self, text: &str, size: usize) -> usize {
+        return text.chars().count() * 8 * size ;
     }
 }
