@@ -12,7 +12,7 @@ use uefi::{
 
 mod fileio;
 mod graphics;
-
+mod ui;
 extern crate alloc;
 use alloc::vec::Vec;
 
@@ -71,7 +71,8 @@ fn main() -> Status {
         boot::open_protocol_exclusive::<GraphicsOutput>(gop_handle).expect("Couldn't Open the GOP");
     let (width, height) = gop.current_mode_info().resolution();
     let mut buffer = graphics::GraphicsBuffer::new(width, height);
-    buffer.draw_text('A', 100, 100, 3, &mut gop);
-    uefi::boot::stall(Duration::from_secs(10));
+    //buffer.draw_rectangle(0, 0, width, height, (100, 100, 100));
+    buffer.draw_text("Hello!", 100, 100, 3);
+    buffer.blit(&mut gop);
     loop {}
 }
