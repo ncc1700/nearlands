@@ -12,3 +12,5 @@ fn panic_handler(_: &PanicInfo) -> ! {
 pub extern "C" fn kernel_entry() -> ! {
     loop {}
 }
+
+
