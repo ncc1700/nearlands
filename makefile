@@ -1,41 +1,27 @@
-all-amd64-debug:
-	cd nearldr && cargo build --target x86_64-unknown-uefi
-	cd nearkrnl && cargo build --target x86_64-unknown-none
 
-all-aarch64-debug:
-	cd nearldr && cargo build --target aarch64-unknown-uefi
-	cd nearkrnl && cargo build --target aarch64-unknown-none
-
-build-img-amd64-debug:
-	mkdir -p bin
-	mkdir -p bin/ldr
-	mkdir -p bin/system
-	cp nearldr/target/x86_64-unknown-uefi/debug/nearldr.efi bin/ldr/BOOTX64.EFI
-	cp nearkrnl/target/x86_64-unknown-none/debug/nearkrnl bin/system/nearkrnl
+build-amd64-image:
+	cd nearldr && xmake build nearldr-amd64
+	cd neark && xmake build neark-amd64
 	qemu-img create -f raw image.img 1440K
 	mformat -i image.img -f 1440 ::
 	mmd -i image.img ::/EFI
 	mmd -i image.img ::/EFI/BOOT
 	mmd -i image.img ::/SYSTEM
-	mcopy -i image.img bin/ldr/BOOTX64.EFI ::/EFI/BOOT
-	mcopy -i image.img bin/system/nearkrnl ::/SYSTEM
-	mcopy -i image.img nearldr.conf ::/
+	mcopy -i image.img binaries/BOOT/BOOTX64.efi ::/EFI/BOOT
+	mcopy -i image.img binaries/SYSTEM/neark.sys ::/SYSTEM
+	mcopy -i image.img nearldr.ini ::/
 
-build-img-aarch64-debug:
-	mkdir -p bin
-	mkdir -p bin/ldr
-	mkdir -p bin/system
-	cp nearldr/target/aarch64-unknown-uefi/debug/nearldr.efi bin/ldr/BOOTAA64.EFI
-	cp nearkrnl/target/aarch64-unknown-none/debug/nearkrnl bin/system/nearkrnl
+build-aarch64-image:
+	cd nearldr && xmake build nearldr-aarch64
+	cd neark && xmake build neark-aarch64
 	qemu-img create -f raw image.img 1440K
 	mformat -i image.img -f 1440 ::
 	mmd -i image.img ::/EFI
 	mmd -i image.img ::/EFI/BOOT
 	mmd -i image.img ::/SYSTEM
-	mcopy -i image.img bin/ldr/BOOTAA64.EFI ::/EFI/BOOT
-	mcopy -i image.img bin/system/nearkrnl ::/SYSTEM
-	mcopy -i image.img nearldr.conf ::/
-
+	mcopy -i image.img binaries/BOOT/BOOTAA64.efi ::/EFI/BOOT
+	mcopy -i image.img binaries/SYSTEM/neark.sys ::/SYSTEM
+	mcopy -i image.img nearldr.ini ::/
 
 run-amd64:
 	qemu-system-x86_64 -bios resources/UEFI/amd64/OVMF.fd \
@@ -47,21 +33,18 @@ run-aarch64:
 		-machine virt -cpu cortex-a57 -m 512M -device ramfb -device usb-ehci -device usb-kbd -display sdl \
 		-drive if=none,file=image.img,format=raw,id=hd0 \
   		-device virtio-blk-device,drive=hd0 \
-		-serial mon:stdio -smp sockets=1,cores=2,threads=2
+		-serial mon:stdio
 
-amd64-debug:
-	make all-amd64-debug
-	make build-img-amd64-debug
+amd64:
+	make build-amd64-image
 	make run-amd64
 
-aarch64-debug:
-	make all-aarch64-debug
-	make build-img-aarch64-debug
+aarch64:
+	make build-aarch64-image
 	make run-aarch64
 
-
 clean:
-	cd nearldr && cargo clean
-	cd nearkrnl && cargo clean
-	rm -rf bin
+	rm -rf binaries
 	rm image.img
+	cd nearldr && make clean
+	cd neark && make clean

@@ -1,1 +1,2 @@
-/target
+.xmake/
+build/
