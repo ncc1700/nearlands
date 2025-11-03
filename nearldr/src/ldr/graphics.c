@@ -61,7 +61,7 @@ void graphics_clear(){
 } 
 
 
-// use this instead
+// use this instead, PLEASE do not do "extern GopInfo info"
 GopInfo graphics_return_gop_info(){
     return info;
 }
