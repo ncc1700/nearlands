@@ -82,17 +82,17 @@ void graphics_putchar(char c, uint32_t x, uint32_t y, uint32_t size, uint32_t co
 
 
 void graphics_print(char* s, uint32_t x, uint32_t y, uint32_t size, uint32_t color){
-    uint8_t c;
     uint32_t current_x = x; 
     uint32_t current_y = y;
 
-    while ((c = *s++)) { 
-        if (c == '\n') {
+    while (*s != '\0') { 
+        if (*s == '\n') {
             current_y += size * 10; 
             current_x = x; 
         } else {
-            graphics_putchar(c, current_x, current_y, size, color);
+            graphics_putchar(*s, current_x, current_y, size, color);
             current_x += size * 8; 
         }
+        s++;
     }
 }
