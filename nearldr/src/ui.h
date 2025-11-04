@@ -10,6 +10,7 @@
 
 
 
+#include "config.h"
 #include "externheaders/efi/Uefi.h"
 
 
@@ -17,7 +18,7 @@
 
 
 
-void render_ui();
+void render_ui(Config conf);
 
 
 

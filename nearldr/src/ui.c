@@ -4,7 +4,7 @@
 
 
 
-void render_ui(){
+void render_ui(Config conf){
     graphics_draw_rect(0, 0, graphics_return_gop_info().width, 30, RGB(180, 180, 180));
     graphics_draw_rect(0, 
                         graphics_return_gop_info().height - 30, 
@@ -19,4 +19,20 @@ void render_ui(){
     graphics_print(entertext, 10, 
                     graphics_return_gop_info().height - 16, 
                     1, RGB(0, 0, 0));
+    
+    graphics_print("Boot Normally", 10, graphics_return_gop_info().height / 2 - 120, 
+                1, RGB(255, 255, 255));
+    graphics_print("Boot in Debug Mode", 10, graphics_return_gop_info().height / 2 - 80, 
+                1, RGB(255, 255, 255));
+    graphics_print("Reboot", 10, 
+                        graphics_return_gop_info().height / 2 - 40, 1, RGB(255, 255, 255));
+    graphics_print("Shutdown", 10, 
+                        graphics_return_gop_info().height / 2, 1, RGB(255, 255, 255));
+    graphics_print("Return to UEFI", 10, 
+                        graphics_return_gop_info().height / 2 + 40, 1, RGB(255, 255, 255));
+    graphics_print("<-", graphics_return_gop_info().width - 40, 
+                            graphics_return_gop_info().height / 2, 1, RGB(255, 255, 255));
+
 }
+
+

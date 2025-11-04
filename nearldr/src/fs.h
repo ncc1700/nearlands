@@ -19,10 +19,8 @@
 
 void fs_initalize(EFI_HANDLE imageHandle);
 EFI_FILE_PROTOCOL* fs_open_file(wchar* filename, uint64_t mode);
-void fs_close_file(EFI_FILE_PROTOCOL* prot);
-
-
-
+void fs_close_file(EFI_FILE_PROTOCOL* file);
+char* fs_read_file(EFI_FILE_PROTOCOL* file);
 
 
 

@@ -11,7 +11,6 @@
 
 
 
-typedef int wchar;
 
 void qol_initalize_abstractions(EFI_SYSTEM_TABLE* SystemTable);
 EFI_SYSTEM_TABLE* qol_return_systab();

@@ -3,8 +3,10 @@
 #include "externheaders/efi/ProcessorBind.h"
 #include "externheaders/efi/SimpleFileSystem.h"
 #include "externheaders/efi/UefiBaseType.h"
+#include "externheaders/efi/UefiMultiPhase.h"
 #include "graphics.h"
 #include "qol.h"
+#include <stdint.h>
 
 
 static EFI_FILE_PROTOCOL *root = NULL;
@@ -34,14 +36,31 @@ EFI_FILE_PROTOCOL* fs_open_file(wchar* filename, uint64_t mode){
     return file;
 }
 
-void fs_close_file(EFI_FILE_PROTOCOL* prot){
-    root->Close(prot);
+void fs_close_file(EFI_FILE_PROTOCOL* file){
+    root->Close(file);
 }
 
-// THIS IS A STUB, DO NOT USE
-// char* fs_read_file(EFI_FILE_PROTOCOL* file, wchar* filename){
-//     char buf[16];
-//     UINTN h = 64;
-//     root->Read(file, &h, buf);
-//     return buf; // 
-// }
+// very janky ik =D
+char* fs_read_file(EFI_FILE_PROTOCOL* file){
+    EFI_STATUS status;
+    char* result;
+    UINTN size = 16;
+    UINTN finalsize = 0;
+    while (1) {
+        size = 16;
+        char buf[16];
+        status = file->Read(file, &size, buf);
+        if(status != EFI_SUCCESS || size == 0){
+            break;
+        }
+        finalsize += size;
+    }
+    if(finalsize == 0) return NULL;
+    status = file->SetPosition(file, 0);
+    if(status != EFI_SUCCESS) return NULL;
+    status = qol_return_systab()->BootServices->AllocatePool(EfiLoaderData, finalsize, (void**)&result);
+    if(status != EFI_SUCCESS) return NULL;
+    status = file->Read(file, &finalsize, result);
+    if(status != EFI_SUCCESS) return NULL;
+    return result; 
+}
