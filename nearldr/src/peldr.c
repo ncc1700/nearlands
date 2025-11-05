@@ -189,16 +189,26 @@ void peldr_load_image(Config conf, LoaderConfiguration config, EFI_HANDLE image)
     UINTN mapKey = 0;
     UINTN descriptorSize = 0;
     UINT32 descriptorVersion = 0;
+    // we don't error check here, why? we game by getting the size THEN allocating
     qol_return_systab()->BootServices->GetMemoryMap(&memMapSize, efiMemMap, &mapKey, &descriptorSize, &descriptorVersion);
     memMapSize += descriptorSize * 8;
-    qol_return_systab()->BootServices->AllocatePool(EfiLoaderData, memMapSize, (void**)&efiMemMap);
+    status = qol_return_systab()->BootServices->AllocatePool(EfiLoaderData, memMapSize, (void**)&efiMemMap);
+    if(status != EFI_SUCCESS){
+        qol_halt_system(L"Couldn't allocate memory for efi memmap");
+    }   
     status = qol_return_systab()->BootServices->GetMemoryMap(&memMapSize, efiMemMap, &mapKey, &descriptorSize, &descriptorVersion);
+    if(status != EFI_SUCCESS){
+        qol_halt_system(L"Couldn't get memory map");
+    } 
     if(status != EFI_SUCCESS){
         qol_halt_system(L"bruh");
     }
     uint64_t entries = memMapSize / descriptorSize;
     MemoryMap memmap = {NULL, 0};
     qol_return_systab()->BootServices->AllocatePool(EfiLoaderData, entries * sizeof(MemoryMapEntry), (void**)&memmap.memEntries);
+    if(status != EFI_SUCCESS){
+        qol_halt_system(L"Couldn't allocate memory for memmap");
+    }  
     memmap.amount = entries;
     for(int i = 0; i < entries; i++){
         EFI_MEMORY_DESCRIPTOR* desc = (EFI_MEMORY_DESCRIPTOR*)((uint8_t*)efiMemMap + (i * descriptorSize));
