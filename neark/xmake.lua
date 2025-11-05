@@ -10,7 +10,7 @@ target("neark-amd64")
     add_cflags("-target x86_64-pc-none-windows", "-ffreestanding", "-nostdlib", "-fno-exceptions", "-fno-rtti", "-mcmodel=kernel", {force = true})
     add_cxxflags("-target x86_64-pc-none-windows", "-ffreestanding", "-nostdlib", "-fno-exceptions", "-fno-rtti", "-mcmodel=kernel", {force = true})
     add_asflags("-f elf64") 
-    add_ldflags("/machine:amd64 /subsystem:native /entry:loader_entry /base:0x1000", {force = true})
+    add_ldflags("/machine:amd64 /subsystem:native /entry:loader_entry /base:0x200000", {force = true})
 
 
 target("neark-aarch64")
@@ -24,7 +24,7 @@ target("neark-aarch64")
     add_cflags("-target aarch64-none-windows", "-ffreestanding", "-nostdlib", "-fno-exceptions", "-fno-rtti", {force = true})
     add_cxxflags("-target aarch64-none-windows", "-ffreestanding", "-nostdlib", "-fno-exceptions", "-fno-rtti", {force = true})
     add_asflags("-target aarch64-none-windows", "-ffreestanding", "-nostdlib", "-fno-exceptions", "-fno-rtti", {force = true})
-    add_ldflags("/machine:arm64 /subsystem:native /entry:loader_entry /base:0x40000000", {force = true})
+    add_ldflags("/machine:arm64 /subsystem:native /entry:loader_entry /base:0x40100000", {force = true})
 
 
 toolchain("clangpeamd64")
