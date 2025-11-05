@@ -1,7 +1,5 @@
 #include "string.h"
-#include "externheaders/efi/UefiMultiPhase.h"
 #include "math.h"
-#include "qol.h"
 #include <stdint.h>
 
 
@@ -277,25 +275,25 @@ int isspace(char c) {
             c == '\r' || c == '\t' || c == '\v');
 }
 
-char* strdup(const char* string) {
-    size_t size = strlen(string) + 1;
-    char* copy = NULL;
-    EFI_STATUS status = qol_return_systab()->BootServices->AllocatePool(EfiLoaderData, size, (void**)&copy);
-    if(status != EFI_SUCCESS) return NULL;
-    qol_return_systab()->BootServices->CopyMem(copy, string, size);
-    copy[strlen(string) + 1] = '\0';
-    return copy;
-}
+// char* strdup(const char* string) {
+//     size_t size = strlen(string) + 1;
+//     char* copy = NULL;
+//     EFI_STATUS status = qol_return_systab()->BootServices->AllocatePool(EfiLoaderData, size, (void**)&copy);
+//     if(status != EFI_SUCCESS) return NULL;
+//     qol_return_systab()->BootServices->CopyMem(copy, string, size);
+//     copy[strlen(string) + 1] = '\0';
+//     return copy;
+// }
 
 
-uint8_t atow(const char* string, wchar* result, uint64_t resultsize){
-    uint64_t i = 0;
-    while(*string != '\0'){
-        if(i >= resultsize - 1) return 1;
-        result[i] = (uint16_t)*string;
-        i++;
-        string++;
-    }
-    result[i] = L'\0';
-    return 0;
-}
+// uint8_t atow(const char* string, wchar* result, uint64_t resultsize){
+//     uint64_t i = 0;
+//     while(*string != '\0'){
+//         if(i >= resultsize - 1) return 1;
+//         result[i] = (uint16_t)*string;
+//         i++;
+//         string++;
+//     }
+//     result[i + 1] = L'\0';
+//     return 0;
+// }

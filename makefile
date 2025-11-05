@@ -28,6 +28,11 @@ run-amd64:
 	-device virtio-gpu-pci -display sdl \
 	-drive file=image.img,format=raw -m 96M -serial mon:stdio
 
+run-amd64-debug:
+	qemu-system-x86_64 -bios resources/UEFI/amd64/OVMF.fd \
+	-device virtio-gpu-pci -display sdl \
+	-drive file=image.img,format=raw -m 96M -serial mon:stdio -s -S
+
 run-aarch64:
 	qemu-system-aarch64 -bios resources/UEFI/aarch64/OVMF.fd \
 		-machine virt -cpu cortex-a57 -m 512M -device ramfb -device usb-ehci -device usb-kbd -display sdl \

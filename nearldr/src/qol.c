@@ -23,7 +23,7 @@ EFI_SYSTEM_TABLE* qol_return_systab(){
 
 void qol_puts(wchar* string){
     qol_return_systab()->ConOut->OutputString(systab->ConOut, (CHAR16*)string);
-    qol_return_systab()->ConOut->OutputString(systab->ConOut, (CHAR16*)L"\n");
+    //qol_return_systab()->ConOut->OutputString(systab->ConOut, (CHAR16*)L"\n");
 }
 
 

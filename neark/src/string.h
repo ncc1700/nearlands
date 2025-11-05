@@ -10,7 +10,6 @@
 
 
 
-#include "externheaders/efi/Uefi.h"
 #include <stdint.h>
 #include <stddef.h>
 
@@ -33,6 +32,6 @@ void *memmove(void *dest, const void *src, size_t n);
 int memcmp(const void *s1, const void *s2, size_t n);
 char* strchr(const char *str, int search_str);
 int isspace(char c);
-char* strdup(const char* string);
-uint8_t atow(const char* string, wchar* result, uint64_t resultsize);
+//char* strdup(const char* string);
+//uint8_t atow(const char* string, wchar* result, uint64_t resultsize);
 #endif

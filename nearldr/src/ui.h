@@ -18,7 +18,7 @@
 
 
 
-void render_ui(Config conf);
+void render_ui(Config conf, EFI_HANDLE image);
 
 
 

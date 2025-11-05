@@ -1,3 +1,4 @@
+#include "arch/arch.h"
 #include "config.h"
 #include "externheaders/efi/SimpleFileSystem.h"
 #include "fs.h"
@@ -14,6 +15,8 @@ int ldr_entry(EFI_HANDLE imageHandle, EFI_SYSTEM_TABLE* systemTable) {
     qol_puts(L"We are ALIVE!");
     graphics_initalize();
     fs_initalize(imageHandle);
+    load_arch();
+    setup_paging();
     graphics_clear(RGB(0, 0, 0));
     EFI_FILE_PROTOCOL* prot = fs_open_file(L"\\nearldr.ini", EFI_FILE_MODE_READ);
     if(prot == NULL){
@@ -24,9 +27,8 @@ int ldr_entry(EFI_HANDLE imageHandle, EFI_SYSTEM_TABLE* systemTable) {
     if(ini_parse_string(result, config_parse_handler, &config) < 0){
         qol_halt_system(L"error parsing config");
     }
-    render_ui(config);
-    //qol_puts(config.email);
     systemTable->BootServices->FreePool((void*)result);
-    while(1){continue;}
+    render_ui(config, imageHandle);
+    
     return 0;
 }
