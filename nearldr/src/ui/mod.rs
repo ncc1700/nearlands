@@ -47,7 +47,7 @@ impl Ui {
                 pixel.blue = 0;
             }
         }
-        self.graphics.blit(gop).expect("Couldn't draw Into buffer");
+        self.graphics.blit(gop).expect("Couldn't draw into buffer");
     }
 
 }
