@@ -15,7 +15,7 @@ uint8_t kernvid_get_if_init(){
     return info.init;
 }
 
-void kernvid_initalize(Framebuffer fb){
+void kernvid_initialize(Framebuffer fb){
     info.fbAddress = fb.fbAddress;
     info.fbSize = fb.fbSize;
     info.height = fb.height;

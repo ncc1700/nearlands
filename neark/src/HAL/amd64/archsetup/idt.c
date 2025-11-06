@@ -36,6 +36,7 @@ static inline void create_int(uint8_t i, void (*handler)(), uint16_t selector, u
 
 void unknown_hardware(){
     kterm_write_printf(ERROR, "UNKNOWN HARDWARE INTERRUPT");
+    hal_halt_system();
 }
 
 void unknown_software(){

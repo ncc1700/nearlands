@@ -2,7 +2,7 @@
 
 extern void load_gdt(void* gdt);
 
-struct gdte {
+struct GdtE {
     uint16_t limit_low;
     uint16_t base_low;
     uint8_t base_middle;
@@ -11,17 +11,17 @@ struct gdte {
     uint8_t base_high;
 } __attribute__((packed));
 
-struct gdtp {
+struct GdtP {
     uint16_t limit;
     uint64_t base;
 } __attribute__((packed));
 
-struct gdte gdt[3];
-struct gdtp gdt_pointer;
+struct GdtE gdt[3];
+struct GdtP gdt_pointer;
 
 void setup_gdt(){
-    gdt[0] = (struct gdte){0};
-    gdt[1] = (struct gdte){
+    gdt[0] = (struct GdtE){0};
+    gdt[1] = (struct GdtE){
         .limit_low = 0xFFFF,
         .base_low = 0x0000,
         .base_middle = 0x00,
@@ -29,7 +29,7 @@ void setup_gdt(){
         .granularity = 0xA0,
         .base_high = 0x00
     };
-    gdt[2] = (struct gdte){
+    gdt[2] = (struct GdtE){
         .limit_low = 0xFFFF,
         .base_low = 0x0000,
         .base_middle = 0x00,

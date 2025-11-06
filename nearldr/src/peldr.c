@@ -200,6 +200,7 @@ void peldr_load_image(Config conf, int mode, EFI_HANDLE image){
     if(status != EFI_SUCCESS){
         qol_halt_system(L"Couldn't get memory map");
     }
+    uint64_t memsize = 0;
     uint64_t entries = memMapSize / descriptorSize;
     MemoryMap memmap = {NULL, 0};
     qol_return_systab()->BootServices->AllocatePool(EfiLoaderData, entries * sizeof(MemoryMapEntry), (void**)&memmap.memEntries);
@@ -213,16 +214,16 @@ void peldr_load_image(Config conf, int mode, EFI_HANDLE image){
         memmap.memEntries[i].base = desc->PhysicalStart;
         memmap.memEntries[i].size = desc->NumberOfPages * 4096;
         memmap.memEntries[i].types = desc->Type;
+        memsize += memmap.memEntries[i].size;
     }
     LoaderInfo info = {
-        1,
-        10,
+        memsize,
+        0,
         memmap,
         {graphics_return_gop_info().fbAddress,
                 graphics_return_gop_info().fbSize, graphics_return_gop_info().width,
                 graphics_return_gop_info().height, graphics_return_gop_info().pixelPerScanLine}
     };
-
     load_sections(exebuf, imageBase, ntHeader, info);
     void (*EntryPoint)() = (void(*)())(imageBase + ntHeader->OptionalHeader.AddressOfEntryPoint);
     qol_return_systab()->BootServices->FreePool(conf.kernel);

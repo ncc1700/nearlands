@@ -5,7 +5,6 @@ global load_idt
 
 
 
-section .text
 
 
 
