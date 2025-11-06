@@ -1,8 +1,12 @@
 # Nearlands
+NEWS!!!
+
+this branch is outdated and deprecated, to see current work on this system check the Refined branch
 
 this is a small project I made to continue the ideas I got from furtherium with some stuff I learned from friends
 
 goals is to be a portable, easily extendable and simple operating system for learning
+
 
 # External Projects Nearlands uses
 
