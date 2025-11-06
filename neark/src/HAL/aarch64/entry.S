@@ -1,11 +1,11 @@
-.global loader_entry
+.global hal_loader_entry
 
 
 
 
 
 
-loader_entry:
+hal_loader_entry:
     ldr x30, =kstackend
     mov sp, x30
     ldr x0, =ldrInfo

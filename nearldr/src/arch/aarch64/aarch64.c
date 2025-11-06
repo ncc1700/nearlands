@@ -18,7 +18,7 @@ void load_arch(){
 }
 
 void switch_stack(uint64_t stack){
-     __asm__("mov sp, %0" : : "r"(stack));
+    __asm__("mov sp, %0" : : "r"(stack));
 }
 
 void halt(){

@@ -12,12 +12,9 @@
 #include "externheaders/efi/Uefi.h"
 
 
-typedef struct _LoaderConfiguration {
-    uint64_t mode;
-} LoaderConfiguration;
 
 
-void peldr_load_image(Config conf, LoaderConfiguration config, EFI_HANDLE image);
+void peldr_load_image(Config conf, int mode, EFI_HANDLE image);
 
 
 

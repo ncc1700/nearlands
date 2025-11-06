@@ -12,11 +12,16 @@ ldrInfo:
 section .text
 
 extern kernel_entry
-global loader_entry
-loader_entry:
-    
-    mov rsp, kstacktop + 256000
+global hal_loader_entry
+hal_loader_entry:
+
+    mov rsp, kstacktop
     mov rcx, ldrInfo
     call kernel_entry
 loop:
     jmp loop
+
+
+
+
+    ; mov rsp, kstacktop + 256000

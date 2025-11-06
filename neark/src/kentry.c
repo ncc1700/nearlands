@@ -1,26 +1,20 @@
-
-
-
-
-
+#include "core/kernterm/kernterm.h"
+#include "core/kernvid/kernvid.h"
 #include "ldrconfig.h"
 #include <stddef.h>
 #include <stdint.h>
+#include "HAL/includes/archsetup.h"
+
+
 
 void __chkstk(){}
 
-uint32_t RGB(uint8_t R, uint8_t G, uint8_t B){
-    return (R << 16) | (G << 8) | (B);
-}
-
 void kernel_entry(LoaderInfo* info){
-    volatile uint32_t* fb = (volatile uint32_t*)info->fb.fbAddress;
-    for(int i = 0; i < info->fb.width; i++){
-        for(int j = 0; j < info->fb.height; j++){
-            fb[j * info->fb.pixelPerScanLine + i] = RGB(j + i, j - i, i * j);
-        }
-    }
+    hal_setup_arch();
+    kernvid_initalize(info->fb);
+    kernvid_clear(RGB(0, 0, 0));
+    kterm_write_printf(PASS, "We are in the kernel!");
+    kterm_write_printf(INFO, "Mode is %d, memmap amount is %d", info->mode, info->memmap.amount);
+
     while(1){continue;}
 }
-
-
