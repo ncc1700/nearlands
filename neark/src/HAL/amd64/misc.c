@@ -12,3 +12,10 @@ void hal_halt_system(){
         continue;
     }
 }
+
+
+
+
+char* hal_return_arch(){
+    return "AMD64";
+}

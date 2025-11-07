@@ -114,9 +114,20 @@ typedef struct _IMAGE_SECTION_HEADER {
     DWORD   Characteristics;
 } IMAGE_SECTION_HEADER, *PIMAGE_SECTION_HEADER;
 
+typedef struct _IMAGE_BASE_RELOCATION_BLOCK {
+    uint32_t PageRVA;
+    uint32_t BlockSize;
+} IMAGE_BASE_RELOCATION_BLOCK;
 
 #define FIELD_OFFSET(type, field) ((unsigned long long) __builtin_offsetof(type, field))
 #define GetFirstSectionOfImage(h) ((PIMAGE_SECTION_HEADER) ((unsigned long)h+FIELD_OFFSET(IMAGE_NT_HEADERS64,OptionalHeader)+((PIMAGE_NT_HEADERS64)(h))->FileHeader.SizeOfOptionalHeader))
+
+#define IMAGE_DIRECTORY_ENTRY_BASERELOC 5
+
+#define IMAGE_REL_BASED_ABSOLUTE 0
+#define IMAGE_REL_BASED_HIGHLOW 3
+#define IMAGE_REL_BASED_DIR64    10
+
 
 
 static inline void load_sections(char* file,
@@ -150,10 +161,50 @@ static inline void load_sections(char* file,
     }
 }
 
+static inline uint8_t relocate_image(uint64_t imageBase, IMAGE_NT_HEADERS64* ntHeader){
+    uint64_t delta = imageBase - ntHeader->OptionalHeader.ImageBase;
+    if(delta == 0) return 1;
+    IMAGE_DATA_DIRECTORY relocDir = ntHeader->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_BASERELOC];
+    if(relocDir.VirtualAddress == 0 || relocDir.Size == 0) return 1;
+    uint8_t* base = (uint8_t*)imageBase;
+    uint8_t* relocStart = base + relocDir.VirtualAddress;
+    uint8_t* relocEnd = relocStart + relocDir.Size;
+    uint8_t* cur = relocStart;
+
+    while(cur < relocEnd){
+        IMAGE_BASE_RELOCATION_BLOCK* block = (IMAGE_BASE_RELOCATION_BLOCK*)cur;
+        if(block->BlockSize < sizeof(IMAGE_BASE_RELOCATION_BLOCK)) break;
+        uint64_t entryCount = (block->BlockSize - sizeof(IMAGE_BASE_RELOCATION_BLOCK)) / sizeof(uint16_t);
+        uint16_t* entries = (uint16_t*)(cur + sizeof(IMAGE_BASE_RELOCATION_BLOCK));
+        for(uint64_t i = 0; i < entryCount; i++){
+            uint64_t entry = entries[i];
+            uint64_t type = entry >> 12; // 15-12
+            uint64_t offset = entry & 0x0FFF; // 11-0
+            uint64_t* patchAddr64 = 0;
+            uint32_t* patchAddr32 = 0;
+
+            switch(type){
+                case IMAGE_REL_BASED_DIR64:
+                    patchAddr64 = (uint64_t*)(base + block->PageRVA + offset);
+                    *patchAddr64 = (uint64_t)(*patchAddr64 + delta);
+                    break;
+                case IMAGE_REL_BASED_HIGHLOW:
+                    patchAddr32 = (uint32_t*)(base + block->PageRVA + offset);
+                    *patchAddr32 = (uint32_t)((uint64_t)(*patchAddr32) + (uint32_t)delta);
+                    break;
+                default:
+                    break;
+            }
+        }
+        cur += block->BlockSize;
+    }
+    ntHeader->OptionalHeader.ImageBase = imageBase;
+    return 0;
+}
+
 void peldr_load_image(Config conf, int mode, EFI_HANDLE image){
     wchar buf[512];
     atow(conf.kernel, buf, 512);
-    qol_puts(buf);
     EFI_FILE_PROTOCOL* file = fs_open_file(buf, EFI_FILE_MODE_READ);
     if(file == NULL){
         qol_halt_system(L"Couldn't find image");
@@ -173,16 +224,23 @@ void peldr_load_image(Config conf, int mode, EFI_HANDLE image){
 
     uint64_t imageBase = ntHeader->OptionalHeader.ImageBase;
     uint64_t imageSize = ntHeader->OptionalHeader.SizeOfImage;
-
+    uint8_t shouldRelocate = 0;
     uint64_t imageAmountOfPages = (imageSize + 0xFFF) / 0x1000;
 
     EFI_STATUS status = qol_return_systab()->BootServices->AllocatePages(AllocateAddress,
                                                     EfiLoaderCode, imageAmountOfPages,
                                                     (EFI_PHYSICAL_ADDRESS*)(&imageBase));
     if(status != EFI_SUCCESS){
-        qol_halt_system(L"Couldn't allocate pages for image");
+        qol_puts(L"couldn't allocate at PE specified ImageBase, allocating somewhere else");
+        shouldRelocate = 1;
+        // we allocate wherever we can, thanks to AllocateAnyPages
+        status = qol_return_systab()->BootServices->AllocatePages(
+            AllocateAnyPages,
+            EfiLoaderCode,
+            imageAmountOfPages,
+            (EFI_PHYSICAL_ADDRESS*)&imageBase
+        );
     }
-
 
     UINTN memMapSize;
     EFI_MEMORY_DESCRIPTOR* efiMemMap = NULL;
@@ -225,6 +283,12 @@ void peldr_load_image(Config conf, int mode, EFI_HANDLE image){
                 graphics_return_gop_info().height, graphics_return_gop_info().pixelPerScanLine}
     };
     load_sections(exebuf, imageBase, ntHeader, info);
+    if(shouldRelocate == 1){
+        uint8_t result = relocate_image(imageBase, ntHeader);
+        if(result == 1){
+            qol_halt_system(L"Couldn't Relocate Executable!");
+        }
+    }
     void (*EntryPoint)() = (void(*)())(imageBase + ntHeader->OptionalHeader.AddressOfEntryPoint);
     qol_return_systab()->BootServices->FreePool(conf.kernel);
     qol_return_systab()->BootServices->FreePool(conf.name);

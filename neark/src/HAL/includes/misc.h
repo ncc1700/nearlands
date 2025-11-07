@@ -13,7 +13,7 @@
 
 
 void hal_halt_system();
-
+char* hal_return_arch();
 
 
 
