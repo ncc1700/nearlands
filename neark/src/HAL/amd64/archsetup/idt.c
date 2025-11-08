@@ -1,9 +1,9 @@
 #include "idt.h"
 #include "../../../core/kernterm/kernterm.h"
 #include "../../includes/misc.h"
-#define IDTSIZE 256
+#define IDT_SIZE 256
 
-typedef struct _intdesc {
+typedef struct _IntDesc {
    uint16_t offsetone;
    uint16_t selector;
    uint8_t  ist;
@@ -11,15 +11,15 @@ typedef struct _intdesc {
    uint16_t offsettwo;
    uint32_t offsetthree;
    uint32_t zero;
-} intdesc;
+} IntDesc;
 
-typedef struct _idtr {
+typedef struct _IdtR {
     uint16_t limit;
     uint64_t base;
-} __attribute__((packed)) idtr;
+} __attribute__((packed)) IdtR;
 
-static intdesc desc[IDTSIZE];
-static idtr idt;
+static IntDesc desc[IDT_SIZE];
+static IdtR idt;
 
 extern void load_idt(void* idtr);
 
@@ -53,6 +53,6 @@ void setup_idt(){
         create_int(i, unknown_software, 0x08, 0, 0x8E);
     }
     idt.base = (uint64_t)desc;
-    idt.limit = (sizeof(intdesc) * IDTSIZE) - 1;
+    idt.limit = (sizeof(IntDesc) * IDT_SIZE) - 1;
     load_idt(&idt);
 }

@@ -18,7 +18,7 @@ int config_parse_handler(void* user, const char* section, const char* name,
     } else if (MATCH("LoaderConfig", "kernel")) {
         pconfig->kernel = strdup(value);
     } else {
-        return 0;  
+        return 0;
     }
     return 1;
 }
