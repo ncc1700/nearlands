@@ -234,12 +234,13 @@ void peldr_load_image(Config conf, int mode, EFI_HANDLE image){
         qol_puts(L"couldn't allocate at PE specified ImageBase, allocating somewhere else");
         shouldRelocate = 1;
         // we allocate wherever we can, thanks to AllocateAnyPages
-        status = qol_return_systab()->BootServices->AllocatePages(
-            AllocateAnyPages,
-            EfiLoaderCode,
-            imageAmountOfPages,
+        status = qol_return_systab()->BootServices->AllocatePages(AllocateAnyPages,
+            EfiLoaderCode, imageAmountOfPages,
             (EFI_PHYSICAL_ADDRESS*)&imageBase
         );
+        if(status != EFI_SUCCESS){
+            qol_halt_system(L"Not enough memory to load kernel");
+        }
     }
 
     UINTN memMapSize;
