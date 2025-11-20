@@ -13,7 +13,7 @@ static term terminal = {0};
 
 
 
-static inline void kterm_clear(){
+void kterm_clear(){
     kernvid_clear(RGB(0, 0, 0));
     terminal.ypos = 10;
     terminal.xpos = 10;

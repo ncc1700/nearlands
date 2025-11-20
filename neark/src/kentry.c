@@ -1,7 +1,9 @@
+#include "HAL/includes/dumpreg.h"
 #include "HAL/includes/misc.h"
 #include "core/kernterm/kernterm.h"
 #include "core/kernvid/kernvid.h"
 #include "core/memory/physmem.h"
+#include "core/misc/panic.h"
 #include "ldrconfig.h"
 #include <stddef.h>
 #include <stdint.h>
@@ -28,6 +30,7 @@ void kernel_entry(LoaderInfo* info){
     void* l = physmem_allocate_multiple_pages(5);
     void* m = physmem_allocate_multiple_pages(3);
     kterm_write_printf(INFO, "m = 0x%x", (uint64_t)m);
+    core_panic("test");
     kterm_write_printf(ERROR, "Nothing else to do, halting");
     hal_halt_system();
 }

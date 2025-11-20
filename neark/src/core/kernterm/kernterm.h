@@ -14,6 +14,7 @@ typedef enum _status {
     INFO
 } status;
 
+void kterm_clear();
 void kterm_write_printf(status stat, char* format, ...);
 
 
