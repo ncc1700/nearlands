@@ -9,7 +9,6 @@
 // not really an "identity map" i just turn off the MMU =D
 setup_identity_map:
     sub sp, sp, #16
-    ic IALLUIS
     isb
     mrs x0, SCTLR_EL1
     bic x0, x0, (1 << 0)

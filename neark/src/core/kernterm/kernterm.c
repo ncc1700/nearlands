@@ -3,7 +3,7 @@
 #include "../kernvid/kernvid.h"
 #include "../klibc/string.h"
 #include "../../externheaders/mini-printf/mini-printf.h"
-
+#include "../../HAL/includes/serial.h"
 typedef struct _term {
     uint64_t ypos;
     uint64_t xpos;
@@ -14,6 +14,7 @@ static term terminal = {0};
 
 
 void kterm_clear(){
+    if(kernvid_get_if_init() == 0) return;
     kernvid_clear(RGB(0, 0, 0));
     terminal.ypos = 10;
     terminal.xpos = 10;
@@ -22,6 +23,7 @@ void kterm_clear(){
 
 
 static inline void kterm_write(char* s, uint32_t color){
+    if(kernvid_get_if_init() == 0) goto SKIP_GRAPH;
     if(terminal.ypos == 0 && terminal.xpos == 0){
         kernvid_clear(RGB(0, 0, 0));
     }
@@ -33,10 +35,14 @@ static inline void kterm_write(char* s, uint32_t color){
         terminal.ypos = 0;
         terminal.xpos = 0;
     }
+    SKIP_GRAPH:
+    hal_print_string_to_serial(s);
+    hal_print_char_to_serial('\n');
 }
 
 
 static inline void kterm_write_no_line(char* s, uint32_t color){
+    if(kernvid_get_if_init() == 0) goto SKIP_GRAPH;
     if(terminal.ypos == 0 && terminal.xpos == 0){
         kterm_clear();
         terminal.ypos = 10;
@@ -47,6 +53,8 @@ static inline void kterm_write_no_line(char* s, uint32_t color){
     if(terminal.xpos >= kernvid_return_info().width - 10){
         terminal.ypos += 10;
     }
+    SKIP_GRAPH:
+    hal_print_string_to_serial(s);
     // terminal.ypos += 10;
     // if(terminal.ypos >= get_height(0) - 10){
     //     terminal.ypos = 0;

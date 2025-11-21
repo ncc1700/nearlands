@@ -1,10 +1,9 @@
-#include "HAL/includes/dumpreg.h"
 #include "HAL/includes/idmap.h"
 #include "HAL/includes/misc.h"
 #include "core/kernterm/kernterm.h"
 #include "core/kernvid/kernvid.h"
+#include "core/memory/alloc.h"
 #include "core/memory/physmem.h"
-#include "core/misc/panic.h"
 #include "ldrconfig.h"
 #include <stddef.h>
 #include <stdint.h>
@@ -24,13 +23,13 @@ void kernel_entry(LoaderInfo* info){
                 VERSION_STRING, VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH, hal_return_arch());
     setup_identity_map();
     kterm_write_printf(INFO, "Memory Amount is %d, memmap amount is %d", info->memoryAmount, info->memmap.amount);
-    void* h = physmem_allocate_page();
-    void* p = physmem_allocate_multiple_pages(3);
-    void* n = physmem_allocate_page();
+    void* h = core_alloc(10);
+    void* p = core_alloc(20);
+    void* n =core_alloc(10);
     kterm_write_printf(INFO, "h = 0x%x p = 0x%x", (uint64_t)h, (uint64_t)p);
-    physmem_free_multiple_pages(p, 3);
-    void* l = physmem_allocate_multiple_pages(5);
-    void* m = physmem_allocate_multiple_pages(3);
+    core_free(p);
+    void* l = core_alloc(30);
+    void* m = core_alloc(20);
     kterm_write_printf(INFO, "m = 0x%x", (uint64_t)m);
     kterm_write_printf(ERROR, "Nothing else to do, halting");
     hal_halt_system();
