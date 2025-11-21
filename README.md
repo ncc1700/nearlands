@@ -1,12 +1,11 @@
 # Nearlands
 
-this is a small project I made to continue the ideas I got from furtherium with some stuff I learned from friends
+this is a small project I made to continue the ideas I got from furtherium with some stuff I learned from friends, while learning more about osdev in general
 
-goals is to be a portable, easily extendable and simple operating system for learning
 
-ill do crimes of OS design in this OS (No virtual memory/MMU gaming), just to see the alternatives
+im experiementing on making a managed code OS with very little intervention/protection from the processor, such as rings/ELs or paging/MMU protection
 
-this is the rewrite branch
+the code is an absolute mess and my memory allocators are horrendous and bad but slowly ill make it better as I learn more and more =D
 
 # External Projects im using
 
