@@ -1,4 +1,3 @@
 .xmake/
 build/
-binaries/
-*.img
+*.sys

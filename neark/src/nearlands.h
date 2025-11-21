@@ -1,0 +1,17 @@
+#ifndef NEARLANDS_H_INCLUDED
+#define NEARLANDS_H_INCLUDED
+
+
+
+
+
+#define VERSION_STRING "INDEV"
+#define VERSION_MAJOR 0
+#define VERSION_MINOR 1
+#define VERSION_PATCH 0
+
+
+
+
+
+#endif
