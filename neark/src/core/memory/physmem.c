@@ -66,6 +66,11 @@ void initialize_physmem_allocator(MemoryMap* memmap, uint64_t memory_amount){
             index++;
         }
     }
+    // some safety stuff
+    uint64_t freemapPages = (freemapSize + 4095) / 4096;
+    for (int i = 0; i < freemapPages; i++) {
+        freemap[i].isFree = 0;
+    }
 }
 
 

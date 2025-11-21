@@ -44,4 +44,3 @@ void print_registers(Registers* reg){
     kterm_write_printf(INFO, "xzr - %x | esr - %x", reg->xzr, reg->esr);
     kterm_write_printf(INFO, "far - %x", reg->far);
 }
-

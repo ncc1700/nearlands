@@ -1,6 +1,7 @@
 #include "idt.h"
 #include "../../../core/kernterm/kernterm.h"
 #include "../../includes/misc.h"
+#include "../../../core/misc/panic.h"
 #define IDT_SIZE 256
 
 typedef struct _IntDesc {
@@ -35,12 +36,12 @@ static inline void create_int(uint8_t i, void (*handler)(), uint16_t selector, u
 }
 
 void unknown_hardware(){
-    kterm_write_printf(ERROR, "UNKNOWN HARDWARE INTERRUPT");
+    core_panic("UNKNOWN HARDWARE INTERRUPT");
     hal_halt_system();
 }
 
 void unknown_software(){
-    kterm_write_printf(ERROR, "UNKNOWN SOFTWARE INTERRUPT");
+    core_panic("UNKNOWN SOFTWARE INTERRUPT");
     hal_halt_system();
 }
 
