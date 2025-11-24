@@ -3,7 +3,7 @@
 #include "externheaders/efi/UefiBaseType.h"
 #include "externheaders/efi/UefiSpec.h"
 #include "graphics.h"
-#include "peldr.h"
+#include "elfldr.h"
 #include "qol.h"
 #include <stdint.h>
 
@@ -73,12 +73,12 @@ void render_ui(Config conf, EFI_HANDLE image){
     qol_return_systab()->ConOut->Reset(qol_return_systab()->ConOut, TRUE);
     switch(add){
         case -120:{
-            peldr_load_image(conf, 1, image);
+            elfldr_load_image(conf, 1, image);
             //qol_halt_system(L"unimplemented");
             break;
         }
         case -80:{
-            peldr_load_image(conf, 1, image);
+            elfldr_load_image(conf, 1, image);
             //qol_halt_system(L"unimplemented");
             break;
         }
