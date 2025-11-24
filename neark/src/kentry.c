@@ -4,6 +4,7 @@
 #include "core/kernvid/kernvid.h"
 #include "core/memory/alloc.h"
 #include "core/memory/physmem.h"
+#include "core/nearvm/nearvm.h"
 #include "ldrconfig.h"
 #include <stddef.h>
 #include <stdint.h>
@@ -17,20 +18,38 @@ void __chkstk(){}
 void kernel_entry(LoaderInfo* info){
     hal_setup_arch();
     initialize_physmem_allocator(&info->memmap, info->memoryAmount);
+    setup_identity_map();
     kernvid_initialize(info->fb);
     kernvid_clear(RGB(0, 0, 0));
     kterm_write_printf(PASS, "Nearlands Build %s %d.%d.%d running on %s",
                 VERSION_STRING, VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH, hal_return_arch());
-    setup_identity_map();
     kterm_write_printf(INFO, "Memory Amount is %d, memmap amount is %d", info->memoryAmount, info->memmap.amount);
-    void* h = core_alloc(10);
-    void* p = core_alloc(20);
-    void* n =core_alloc(10);
-    kterm_write_printf(INFO, "h = 0x%x p = 0x%x", (uint64_t)h, (uint64_t)p);
-    core_free(p);
-    void* l = core_alloc(30);
-    void* m = core_alloc(20);
-    kterm_write_printf(INFO, "m = 0x%x", (uint64_t)m);
+    // void* h = core_alloc(10);
+    // void* p = core_alloc(20);
+    // void* n = core_alloc(10);
+    // kterm_write_printf(INFO, "h = 0x%x p = 0x%x", (uint64_t)h, (uint64_t)p);
+    // core_free(p);
+    // void* l = core_alloc(30);
+    // void* m = core_alloc(20);
+    // kterm_write_printf(INFO, "m = 0x%x", (uint64_t)m);
+
+    uint64_t code[] = {
+        OP_MOVI, 2, 10, 0,
+        OP_MOVI, 3, 5, 0,
+        OP_MUL,  1, 2, 3,
+        OP_VMCALL, 0, 1, 0,
+        OP_HALT
+    };
+    VmCode vmCode = {code, 16};
+    kterm_write_printf(INFO, "here?");
+    VmStack stack = {NULL, 0, 0};
+    kterm_write_printf(INFO, "here?");
+    VmProgram program;
+    program.isCurrentlyRunning = FALSE;
+    program.vmCode = vmCode;
+    // program.vmStack = stack;
+    //vm_execute_program(&program);
+
     kterm_write_printf(ERROR, "Nothing else to do, halting");
     hal_halt_system();
 }

@@ -48,7 +48,9 @@ void* core_alloc(uint64_t size){
 
     if(initial == NULL){
         list = (CurMemory*)physmem_allocate_page();
+        if(list == NULL) return NULL;
         list->mem = (uint8_t*)physmem_allocate_page();
+        if(list->mem == NULL) return NULL;
         list->size = 0;
         list->max = 4096 / BLOCK_SIZE;
         list->next = NULL;
@@ -56,7 +58,9 @@ void* core_alloc(uint64_t size){
     }
     if((list->size + amount) > list->max){
         list->next = (CurMemory*)physmem_allocate_page();
+        if(list->next == NULL) return NULL;
         list->next->mem = (uint8_t*)physmem_allocate_page();
+        if(list->next->mem == NULL) return NULL;
         list->next->size = 0;
         list->next->max = 4096 / BLOCK_SIZE;
         list->next->next = NULL;

@@ -26,7 +26,7 @@ build-aarch64-image:
 run-amd64:
 	qemu-system-x86_64 -bios resources/UEFI/amd64/OVMF.fd \
 	-device virtio-gpu-pci \
-	-drive file=image.img,format=raw -m 96M -serial mon:stdio
+	-drive file=image.img,format=raw -m 512M -serial mon:stdio
 
 run-amd64-debug:
 	qemu-system-x86_64 -bios resources/UEFI/amd64/OVMF.fd \
@@ -35,10 +35,17 @@ run-amd64-debug:
 
 run-aarch64:
 	qemu-system-aarch64 -bios resources/UEFI/aarch64/OVMF.fd \
-		-machine virt -cpu cortex-a57 -m 512M -device ramfb -device usb-ehci -device usb-kbd \
+		-machine virt -cpu cortex-a57 -m 2G -device ramfb -device usb-ehci -device usb-kbd \
 		-drive if=none,file=image.img,format=raw,id=hd0 \
   		-device virtio-blk-device,drive=hd0 \
 		-serial mon:stdio
+
+run-aarch64-debug:
+	qemu-system-aarch64 -bios resources/UEFI/aarch64/OVMF.fd \
+		-machine virt -cpu cortex-a57 -m 512M -device ramfb -device usb-ehci -device usb-kbd \
+		-drive if=none,file=image.img,format=raw,id=hd0 \
+  		-device virtio-blk-device,drive=hd0 \
+		-serial mon:stdio -s -S
 
 amd64:
 	make build-amd64-image

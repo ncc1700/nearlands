@@ -11,7 +11,9 @@
 #define VERSION_PATCH 0
 
 
-
+typedef unsigned char boolean;
+#define TRUE 1
+#define FALSE 0
 
 
 #endif
