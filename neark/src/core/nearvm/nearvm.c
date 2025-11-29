@@ -6,6 +6,12 @@
 
 #define SKIP_PER_INSTR 4
 
+/**
+
+    Bad prototype =(
+
+    
+*/
 
 static inline boolean check_if_valid_register(uint64_t reg){
     if(reg >= REG_AMOUNT) return FALSE;
@@ -15,8 +21,8 @@ static inline boolean check_if_valid_register(uint64_t reg){
 static inline boolean begin_virtual_machine(VmProgram* program){
     program->registers = (uint64_t*)core_alloc(REG_AMOUNT * sizeof(uint64_t));
     if(program->registers == NULL) return FALSE;
-    program->vmStack.stack = (uint64_t*)core_alloc(program->vmStack.stackSize * sizeof(uint64_t));
-    if(program->vmStack.stack == NULL) return FALSE;
+    program->vmMem.memory = (uint64_t*)core_alloc(program->vmMem.memsize * sizeof(uint64_t));
+    if(program->vmMem.memory == NULL) return FALSE;
     memset(program->registers, 0, REG_AMOUNT * sizeof(uint64_t));
     uint64_t* arr = program->vmCode.code;
     while(*arr != OP_HALT){
@@ -24,22 +30,23 @@ static inline boolean begin_virtual_machine(VmProgram* program){
         arr++;
     }
 
-    memset(program->vmStack.stack, 0, program->vmStack.stackSize * sizeof(uint64_t));
+    memset(program->vmMem.memory, 0, program->vmMem.memsize * sizeof(uint64_t));
     program->isCurrentlyRunning = TRUE;
     return TRUE;
 }
 
-static inline void end_virtual_machine(VmProgram* program){
+static inline void end_virtual_machine(VmProgram* program, char* reason){
     if(program->registers != NULL){
         core_free((uint64_t*)program->registers);
     }
-    if(program->registers != program->vmStack.stack){
-        core_free((uint64_t*)program->vmStack.stack);
+    if(program->registers != program->vmMem.memory){
+        core_free((uint64_t*)program->vmMem.memory);
     }
     program->programCounter = 0;
-    program->vmStack.sp = 0;
     program->vmCode.codeSize = 0;
     program->isCurrentlyRunning = FALSE;
+
+    kterm_write_printf(INFO, "This program has been killed: %s", reason);
 }
 
 
@@ -63,7 +70,7 @@ boolean vm_execute_program(VmProgram* program){
                     check_if_valid_register(arg2) == FALSE ||
                     check_if_valid_register(arg3) == FALSE)
                 {
-                    end_virtual_machine(program);
+                    end_virtual_machine(program, "Invalid register in OP_ADD");
                     return FALSE;
                 }
                 program->registers[arg1] = program->registers[arg2] + program->registers[arg3];
@@ -75,7 +82,7 @@ boolean vm_execute_program(VmProgram* program){
                     check_if_valid_register(arg2) == FALSE ||
                     check_if_valid_register(arg3) == FALSE)
                 {
-                    end_virtual_machine(program);
+                    end_virtual_machine(program, "Invalid register in OP_SUB");
                     return FALSE;
                 }
                 program->registers[arg1] = program->registers[arg2] - program->registers[arg3];
@@ -87,7 +94,7 @@ boolean vm_execute_program(VmProgram* program){
                     check_if_valid_register(arg2) == FALSE ||
                     check_if_valid_register(arg3) == FALSE)
                 {
-                    end_virtual_machine(program);
+                    end_virtual_machine(program, "Invalid register in OP_MUL");
                     return FALSE;
                 }
                 program->registers[arg1] = program->registers[arg2] * program->registers[arg3];
@@ -99,7 +106,7 @@ boolean vm_execute_program(VmProgram* program){
                     check_if_valid_register(arg2) == FALSE ||
                     check_if_valid_register(arg3) == FALSE)
                 {
-                    end_virtual_machine(program);
+                    end_virtual_machine(program, "Invalid register in OP_DIV");
                     return FALSE;
                 }
                 if(program->registers[arg3] == 0){
@@ -112,7 +119,7 @@ boolean vm_execute_program(VmProgram* program){
             }
             case OP_MOV:{
                 if(check_if_valid_register(arg1) == FALSE || check_if_valid_register(arg2) == FALSE){
-                    end_virtual_machine(program);
+                    end_virtual_machine(program, "Invalid register in OP_MOV");
                     return FALSE;
                 }
                 program->registers[arg1] = program->registers[arg2];
@@ -121,7 +128,7 @@ boolean vm_execute_program(VmProgram* program){
             }
             case OP_MOVI:{
                 if(check_if_valid_register(arg1) == FALSE){
-                    end_virtual_machine(program);
+                    end_virtual_machine(program, "Invalid register in OP_MOVI");
                     return FALSE;
                 }
 
@@ -133,26 +140,207 @@ boolean vm_execute_program(VmProgram* program){
                 switch (arg1) {
                     case 0:{
                         if(check_if_valid_register(arg2) == FALSE){
-                            end_virtual_machine(program);
+                            end_virtual_machine(program, "Invalid register in OP_VMCALL call 0");
                             return FALSE;
                         }
                         kterm_write_printf(INFO, "r%d has %d", arg2, program->registers[arg2]);
+                        break;
+                    }
+                    case 1:{
+                        if(check_if_valid_register(arg2) == FALSE){
+                            end_virtual_machine(program, "Invalid register in OP_VMCALL call 0");
+                            return FALSE;
+                        }
+                        char buffer[512];
+                        char* string = (char*)program->vmMem.memory[program->registers[arg2]];
+                        int i = 0;
+                        while(*string != '\0' && i < 511){
+                            buffer[i] = *string;
+                            i++;
+                            string++;
+                        }
+                        buffer[i++] = '\0';
+                        kterm_write_printf(INFO, "%s", buffer);
+                        break;
                     }
                     default:{
-                        end_virtual_machine(program);
+                        end_virtual_machine(program, "Unknown VMCALL");
                         return FALSE;
                     }
                 }
                 program->programCounter += SKIP_PER_INSTR;
                 break;
             }
+            case OP_STORE:{
+                if(check_if_valid_register(arg1) == FALSE){
+                    end_virtual_machine(program, "Invalid register in OP_STORE\n");
+                    return FALSE;
+                }
+                if(program->vmMem.memsize <= arg2){
+                    end_virtual_machine(program, "Attempted memory Overflow\n");
+                    return FALSE;
+                }
+                program->vmMem.memory[arg2] = program->registers[arg1];
+                program->programCounter += SKIP_PER_INSTR;
+                break;
+            }
+            case OP_LOAD:{
+                if(check_if_valid_register(arg2) == FALSE){
+                    end_virtual_machine(program, "Invalid register in OP_LOAD\n");
+                    return FALSE;
+                }
+                if(program->vmMem.memsize <= arg1){
+                    end_virtual_machine(program, "Attempted load in address further away from memory\n");
+                    return FALSE;
+                }
+                program->registers[arg2] = program->vmMem.memory[arg1];
+                program->programCounter += SKIP_PER_INSTR;
+                break;
+            }
+            case OP_JMP:{
+                if(arg1 >= program->vmCode.codeSize){
+                    end_virtual_machine(program, "Invalid JMP in OP_JMP, greater then code size");
+                    return FALSE;
+                }
+                program->programCounter = arg1;
+                break;
+            }
+            case OP_JEQ:{
+                if(arg1 >= program->vmCode.codeSize){
+                    end_virtual_machine(program, "Invalid JMP in OP_JEQ, greater then code size");
+                    return FALSE;
+                }
+                if(check_if_valid_register(arg2) == FALSE || check_if_valid_register(arg3) == FALSE){
+                    end_virtual_machine(program, "Invalid register in OP_JEQ\n");
+                    return FALSE;
+                }
+                if(program->registers[arg2] == program->registers[arg3]){
+                    program->programCounter = arg1;
+                } else {
+                    program->programCounter += SKIP_PER_INSTR;
+                }
+                break;
+            }
+            case OP_JNEQ:{
+                if(arg1 >= program->vmCode.codeSize){
+                    end_virtual_machine(program, "Invalid JMP in OP_JNEQ, greater then code size");
+                    return FALSE;;
+                }
+                if(check_if_valid_register(arg2) == FALSE || check_if_valid_register(arg3) == FALSE){
+                    end_virtual_machine(program, "Invalid register in OP_JNEQ\n");
+                    return FALSE;
+                }
+                if(program->registers[arg2] != program->registers[arg3]){
+                    program->programCounter = arg1;
+                } else {
+                    program->programCounter += SKIP_PER_INSTR;
+                }
+                break;
+            }
+            case OP_JGT:{
+                if(arg1 >= program->vmCode.codeSize){
+                    end_virtual_machine(program, "Invalid JMP in OP_JGT, greater then code size");
+                    return FALSE;
+                }
+                if(check_if_valid_register(arg2) == FALSE || check_if_valid_register(arg3) == FALSE){
+                    end_virtual_machine(program, "Invalid register in OP_JGT\n");
+                    return FALSE;
+                }
+                if(program->registers[arg2] > program->registers[arg3]){
+                    program->programCounter = arg1;
+                } else {
+                    program->programCounter += SKIP_PER_INSTR;
+                }
+                break;
+            }
+            case OP_JLT:{
+                if(arg1 >= program->vmCode.codeSize){
+                    end_virtual_machine(program, "Invalid JMP in OP_JLT, greater then code size");
+                    return FALSE;
+                }
+                if(check_if_valid_register(arg2) == FALSE || check_if_valid_register(arg3) == FALSE){
+                    end_virtual_machine(program, "Invalid register in OP_JLT\n");
+                    return FALSE;
+                }
+                if(program->registers[arg2] < program->registers[arg3]){
+                    program->programCounter = arg1;
+                } else {
+                    program->programCounter += SKIP_PER_INSTR;
+                }
+                break;
+            }
+            case OP_CMP:{
+                if(check_if_valid_register(arg1) == FALSE ||
+                    check_if_valid_register(arg2) == FALSE ||
+                    check_if_valid_register(arg3) == FALSE)
+                {
+                    end_virtual_machine(program, "Invalid register in OP_CMP\n");
+                    return FALSE;
+                }
+                if(program->registers[arg2] == program->registers[arg3]){
+                    program->registers[arg1] = 1;
+                } else {
+                    program->registers[arg1] = 0;
+                }
+                program->programCounter += SKIP_PER_INSTR;
+                break;
+            }
+            case OP_CMPNE:{
+                if(check_if_valid_register(arg1) == FALSE ||
+                    check_if_valid_register(arg2) == FALSE ||
+                    check_if_valid_register(arg3) == FALSE)
+                {
+                    end_virtual_machine(program, "Invalid register in OP_CMPNE\n");
+                    return FALSE;
+                }
+                if(program->registers[arg2] != program->registers[arg3]){
+                    program->registers[arg1] = 1;
+                } else {
+                    program->registers[arg1] = 0;
+                }
+                program->programCounter += SKIP_PER_INSTR;
+                break;
+            }
+            case OP_CMPGT:{
+                if(check_if_valid_register(arg1) == FALSE ||
+                    check_if_valid_register(arg2) == FALSE ||
+                    check_if_valid_register(arg3) == FALSE)
+                {
+                    end_virtual_machine(program, "Invalid register in OP_CMPGT\n");
+                    return FALSE;
+                }
+                if(program->registers[arg2] >= program->registers[arg3]){
+                    program->registers[arg1] = 1;
+                } else {
+                    program->registers[arg1] = 0;
+                }
+                program->programCounter += SKIP_PER_INSTR;
+                break;
+            }
+            case OP_CMPLT:{
+                if(check_if_valid_register(arg1) == FALSE ||
+                    check_if_valid_register(arg2) == FALSE ||
+                    check_if_valid_register(arg3) == FALSE)
+                {
+                    end_virtual_machine(program, "Invalid register in OP_CMPLT\n");
+                    return FALSE;
+                }
+                if(program->registers[arg2] <= program->registers[arg3]){
+                    program->registers[arg1] = 1;
+                } else {
+                    program->registers[arg1] = 0;
+                }
+                program->programCounter += SKIP_PER_INSTR;
+                break;
+            }
             default:{
-                end_virtual_machine(program);
+                kterm_write_printf(INFO, "%lu is INVALID!!!\n", op);
+                end_virtual_machine(program, "Invalid Instruction\n");
                 return FALSE;
             }
 
         }
     }
-    end_virtual_machine(program);
+    end_virtual_machine(program, "Program exited successfully");
     return TRUE;
 }

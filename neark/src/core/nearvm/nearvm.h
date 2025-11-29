@@ -20,14 +20,24 @@ typedef enum _VmOpCodes {
     OP_MOV,
     OP_MOVI,
     OP_VMCALL,
-    OP_HALT
+    OP_HALT,
+    OP_STORE,
+    OP_LOAD,
+    OP_JMP,
+    OP_JEQ,
+    OP_JNEQ,
+    OP_JGT,
+    OP_JLT,
+    OP_CMP,
+    OP_CMPNE,
+    OP_CMPGT,
+    OP_CMPLT,
 } VmOpCodes;
 
-typedef struct _VmStack {
-    uint64_t* stack;
-    size_t stackSize;
-    uint64_t sp;
-} VmStack;
+typedef struct _VmMem {
+    uint64_t* memory;
+    size_t memsize;
+} VmMem;
 
 typedef struct _VmCode {
     uint64_t* code;
@@ -38,7 +48,7 @@ typedef struct _VmCode {
 typedef struct _VmProgram {
     boolean isCurrentlyRunning;
     uint64_t* registers;
-    VmStack vmStack;
+    VmMem vmMem;
     VmCode vmCode;
     size_t programCounter;
 } VmProgram;
