@@ -26,7 +26,7 @@ void graphics_initalize(){
     status = qol_return_systab()->BootServices->LocateProtocol(&guid, NULL, (void**)&gop);
 
     if(status != EFI_SUCCESS){
-        qol_halt_system(L"failed to locate GOP protocol");
+        qol_halt_system("failed to locate GOP protocol");
     }
 
     info = (GopInfo){

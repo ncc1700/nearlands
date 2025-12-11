@@ -1,7 +1,7 @@
 #include "string.h"
 #include "math.h"
 #include <stdint.h>
-
+#include "../../core/kernterm/kernterm.h"
 
 
 
@@ -30,7 +30,26 @@ char* strcpy(char* src, char* dest){
 }
 
 
+void _fltused(){}
+
+
 int strcmp(const char* str1, const char* str2){
+    while(1){
+        if(*str1 == '\0' && *str2 != '\0'){
+            return -1;
+        } else if(*str2 == '\0' && *str1 != '\0'){
+            return 1;
+        } else if(*str1 == '\0' && *str2 == '\0') return 0;
+        if(*str2 != *str1){
+            if(*str2 >= *str1) return -1;
+            else return 1;
+        }
+        str2++, str1++;
+    }
+    return 0;
+}
+
+int strncmp(const char* str1, const char* str2, int size){
     while(1){
         if(*str1 == '\0' && *str2 != '\0'){
             return -1;
@@ -167,7 +186,7 @@ uint8_t itoa(uint64_t integer, char* string, uint16_t size){
 
 
 
-uint64_t atoi_u64(const char* string){
+uint64_t atoll(const char* string){
     uint64_t result = 0;
 
     while(*string != '\0'){
@@ -180,6 +199,27 @@ uint64_t atoi_u64(const char* string){
     return result;
 }
 
+double atof(const char* string){
+    double result = 0;
+
+    while(*string != '\0'){
+        if(*string >= 48 && *string <= 57){
+            result *= 10;
+            result += (*string - 48);
+        }
+        string++;
+    }
+    return result;
+}
+
+char* strstr(const char* looker, const char* buffer){
+    kterm_write_printf(ERROR, "stub");
+    return "h";
+}
+
+int ispunct(int argument){
+    return 0;
+}
 int atoi(const char* string){
     int result = 0;
 

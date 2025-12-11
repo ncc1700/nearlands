@@ -14,9 +14,9 @@ hal_loader_entry:
     bic x0, x0, (1 << 11)
     msr SCTLR_EL1, x0
     isb
-    ldr x30, =kstackend
+    adr x30, kstackend
     mov sp, x30
-    ldr x0, =ldrInfo
+    adr x0, ldrInfo
     bl kernel_entry
     b .
 

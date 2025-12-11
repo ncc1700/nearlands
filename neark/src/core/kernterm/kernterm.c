@@ -28,7 +28,6 @@ static inline void kterm_write(char* s, uint32_t color){
         kernvid_clear(RGB(0, 0, 0));
     }
     kernvid_print(s, terminal.xpos, terminal.ypos, 1, color);
-    terminal.xpos += (strlen(s) * 10);
     terminal.ypos += 10;
     terminal.xpos = 10;
     if(terminal.ypos >= kernvid_return_info().height - 10){
@@ -41,7 +40,7 @@ static inline void kterm_write(char* s, uint32_t color){
 }
 
 
-static inline void kterm_write_no_line(char* s, uint32_t color){
+void kterm_write_no_line(char* s, uint32_t color){
     if(kernvid_get_if_init() == 0) goto SKIP_GRAPH;
     if(terminal.ypos == 0 && terminal.xpos == 0){
         kterm_clear();
