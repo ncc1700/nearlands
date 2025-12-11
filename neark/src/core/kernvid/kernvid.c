@@ -53,7 +53,6 @@ void kernvid_clear(uint32_t color){
 }
 
 
-// use this instead, PLEASE do not do "extern KernVid info"
 KernVid kernvid_return_info(){
     return info;
 }
