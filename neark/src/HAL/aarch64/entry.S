@@ -6,25 +6,12 @@
 
 
 hal_loader_entry:
-    isb
-    mrs x0, SCTLR_EL1
-    bic x0, x0, (1 << 0)
-    bic x0, x0, (1 << 2)
-    bic x0, x0, (1 << 12)
-    bic x0, x0, (1 << 11)
-    msr SCTLR_EL1, x0
-    isb
-    adr x30, kstackend
+    ldr x30, =sp_top
     mov sp, x30
-    adr x0, ldrInfo
+    adrp x0, ldrInfo
+    add x0, x0, :lo12:ldrInfo
     bl kernel_entry
     b .
-
-.section .bss
-kstack:
-    .skip 256000
-    .align 16
-kstackend:
 
 
 .section .ldr
