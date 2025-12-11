@@ -28,7 +28,6 @@ static inline void kterm_write(char* s, uint32_t color){
         kernvid_clear(RGB(0, 0, 0));
     }
     kernvid_print(s, terminal.xpos, terminal.ypos, 1, color);
-    terminal.xpos += (strlen(s) * 10);
     terminal.ypos += 10;
     terminal.xpos = 10;
     if(terminal.ypos >= kernvid_return_info().height - 10){
