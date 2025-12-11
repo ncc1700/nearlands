@@ -5,7 +5,13 @@
 #include "qol.h"
 #include <stdint.h>
 
+/**
 
+    This is basically Nearks kernvid but made to be used
+    within NearLDR
+
+
+*/
 
 
 static GopInfo info = {0};
@@ -68,7 +74,6 @@ void graphics_clear(uint32_t color){
 } 
 
 
-// use this instead, PLEASE do not do "extern GopInfo info"
 GopInfo graphics_return_gop_info(){
     return info;
 }
