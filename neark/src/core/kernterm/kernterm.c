@@ -41,7 +41,7 @@ static inline void kterm_write(char* s, uint32_t color){
 }
 
 
-static inline void kterm_write_no_line(char* s, uint32_t color){
+void kterm_write_no_line(char* s, uint32_t color){
     if(kernvid_get_if_init() == 0) goto SKIP_GRAPH;
     if(terminal.ypos == 0 && terminal.xpos == 0){
         kterm_clear();

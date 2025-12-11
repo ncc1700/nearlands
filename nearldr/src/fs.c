@@ -20,11 +20,11 @@ void fs_initalize(EFI_HANDLE imageHandle){
     EFI_SIMPLE_FILE_SYSTEM_PROTOCOL* sfs = NULL;
     status = qol_return_systab()->BootServices->HandleProtocol(imageHandle, &lipguid, (void**)&lip);
     if(status != EFI_SUCCESS){
-        qol_halt_system(L"Couldn't get loaded image protocal");
+        qol_halt_system("Couldn't get loaded image protocal");
     }
     status = qol_return_systab()->BootServices->HandleProtocol(lip->DeviceHandle, &sfsguid, (void**)&sfs);
     if(status != EFI_SUCCESS){
-        qol_halt_system(L"Couldn't get simple file system protocol");
+        qol_halt_system("Couldn't get simple file system protocol");
     }
     sfs->OpenVolume(sfs, &root);
 }

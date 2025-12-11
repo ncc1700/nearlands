@@ -15,7 +15,7 @@
 void qol_initalize_abstractions(EFI_SYSTEM_TABLE* SystemTable);
 EFI_SYSTEM_TABLE* qol_return_systab();
 void qol_puts(wchar* string);
-void qol_halt_system(wchar* error);
-
+void qol_printf(char* string, ...);
+void qol_halt_system(char* error);
 
 #endif

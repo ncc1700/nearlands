@@ -50,6 +50,81 @@ static inline void end_virtual_machine(VmProgram* program, char* reason){
 }
 
 
+static inline boolean op_add(VmProgram* program, uint64_t arg1, uint64_t arg2, uint64_t arg3){
+    if(check_if_valid_register(arg1) == FALSE ||
+            check_if_valid_register(arg2) == FALSE ||
+            check_if_valid_register(arg3) == FALSE)
+    {
+        return FALSE;
+    }
+    program->registers[arg1] = program->registers[arg2] + program->registers[arg3];
+    program->programCounter += SKIP_PER_INSTR;
+    return TRUE;
+}
+
+static inline boolean op_sub(VmProgram* program, uint64_t arg1, uint64_t arg2, uint64_t arg3){
+    if(check_if_valid_register(arg1) == FALSE ||
+            check_if_valid_register(arg2) == FALSE ||
+            check_if_valid_register(arg3) == FALSE)
+    {
+        return FALSE;
+    }
+    program->registers[arg1] = program->registers[arg2] - program->registers[arg3];
+    program->programCounter += SKIP_PER_INSTR;
+    return TRUE;
+}
+
+static inline boolean op_mul(VmProgram* program, uint64_t arg1, uint64_t arg2, uint64_t arg3){
+    if(check_if_valid_register(arg1) == FALSE ||
+            check_if_valid_register(arg2) == FALSE ||
+            check_if_valid_register(arg3) == FALSE)
+    {
+        return FALSE;
+    }
+    program->registers[arg1] = program->registers[arg2] * program->registers[arg3];
+    program->programCounter += SKIP_PER_INSTR;
+    return TRUE;
+}
+
+
+static inline boolean op_div(VmProgram* program, uint64_t arg1, uint64_t arg2, uint64_t arg3){
+    if(check_if_valid_register(arg1) == FALSE ||
+            check_if_valid_register(arg2) == FALSE ||
+            check_if_valid_register(arg3) == FALSE)
+    {
+        return FALSE;
+    }
+    if(program->registers[arg3] == 0){
+        program->registers[arg1] = 0;
+        return TRUE;
+    }
+    program->registers[arg1] = program->registers[arg2] / program->registers[arg3];
+    program->programCounter += SKIP_PER_INSTR;
+    return TRUE;
+}
+
+
+static inline boolean op_mov(VmProgram* program, uint64_t arg1, uint64_t arg2){
+    if(check_if_valid_register(arg1) == FALSE || check_if_valid_register(arg2) == FALSE){
+        return FALSE;
+    }
+    program->registers[arg1] = program->registers[arg2];
+    program->programCounter += SKIP_PER_INSTR;
+    return TRUE;
+}
+
+
+static inline boolean op_movi(VmProgram* program, uint64_t arg1, uint64_t arg2){
+    if(check_if_valid_register(arg1) == FALSE){
+        return FALSE;
+    }
+
+    program->registers[arg1] = arg2;
+    program->programCounter += SKIP_PER_INSTR;
+    return TRUE;
+}
+
+
 
 boolean vm_execute_program(VmProgram* program){
     if(program->isCurrentlyRunning == FALSE){
@@ -66,74 +141,45 @@ boolean vm_execute_program(VmProgram* program){
 
         switch(op){
             case OP_ADD:{
-                if(check_if_valid_register(arg1) == FALSE ||
-                    check_if_valid_register(arg2) == FALSE ||
-                    check_if_valid_register(arg3) == FALSE)
-                {
-                    end_virtual_machine(program, "Invalid register in OP_ADD");
+                if(op_add(program, arg1, arg2, arg3) == FALSE){
+                    end_virtual_machine(program, "OP_ADD");
                     return FALSE;
                 }
-                program->registers[arg1] = program->registers[arg2] + program->registers[arg3];
-                program->programCounter += SKIP_PER_INSTR;
                 break;
             }
             case OP_SUB:{
-                if(check_if_valid_register(arg1) == FALSE ||
-                    check_if_valid_register(arg2) == FALSE ||
-                    check_if_valid_register(arg3) == FALSE)
-                {
-                    end_virtual_machine(program, "Invalid register in OP_SUB");
+                if(op_sub(program, arg1, arg2, arg3) == FALSE){
+                    end_virtual_machine(program, "OP_SUB");
                     return FALSE;
                 }
-                program->registers[arg1] = program->registers[arg2] - program->registers[arg3];
-                program->programCounter += SKIP_PER_INSTR;
                 break;
             }
             case OP_MUL:{
-                if(check_if_valid_register(arg1) == FALSE ||
-                    check_if_valid_register(arg2) == FALSE ||
-                    check_if_valid_register(arg3) == FALSE)
-                {
-                    end_virtual_machine(program, "Invalid register in OP_MUL");
+                if(op_mul(program, arg1, arg2, arg3) == FALSE){
+                    end_virtual_machine(program, "OP_MUL");
                     return FALSE;
                 }
-                program->registers[arg1] = program->registers[arg2] * program->registers[arg3];
-                program->programCounter += SKIP_PER_INSTR;
                 break;
             }
             case OP_DIV:{
-                if(check_if_valid_register(arg1) == FALSE ||
-                    check_if_valid_register(arg2) == FALSE ||
-                    check_if_valid_register(arg3) == FALSE)
-                {
-                    end_virtual_machine(program, "Invalid register in OP_DIV");
+                if(op_div(program, arg1, arg2, arg3) == FALSE){
+                    end_virtual_machine(program, "OP_DIV");
                     return FALSE;
                 }
-                if(program->registers[arg3] == 0){
-                    program->registers[arg1] = 0;
-                } else {
-                    program->registers[arg1] = program->registers[arg2] / program->registers[arg3];
-                }
-                program->programCounter += SKIP_PER_INSTR;
                 break;
             }
             case OP_MOV:{
-                if(check_if_valid_register(arg1) == FALSE || check_if_valid_register(arg2) == FALSE){
-                    end_virtual_machine(program, "Invalid register in OP_MOV");
+                if(op_mov(program, arg1, arg2) == FALSE){
+                    end_virtual_machine(program, "OP_MOV");
                     return FALSE;
                 }
-                program->registers[arg1] = program->registers[arg2];
-                program->programCounter += SKIP_PER_INSTR;
                 break;
             }
             case OP_MOVI:{
-                if(check_if_valid_register(arg1) == FALSE){
-                    end_virtual_machine(program, "Invalid register in OP_MOVI");
+                if(op_movi(program, arg1, arg2) == FALSE){
+                    end_virtual_machine(program, "OP_MOVI");
                     return FALSE;
                 }
-
-                program->registers[arg1] = arg2;
-                program->programCounter += SKIP_PER_INSTR;
                 break;
             }
             case OP_VMCALL:{

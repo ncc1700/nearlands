@@ -6,6 +6,7 @@
 
 
 
+#include <stdint.h>
 typedef enum _status {
     ERROR,
     WAITING,
@@ -15,8 +16,8 @@ typedef enum _status {
 } status;
 
 void kterm_clear();
+void kterm_write_no_line(char* s, uint32_t color);
 void kterm_write_printf(status stat, char* format, ...);
-
 
 
 #endif

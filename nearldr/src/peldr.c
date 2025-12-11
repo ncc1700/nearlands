@@ -1,5 +1,5 @@
 #include "peldr.h"
-#include "arch/arch.h"
+//#include "arch/arch.h"
 #include "config.h"
 #include "externheaders/efi/SimpleFileSystem.h"
 #include "externheaders/efi/Uefi.h"
@@ -207,19 +207,19 @@ void peldr_load_image(Config conf, int mode, EFI_HANDLE image){
     atow(conf.kernel, buf, 512);
     EFI_FILE_PROTOCOL* file = fs_open_file(buf, EFI_FILE_MODE_READ);
     if(file == NULL){
-        qol_halt_system(L"Couldn't find image");
+        qol_halt_system("Couldn't find image");
     }
     char* exebuf = fs_read_file(file);
     if(exebuf == NULL){
-        qol_halt_system(L"error");
+        qol_halt_system("error");
     }
     if(memcmp(exebuf, "MZ", 2) != 0){
-        qol_halt_system(L"Not a PE Image, Failure during MZ Check");
+        qol_halt_system("Not a PE Image, Failure during MZ Check");
     }
     IMAGE_DOS_HEADER* dosHeader = (IMAGE_DOS_HEADER*)exebuf;
     IMAGE_NT_HEADERS64* ntHeader = (IMAGE_NT_HEADERS64*)(exebuf + dosHeader->e_lfanew);
     if(memcmp(ntHeader, "PE\0\0", 4) != 0){
-        qol_halt_system(L"Not a PE Image, Failure during PE Check");
+        qol_halt_system("Not a PE Image, Failure during PE Check");
     }
 
     uint64_t imageBase = ntHeader->OptionalHeader.ImageBase;
@@ -231,7 +231,7 @@ void peldr_load_image(Config conf, int mode, EFI_HANDLE image){
                                                     EfiLoaderCode, imageAmountOfPages,
                                                     (EFI_PHYSICAL_ADDRESS*)(&imageBase));
     if(status != EFI_SUCCESS){
-        qol_puts(L"couldn't allocate at PE specified ImageBase, allocating somewhere else");
+        qol_printf("couldn't allocate at PE specified ImageBase, allocating somewhere else");
         shouldRelocate = 1;
         // we allocate wherever we can, thanks to AllocateAnyPages
         status = qol_return_systab()->BootServices->AllocatePages(AllocateAnyPages,
@@ -239,7 +239,7 @@ void peldr_load_image(Config conf, int mode, EFI_HANDLE image){
             (EFI_PHYSICAL_ADDRESS*)&imageBase
         );
         if(status != EFI_SUCCESS){
-            qol_halt_system(L"Not enough memory to load kernel");
+            qol_halt_system("Not enough memory to load kernel");
         }
     }
 
@@ -253,18 +253,18 @@ void peldr_load_image(Config conf, int mode, EFI_HANDLE image){
     memMapSize += descriptorSize * 8;
     status = qol_return_systab()->BootServices->AllocatePool(EfiLoaderData, memMapSize, (void**)&efiMemMap);
     if(status != EFI_SUCCESS){
-        qol_halt_system(L"Couldn't allocate memory for efi memmap");
+        qol_halt_system("Couldn't allocate memory for efi memmap");
     }
     status = qol_return_systab()->BootServices->GetMemoryMap(&memMapSize, efiMemMap, &mapKey, &descriptorSize, &descriptorVersion);
     if(status != EFI_SUCCESS){
-        qol_halt_system(L"Couldn't get memory map");
+        qol_halt_system("Couldn't get memory map");
     }
     uint64_t memsize = 0;
     uint64_t entries = memMapSize / descriptorSize;
     MemoryMap memmap = {NULL, 0};
     qol_return_systab()->BootServices->AllocatePool(EfiLoaderData, entries * sizeof(MemoryMapEntry), (void**)&memmap.memEntries);
     if(status != EFI_SUCCESS){
-        qol_halt_system(L"Couldn't allocate memory for memmap");
+        qol_halt_system("Couldn't allocate memory for memmap");
     }
     memmap.amount = entries;
     for(int i = 0; i < entries; i++){
@@ -287,7 +287,7 @@ void peldr_load_image(Config conf, int mode, EFI_HANDLE image){
     if(shouldRelocate == 1){
         uint8_t result = relocate_image(imageBase, ntHeader);
         if(result == 1){
-            qol_halt_system(L"Couldn't Relocate Executable!");
+            qol_halt_system("Couldn't Relocate Executable!");
         }
     }
     void (*EntryPoint)() = (void(*)())(imageBase + ntHeader->OptionalHeader.AddressOfEntryPoint);
