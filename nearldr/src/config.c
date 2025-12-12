@@ -11,8 +11,8 @@ int config_parse_handler(void* user, const char* section, const char* name,
 {
     Config* pconfig = (Config*)user;
     #define MATCH(s, n) strcmp(section, s) == 0 && strcmp(name, n) == 0
-    if (MATCH("LoaderConfig", "timeout")) {
-        pconfig->timeout = atoi(value);
+    if (MATCH("LoaderConfig", "pause")) {
+        pconfig->pause = atoi(value);
     } else if (MATCH("LoaderConfig", "name")) {
         pconfig->name = strdup(value);
     } else if (MATCH("LoaderConfig", "kernel")) {

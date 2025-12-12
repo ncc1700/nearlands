@@ -17,7 +17,7 @@ typedef struct _OsLog {
     char* kernel;
 } OsLog;
 typedef struct _Config { 
-    int timeout;
+    int pause;
     char* name;
     char* kernel;
 } Config;

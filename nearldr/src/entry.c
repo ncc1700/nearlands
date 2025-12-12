@@ -16,7 +16,7 @@ int ldr_entry(EFI_HANDLE imageHandle, EFI_SYSTEM_TABLE* systemTable) {
     graphics_initalize();
     fs_initalize(imageHandle);
     load_arch();
-    setup_paging();
+    //setup_paging();
     graphics_clear(RGB(0, 0, 0));
     EFI_FILE_PROTOCOL* prot = fs_open_file(L"\\nearldr.ini", EFI_FILE_MODE_READ);
     if(prot == NULL){
