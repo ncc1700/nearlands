@@ -146,9 +146,6 @@ static inline void apply_reloc(char* imgbuf, ElfHeader* header, uint64_t baseAdd
 
 void elfldr_load_image(Config conf, int mode, EFI_HANDLE image){
     qol_printf("Loading %s\n", conf.kernel);
-    uint8_t shouldRelocate = 0;
-    int64_t relocDelta = 0;
-    int64_t nonzeroDelta = 0;
     wchar buf[512];
     atow(conf.kernel, buf, 512);
     EFI_FILE_PROTOCOL* file = fs_open_file(buf, EFI_FILE_MODE_READ);
