@@ -217,17 +217,14 @@ void elfldr_load_image(Config conf, int mode, EFI_HANDLE image){
         memsize += memmap.memEntries[i].size;
     }
     LoaderInfo config = {
-                memsize,
-                1,
-                memmap.memEntries, memmap.amount,
-                {graphics_return_gop_info().fbAddress,
-                        graphics_return_gop_info().fbSize, graphics_return_gop_info().width,
-                        graphics_return_gop_info().height, graphics_return_gop_info().pixelPerScanLine}
+            memsize,
+            mode,
+            memmap.memEntries, memmap.amount,
+            {graphics_return_gop_info().fbAddress,
+                    graphics_return_gop_info().fbSize, graphics_return_gop_info().width,
+                    graphics_return_gop_info().height, graphics_return_gop_info().pixelPerScanLine
+            }
     };
-    for(int i = 0; i < header->secHeaderTableCount; i++){
-        qol_printf("%s\n", get_elf_section_name(imgbuf, header, sHeader));
-        sHeader++;
-    }
     qol_printf("loaderinfo loc 0x%x\n", (uint64_t)&config);
     void (*kernel_entry)(LoaderInfo*) = (void(*)(LoaderInfo*))(header->entrypoint + paddress);
     fs_close_file(file);

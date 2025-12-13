@@ -38,7 +38,7 @@ void render_ui(Config conf, EFI_HANDLE image){
 
     graphics_print("Boot Normally", 30, graphics_return_gop_info().height / 2 - 120,
                 1, FG_COLOR);
-    graphics_print("Boot in Debug Mode (USES ELFLDR)", 30, graphics_return_gop_info().height / 2 - 80,
+    graphics_print("Boot in Debug Mode", 30, graphics_return_gop_info().height / 2 - 80,
                 1, FG_COLOR);
     graphics_print("Reboot", 30,
                         graphics_return_gop_info().height / 2 - 40, 1, FG_COLOR);
@@ -79,7 +79,7 @@ void render_ui(Config conf, EFI_HANDLE image){
     qol_return_systab()->ConOut->Reset(qol_return_systab()->ConOut, TRUE);
     switch(add){
         case -120:{
-            peldr_load_image(conf, 1, image);
+            elfldr_load_image(conf, 0, image);
             //qol_halt_system("unimplemented");
             break;
         }
