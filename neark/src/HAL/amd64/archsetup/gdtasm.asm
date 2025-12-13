@@ -6,7 +6,7 @@ load_gdt:
     push rbp
     mov rbp, rsp
 
-    lgdt [rcx]
+    lgdt [rdi]
 
     mov ax, 0x10
     mov ds, ax

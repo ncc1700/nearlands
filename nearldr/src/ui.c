@@ -6,6 +6,7 @@
 #include "peldr.h"
 #include "qol.h"
 #include <stdint.h>
+#include "elfldr.h"
 
 #define FG_COLOR RGB(210, 210, 210)
 #define BG_COLOR RGB(0, 0, 130)
@@ -22,12 +23,12 @@ void render_ui(Config conf, EFI_HANDLE image){
                         graphics_return_gop_info().height - 30,
                         graphics_return_gop_info().width, 30, FG_COLOR);
 
-    //char* headertext = "Nearlands Boot Manager";
-    //size_t headertextsize = graphics_measure_text(headertext, 1);
-    graphics_print("Nearlands Boot Manager", 10,
+    char* headertext = "Nearlands Boot Manager";
+    size_t headertextwidth = graphics_measure_text(headertext, 1);
+    graphics_print(headertext, 10,
                     30, 1, FG_COLOR);
-    graphics_draw_rect(10, 40, 200, 1, FG_COLOR);
-    graphics_draw_rect(10, 45, 200, 1, FG_COLOR);
+    graphics_draw_rect(10, 40, headertextwidth + 10, 1, FG_COLOR);
+    graphics_draw_rect(10, 45, headertextwidth + 10, 1, FG_COLOR);
 
     char* entertext = "W to go up | S to go down | Space to Enter";
     graphics_print(entertext, 10,
@@ -46,7 +47,7 @@ void render_ui(Config conf, EFI_HANDLE image){
     graphics_print("Return to UEFI", 30,
                         graphics_return_gop_info().height / 2 + 40, 1, FG_COLOR);
     while(exit == 0){
-        if(conf.timeout == 0){
+        if(conf.pause == 0){
             break;
         }
         graphics_print("<-", graphics_return_gop_info().width - 40,
@@ -78,12 +79,12 @@ void render_ui(Config conf, EFI_HANDLE image){
     qol_return_systab()->ConOut->Reset(qol_return_systab()->ConOut, TRUE);
     switch(add){
         case -120:{
-            peldr_load_image(conf, 1, image);
+            elfldr_load_image(conf, 0, image);
             //qol_halt_system("unimplemented");
             break;
         }
         case -80:{
-            peldr_load_image(conf, 1, image);
+            elfldr_load_image(conf, 1, image);
             //qol_halt_system("unimplemented");
             break;
         }

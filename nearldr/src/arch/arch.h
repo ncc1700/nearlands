@@ -25,7 +25,7 @@ typedef enum _Architecture {
 
 Architecture what_arch();
 void load_arch();
-void setup_paging();
+//void setup_paging();
 void switch_stack(uint64_t stack);
 void halt();
 
