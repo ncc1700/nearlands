@@ -78,7 +78,11 @@ typedef struct _ElfDynamicLoading {
 
 
 
-
+static inline char* get_elf_section_name(char* imageBuffer, ElfHeader* header, ElfSecHeader* sHeader){
+    ElfSecHeader* firstSecHeader = (ElfSecHeader*)(imageBuffer + header->secHeaderOffset);
+    ElfSecHeader* secStrLand = (ElfSecHeader*)&firstSecHeader[header->secHeaderStrTableIndex];
+    return (char*)((imageBuffer + secStrLand->secOffset) + sHeader->secName);
+}   
 
 
 
@@ -104,21 +108,22 @@ void elfldr_load_image(Config conf, int mode, EFI_HANDLE image){
     //qol_printf("unimplemented (yet), please reboot");
     ElfProgramHeader* pHeader = (ElfProgramHeader*)(imgbuf + header->progHeaderOffset);
     ElfSecHeader* sHeader = (ElfSecHeader*)(imgbuf + header->secHeaderOffset);
+    char* loc = (imgbuf + header->secHeaderStrTableIndex);
+    qol_printf("%s\n", loc);
     qol_printf("%d\n", header->progHeaderTableCount);
 
     for(int i = 0; i < header->progHeaderTableCount; i++){
         if(pHeader->programType == PROGHEAD_LOAD){
-            qol_printf("Program header in 0x%x\n", pHeader->programPAddr);
+            //qol_printf("Program header in 0x%x\n", pHeader->programPAddr);
+            
         }
         pHeader++;
     }
 
     for(int i = 0; i < header->secHeaderTableCount; i++){
         if(sHeader->secType == PROGHEAD_LOAD){
-            qol_printf("! ");
+            //qol_printf("%s\n", get_elf_section_name(imgbuf, header, sHeader));
         }
-        qol_printf("Section header in 0x%x\n", sHeader->secVAddr);
-
         sHeader++;
     }
 
