@@ -7,20 +7,8 @@
 
 hal_loader_entry:
 
-    adr x30, kstackend
-    mov sp, x30
-    adr x0, ldrInfo
-    bl kernel_entry
+    adr x30, sp_top
+    adr x1, sp_top
+    b kernel_entry
     b .
 
-
-.section .bss
-kstack:
-    .skip 256000
-    .align 16
-kstackend:
-
-.section .ldr
-.align 16
-ldrInfo:
-    .space 128

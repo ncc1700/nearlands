@@ -8,9 +8,6 @@ SECTIONS {
     .data : {
         *(.data)
     }
-    .ldr : {
-        KEEP(*(.ldr))
-    }
     .bss : {
         *(.bss)
     }

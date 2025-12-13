@@ -28,7 +28,7 @@ hal_dump_and_print_registers:
     mov [rsp + 96], r14 
     mov [rsp + 104], r15 
 
-    lea rcx, [rsp]
+    lea rdi, [rsp]
     call print_registers
 
     add rsp, 120

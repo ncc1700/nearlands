@@ -14,7 +14,7 @@ load_idt:
     push rbp
     mov rbp, rsp
 
-    lidt [rel rcx]
+    lidt [rel rdi]
 
     mov rsp, rbp
     pop rbp

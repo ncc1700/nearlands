@@ -8,14 +8,11 @@ SECTIONS {
     .data : {
         *(.data) 
     }
-    .ldr : {
-        KEEP(*(.ldr))
-    }
     .bss : {
         *(.bss)
     }
-    . = ALIGN(8);
-    . += 0x30000;
+    . = ALIGN(16);
     sp_top = .;
+    . += 0x30000;
     stack_size = 0x30000;
 }

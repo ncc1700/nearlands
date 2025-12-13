@@ -121,7 +121,7 @@ static inline uint64_t address_to_allocate_to(char* imgbuf, ElfHeader* header){
     EFI_PHYSICAL_ADDRESS address = 0x0; // temp address
     EFI_STATUS status = qol_return_systab()->BootServices->AllocatePages(AllocateAnyPages, EfiLoaderCode, amountOfPages, &address);
     if(status != EFI_SUCCESS){
-        qol_halt_system("Not enough memory for nearlands kernel");
+        qol_halt_system("elfldr failed: not enough memory for nearlands kernel");
     }
     return address - minVAddr;
 }
@@ -194,18 +194,18 @@ void elfldr_load_image(Config conf, int mode, EFI_HANDLE image){
     memMapSize += descriptorSize * 8;
     EFI_STATUS status = qol_return_systab()->BootServices->AllocatePool(EfiLoaderData, memMapSize, (void**)&efiMemMap);
     if(status != EFI_SUCCESS){
-        qol_halt_system("Couldn't allocate memory for efi memmap");
+        qol_halt_system("elfldr failed: couldn't allocate memory for efi memmap");
     }
     status = qol_return_systab()->BootServices->GetMemoryMap(&memMapSize, efiMemMap, &mapKey, &descriptorSize, &descriptorVersion);
     if(status != EFI_SUCCESS){
-        qol_halt_system("Couldn't get memory map");
+        qol_halt_system("elfldr failed: couldn't get memory map");
     }
     uint64_t memsize = 0;
     uint64_t entries = memMapSize / descriptorSize;
     MemoryMap memmap = {NULL, 0};
     qol_return_systab()->BootServices->AllocatePool(EfiLoaderData, entries * sizeof(MemoryMapEntry), (void**)&memmap.memEntries);
     if(status != EFI_SUCCESS){
-        qol_halt_system("Couldn't allocate memory for memmap");
+        qol_halt_system("elfldr failed: couldn't allocate memory for memmap");
     }
     memmap.amount = entries;
     for(int i = 0; i < entries; i++){
@@ -216,36 +216,29 @@ void elfldr_load_image(Config conf, int mode, EFI_HANDLE image){
         memmap.memEntries[i].types = desc->Type;
         memsize += memmap.memEntries[i].size;
     }
-
-    for(int i = 0; i < header->secHeaderTableCount; i++){
-        qol_printf("%s\n", get_elf_section_name(imgbuf, header, sHeader));
-        if(strcmp(".ldr", get_elf_section_name(imgbuf, header, sHeader)) == 0){
-            LoaderInfo info = {
+    LoaderInfo config = {
                 memsize,
                 1,
-                memmap,
+                memmap.memEntries, memmap.amount,
                 {graphics_return_gop_info().fbAddress,
                         graphics_return_gop_info().fbSize, graphics_return_gop_info().width,
                         graphics_return_gop_info().height, graphics_return_gop_info().pixelPerScanLine}
-            };
-            uint64_t addr = paddress + sHeader->secVAddr;
-            memcpy((void*)addr, &info, sizeof(LoaderInfo));
-        }
+    };
+    for(int i = 0; i < header->secHeaderTableCount; i++){
+        qol_printf("%s\n", get_elf_section_name(imgbuf, header, sHeader));
         sHeader++;
     }
-    void (*kernel_entry)(void) = (void(*)())(header->entrypoint + paddress);
+    qol_printf("loaderinfo loc 0x%x\n", (uint64_t)&config);
+    void (*kernel_entry)(LoaderInfo*) = (void(*)(LoaderInfo*))(header->entrypoint + paddress);
     fs_close_file(file);
     qol_return_systab()->BootServices->FreePool(conf.kernel);
     qol_return_systab()->BootServices->FreePool(conf.name);
     qol_return_systab()->BootServices->FreePool(imgbuf);
-    qol_return_systab()->BootServices->ExitBootServices(imgbuf, mapKey);
     graphics_clear(RGB(0, 0, 0));
     qol_return_systab()->ConOut->Reset(qol_return_systab()->ConOut, TRUE);
+    qol_return_systab()->BootServices->ExitBootServices(imgbuf, mapKey);
+
     // bye bye! - NearLDR
-    kernel_entry();
-    
-
-
-
+    kernel_entry(&config);
     while(1){continue;}
 }
