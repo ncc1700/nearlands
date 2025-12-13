@@ -6,13 +6,19 @@
 
 
 hal_loader_entry:
-    ldr x30, =sp_top
+
+    adr x30, kstackend
     mov sp, x30
-    adrp x0, ldrInfo
-    add x0, x0, :lo12:ldrInfo
+    adr x0, ldrInfo
     bl kernel_entry
     b .
 
+
+.section .bss
+kstack:
+    .skip 256000
+    .align 16
+kstackend:
 
 .section .ldr
 .align 16

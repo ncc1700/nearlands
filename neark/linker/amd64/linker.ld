@@ -1,18 +1,18 @@
 ENTRY(hal_loader_entry)
 
 SECTIONS {
-    . = 0x100000;
+    . = 0x0;
     .text : {
         *(.text)
     }
     .data : {
-        *(.data)
+        *(.data) 
+    }
+    .ldr : {
+        KEEP(*(.ldr))
     }
     .bss : {
         *(.bss)
-    }
-    .ldr : {
-        *(.ldr)
     }
     . = ALIGN(8);
     . += 0x30000;

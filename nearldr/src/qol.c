@@ -37,6 +37,7 @@ void qol_printf(char* string, ...){
     wchar ws[1024];
     atow(s, ws, 1024);
     qol_puts(ws);
+    //qol_return_systab()->ConOut->SetMode()
 }
 
 

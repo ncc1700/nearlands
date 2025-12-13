@@ -1,9 +1,3 @@
-section .bss
-    align 16
-kstackbottom:
-    resb 256000
-kstacktop:
-
 section .ldr
     align 16
 ldrInfo:
@@ -13,10 +7,11 @@ section .text
 
 extern kernel_entry
 global hal_loader_entry
+extern sp_top
 hal_loader_entry:
 
-    mov rsp, kstacktop
-    mov rcx, ldrInfo
+    mov rsp, sp_top
+    mov rdi, ldrInfo
     call kernel_entry
 loop:
     jmp loop
