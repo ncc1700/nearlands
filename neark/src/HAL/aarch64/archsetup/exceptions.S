@@ -6,7 +6,7 @@
 load_exception_vector:
     sub sp, sp, #16
 
-    ldr x2, =exception_vector
+    adr x2, exception_vector
     msr VBAR_EL1, x2
 
     add sp, sp, #16

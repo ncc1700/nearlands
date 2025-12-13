@@ -35,7 +35,7 @@ void kernel_entry(LoaderInfo* info, uint64_t stackLoc){
         kterm_write_printf(INFO, "Memory Amount is %d, memmap amount is %d, stack loc is 0x%x", lInfo.memoryAmount, lInfo.memmap.amount, stackLoc); 
 
     }
-    //*(uint64_t*)0x8922829829282 = 'h';
+    *(uint64_t*)0x8922829829282 = 'h';
    
     kterm_write_printf(ERROR, "Nothing else to do, halting");
     //core_panic("idk");

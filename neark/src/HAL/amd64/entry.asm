@@ -7,7 +7,6 @@ extern sp_top
 
 hal_loader_entry:
     mov rsp, sp_top
-    sub rsp, 8
     mov rdi, rcx
     mov rsi, sp_top
     call kernel_entry
