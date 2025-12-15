@@ -83,7 +83,6 @@ typedef struct {
 } ElfRelocation;
 
 
-#define AARCH64_REL 1027
 // idk if we will ever use it, but if we do need it its
 // good to have
 typedef struct _ElfDynamicLoading {
@@ -101,7 +100,7 @@ static inline char* get_elf_section_name(char* imageBuffer, ElfHeader* header, E
     ElfSecHeader* firstSecHeader = (ElfSecHeader*)(imageBuffer + header->secHeaderOffset);
     ElfSecHeader* secStrLand = (ElfSecHeader*)&firstSecHeader[header->secHeaderStrTableIndex];
     return (char*)((imageBuffer + secStrLand->secOffset) + sHeader->secName);
-}  
+}
 
 
 
@@ -129,16 +128,15 @@ static inline uint64_t address_to_allocate_to(char* imgbuf, ElfHeader* header){
 static inline void apply_reloc(char* imgbuf, ElfHeader* header, uint64_t baseAddr){
     ElfSecHeader* sHeader = (ElfSecHeader*)(imgbuf + header->secHeaderOffset);
     for(int i = 0; i < header->secHeaderTableCount; i++){
-        if(sHeader->secType != SECHEAD_RELOCATE_WITH_ADDENDS) goto SKIP;
+        if(sHeader->secType == SECHEAD_RELOCATE_WITH_ADDENDS) {
+            ElfRelocation* relaEntries = (ElfRelocation*)(imgbuf + sHeader->secOffset);
+            int eCount = sHeader->secSize / sHeader->secEntrySize;
 
-        ElfRelocation* relaEntries = (ElfRelocation*)(imgbuf + sHeader->secOffset);
-        int eCount = sHeader->secSize / sHeader->secEntrySize;
-
-        for(int j = 0; j < eCount; j++){
-            uint64_t* target = (uint64_t*)(baseAddr + relaEntries[j].offset);
-            *target = baseAddr + relaEntries[j].addend;
+            for(int j = 0; j < eCount; j++){
+                uint64_t* target = (uint64_t*)(baseAddr + relaEntries[j].offset);
+                *target = baseAddr + relaEntries[j].addend;
+            }
         }
-        SKIP:
         sHeader++;
     }
 }
@@ -164,17 +162,14 @@ void elfldr_load_image(Config conf, int mode, EFI_HANDLE image){
     //qol_printf("unimplemented (yet), please reboot");
     ElfProgramHeader* pHeader = (ElfProgramHeader*)(imgbuf + header->progHeaderOffset);
     ElfSecHeader* sHeader = (ElfSecHeader*)(imgbuf + header->secHeaderOffset);
-    char* loc = (imgbuf + header->secHeaderStrTableIndex);
     uint64_t paddress = address_to_allocate_to(imgbuf, header);
-    uint8_t firstSeg = 0;
-    uint64_t base = 0;
     for(int i = 0; i < header->progHeaderTableCount; i++){
         if(pHeader->programType == PROGHEAD_LOAD){
             uint64_t pages = EFI_SIZE_TO_PAGES(pHeader->programMemorySize);
             EFI_PHYSICAL_ADDRESS address = 0;
-            
+
             address = paddress + pHeader->programVAddr;
-            
+
             qol_printf("supposed to be put at 0x%x\n", pHeader->programVAddr);
             qol_printf("at %d: %d pages 0x%x\n", i, pages, address);
             memset((void*)address, 0, pHeader->programMemorySize);

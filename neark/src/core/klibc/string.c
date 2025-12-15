@@ -220,6 +220,7 @@ char* strstr(const char* looker, const char* buffer){
 int ispunct(int argument){
     return 0;
 }
+
 int atoi(const char* string){
     int result = 0;
 
