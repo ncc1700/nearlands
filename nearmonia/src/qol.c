@@ -1,0 +1,119 @@
+#include "qol.h"
+#include "extern/EFI/Uefi.h"
+#include "extern/EFI/UefiBaseType.h"
+#include "extern/nanoprintf/nprintfimpl.h"
+
+static EFI_SYSTEM_TABLE* globalSysTab = NULL;
+static EFI_HANDLE globalHandle = NULL;
+
+
+
+void _fltused(){}
+
+void QolSetupQolAbstractions(EFI_HANDLE handle, EFI_SYSTEM_TABLE* systab){
+    globalHandle = handle;
+    globalSysTab = systab;
+}
+
+
+EFI_SYSTEM_TABLE* QolReturnSystemTable(){
+    return globalSysTab;
+}
+
+EFI_HANDLE QolReturnImagehandle(){
+    return globalHandle;
+}
+
+
+void QolWideStringToAnsiString(const wchar* wideString, char* string, u32 strSize){
+    const wchar* sCopy = wideString;
+    u32 count = 0;
+    while(*sCopy != L'\0' && count < strSize - 1){
+        string[count] = (char)*sCopy;
+        count++;
+        sCopy++;
+    }
+    string[count] = '\0';
+}
+
+void QolAnsiStringToWideString(const char* ansiString, wchar* string, u32 strSize){
+    const char* sCopy = ansiString;
+    u32 count = 0;
+    while(*sCopy != '\0' && count < strSize - 1){
+        string[count] = (wchar)*sCopy;
+        count++;
+        sCopy++;
+    }
+    string[count] = L'\0';
+}
+
+
+void QolUefiFormatPrint(const char* string, ...){
+    char buffer[128];
+    wchar wbuffer[128];
+    va_list arg;
+    va_start(arg, string);
+    impl_vsnprintf(buffer, 128, string, arg);
+    va_end(arg);
+    QolAnsiStringToWideString(buffer, wbuffer, 128);
+    globalSysTab->ConOut->OutputString(globalSysTab->ConOut, wbuffer);
+}
+
+
+/*
+    Taken from Limines template as i believe my own impl
+    would suck
+
+    clang won't compile the code without these
+*/
+
+void *memcpy(void *restrict dest, const void *restrict src, size_t n) {
+    unsigned char *restrict pdest = (unsigned char *restrict)dest;
+    const unsigned char *restrict psrc = (const unsigned char *restrict)src;
+
+    for (size_t i = 0; i < n; i++) {
+        pdest[i] = psrc[i];
+    }
+
+    return dest;
+}
+
+void *memset(void *s, int c, size_t n) {
+    unsigned char *p = (unsigned char *)s;
+
+    for (size_t i = 0; i < n; i++) {
+        p[i] = (unsigned char)c;
+    }
+
+    return s;
+}
+
+void *memmove(void *dest, const void *src, size_t n) {
+    unsigned char *pdest = (unsigned char *)dest;
+    const unsigned char *psrc = (const unsigned char *)src;
+
+    if (src > dest) {
+        for (size_t i = 0; i < n; i++) {
+            pdest[i] = psrc[i];
+        }
+    } else if (src < dest) {
+        for (size_t i = n; i > 0; i--) {
+            pdest[i-1] = psrc[i-1];
+        }
+    }
+
+    return dest;
+}
+
+int memcmp(const void *s1, const void *s2, size_t n) {
+    const unsigned char *p1 = (const unsigned char *)s1;
+    const unsigned char *p2 = (const unsigned char *)s2;
+
+    for (size_t i = 0; i < n; i++) {
+        if (p1[i] != p2[i]) {
+            return p1[i] < p2[i] ? -1 : 1;
+        }
+    }
+
+    return 0;
+}

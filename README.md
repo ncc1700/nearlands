@@ -4,11 +4,9 @@ WIP
 
 # External Projects im using
 
-[Font8x8](https://github.com/dhepper/font8x8) (the terminals font)
+[BitFonts](https://github.com/SloopyCode/BitFonts) (the font mainly used for text in the OS)
 
-[mini-printf](https://github.com/mludvig/mini-printf) (simple and usable printf impl for embedded projects)
-
-[inih](https://github.com/benhoyt/inih) (simple and extensible INI parser)
+[nanoprintf](https://github.com/charlesnicholson/nanoprintf) (simple and usable printf impl for embedded projects)
 
 # How to build
 

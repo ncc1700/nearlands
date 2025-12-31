@@ -1,62 +1,32 @@
 
-build-amd64-image:
-	cd nearldr && xmake build nearldr-amd64
-	cd neark && xmake build neark-amd64
-	qemu-img create -f raw image.img 1440K
-	mformat -i image.img -f 1440 ::
-	mmd -i image.img ::/EFI
-	mmd -i image.img ::/EFI/BOOT
-	mmd -i image.img ::/SYSTEM
-	mcopy -i image.img binaries/BOOT/BOOTX64.efi ::/EFI/BOOT
-	mcopy -i image.img binaries/SYSTEM/neark.sys ::/SYSTEM
-	mcopy -i image.img nearldr.ini ::/
+build-amd64pc:
+	cd nearmonia && xmake build nearmonia-amd64pc
+	cd narnify && xmake build narnify-amd64pc
+	qemu-img create -f raw nearlands.img 1440K
+	mformat -i nearlands.img -f 1440 ::
+	mmd -i nearlands.img ::/EFI
+	mmd -i nearlands.img ::/EFI/BOOT
+	mmd -i nearlands.img ::/SYSTEM
+	mcopy -i nearlands.img output/EFI/BOOT/BOOTX64.EFI ::/EFI/BOOT
+	mcopy -i nearlands.img output/SYSTEM/narnify.sys ::/SYSTEM
 
-build-aarch64-image:
-	cd nearldr && xmake build nearldr-aarch64
-	cd neark && xmake build neark-aarch64
-	qemu-img create -f raw image.img 1440K
-	mformat -i image.img -f 1440 ::
-	mmd -i image.img ::/EFI
-	mmd -i image.img ::/EFI/BOOT
-	mmd -i image.img ::/SYSTEM
-	mcopy -i image.img binaries/BOOT/BOOTAA64.efi ::/EFI/BOOT
-	mcopy -i image.img binaries/SYSTEM/neark.sys ::/SYSTEM
-	mcopy -i image.img nearldr.ini ::/
 
-run-amd64:
-	qemu-system-x86_64 -bios resources/UEFI/amd64/OVMF.fd \
-	-device virtio-gpu-pci \
-	-drive file=image.img,format=raw -m 512M -serial mon:stdio
+run-amd64pc:
+	qemu-system-x86_64 -bios resources/UEFI/amd64pc/OVMF.fd \
+		 -drive file=nearlands.img,format=raw -display sdl \
+		 -serial mon:stdio
 
-run-amd64-debug:
-	qemu-system-x86_64 -bios resources/UEFI/amd64/OVMF.fd \
-	-device virtio-gpu-pci \
-	-drive file=image.img,format=raw -m 96M -serial mon:stdio -s -S
+amd64pc:
+	make build-amd64pc
+	make run-amd64pc
 
-run-aarch64:
-	qemu-system-aarch64 -bios resources/UEFI/aarch64/OVMF.fd \
-		-machine virt -cpu cortex-a57 -m 2G -device ramfb -device usb-ehci -device usb-kbd \
-		-drive if=none,file=image.img,format=raw,id=hd0 \
-  		-device virtio-blk-device,drive=hd0 \
-		-serial mon:stdio
 
-run-aarch64-debug:
-	qemu-system-aarch64 -bios resources/UEFI/aarch64/OVMF.fd \
-		-machine virt -cpu cortex-a57 -m 512M -device ramfb -device usb-ehci -device usb-kbd \
-		-drive if=none,file=image.img,format=raw,id=hd0 \
-  		-device virtio-blk-device,drive=hd0 \
-		-serial mon:stdio -s -S
+clean-build:
+	cd nearmonia && make clean
+	cd narnify && make clean
 
-amd64:
-	make build-amd64-image
-	make run-amd64
-
-aarch64:
-	make build-aarch64-image
-	make run-aarch64
 
 clean:
-	rm -rf binaries
-	rm image.img
-	cd nearldr && make clean
-	cd neark && make clean
+	make clean-build
+	rm -rf output
+	rm nearlands.img

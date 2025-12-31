@@ -1,4 +1,4 @@
 .xmake/
 build/
-binaries/
+output/
 *.img
