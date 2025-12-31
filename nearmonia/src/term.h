@@ -19,7 +19,7 @@ typedef enum _Status {
 } Status;
 
 
-
+void TermClear();
 void TermPuts(boolean addNewLine, const char* string, u64 color);
 void TermPrint(Status stat, char* string, ...);
 
