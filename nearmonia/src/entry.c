@@ -1,3 +1,4 @@
+#include "arch/includes/mem.h"
 #include "gop.h"
 #include "qol.h"
 #include "term.h"
@@ -17,12 +18,11 @@ i32 LdrEfiEntry(EFI_HANDLE imageHandle, EFI_SYSTEM_TABLE* systemTable){
     LdrSetupGOP();
     
 
-    TermPrint(TERM_STATUS_ERROR, "This is an error %d", 1);
-    TermPrint(TERM_STATUS_PASS, "This is a pass %d", 1);
-    TermPrint(TERM_STATUS_INFO, "This is an info %d", 1);
-    TermPrint(TERM_STATUS_WARNING, "This is a warning %d", 1);
-    TermPrint(TERM_STATUS_UNKNOWN, "This is unknown %d", 1);
-    
+    MemoryMap* memMap = LdrMmRetrieveCurrentMemoryMap();
+    if(memMap == NULL){
+        TermPrint(TERM_STATUS_ERROR, "Couldn't access memory map!");
+    } else TermPrint(TERM_STATUS_PASS, "Retrieved memory map! Size of all memory is %lu, memory map amount %d\n", 
+                            memMap->sizeOfEntireMemory, memMap->amountOfEntries);
     while(1){continue;}
     return 0;
 }

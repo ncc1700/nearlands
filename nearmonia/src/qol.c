@@ -61,30 +61,21 @@ void QolUefiFormatPrint(const char* string, ...){
 
 
 /*
-    Taken from Limines template as i believe my own impl
+    Some are taken from Limines template as i believe my own impl
     would suck
 
-    clang won't compile the code without these
+    the ones that aren't just use EFI BootServices functions instead
+
+    clang won't compile anything without these functions
 */
 
 void *memcpy(void *restrict dest, const void *restrict src, size_t n) {
-    unsigned char *restrict pdest = (unsigned char *restrict)dest;
-    const unsigned char *restrict psrc = (const unsigned char *restrict)src;
-
-    for (size_t i = 0; i < n; i++) {
-        pdest[i] = psrc[i];
-    }
-
+    QolReturnSystemTable()->BootServices->CopyMem(dest, (void*)src, n);
     return dest;
 }
 
 void *memset(void *s, int c, size_t n) {
-    unsigned char *p = (unsigned char *)s;
-
-    for (size_t i = 0; i < n; i++) {
-        p[i] = (unsigned char)c;
-    }
-
+    QolReturnSystemTable()->BootServices->SetMem(s, n, c);
     return s;
 }
 
@@ -114,6 +105,5 @@ int memcmp(const void *s1, const void *s2, size_t n) {
             return p1[i] < p2[i] ? -1 : 1;
         }
     }
-
     return 0;
 }

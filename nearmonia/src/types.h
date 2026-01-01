@@ -25,6 +25,9 @@ typedef int32_t i32;
 typedef uint64_t u64;
 typedef int64_t i64;
 
+typedef uintptr_t uptr;
+typedef intptr_t iptr;
+
 typedef bool boolean;
 #define FALSE 0
 #define TRUE 1
