@@ -2,13 +2,6 @@
 #include "../../qol.h"
 #include "../../term.h"
 
-static u64 memAmount = 0;
-
-
-
-
-
-
 
 
 
