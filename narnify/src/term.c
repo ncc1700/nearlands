@@ -2,10 +2,8 @@
 #include "arch/includes/serial.h"
 #include "extern/nanoprintf/nprintfimpl.h"
 #include "graphics.h"
-#include "qol.h"
 #include "types.h"
 #include <stdarg.h>
-
 
 
 static u32 termCurrentX = 10;
@@ -15,13 +13,12 @@ static u32 termCurrentY = 10;
 
 void TermClear(){
     // ONLY IN UEFI
-    QolReturnSystemTable()->ConOut->ClearScreen(QolReturnSystemTable()->ConOut);
     if(GraphicsReturnData()->init == 1){
         GraphicsDrawRect(0, 0, GraphicsReturnData()->width, GraphicsReturnData()->height, 0x000000);
     }
     termCurrentX = 10;
     termCurrentY = 10;
-    LdrArEnterCharacterToSerial('\n');
+    ArEnterCharacterToSerial('\n');
 }
 
 
@@ -36,14 +33,14 @@ void TermPuts(boolean addNewLine, const char* string, u64 color){
     if(GraphicsReturnData()->init == 1){
         GraphicsDrawString(string, termCurrentX, termCurrentY, 1, color);
     }
-    LdrArPrintToSerial(string);
+    ArPrintToSerial(string);
     if(addNewLine == TRUE){
         termCurrentX = 10;
         termCurrentY += 12;
         if(termCurrentY >= GraphicsReturnData()->height){
             TermClear();
         }
-        LdrArEnterCharacterToSerial('\n');
+        ArEnterCharacterToSerial('\n');
     } else {
         if(GraphicsReturnData()->init == 1){
             termCurrentX += GraphicsMeasureTextSizeFromDefaultFont(string, 1);
@@ -80,4 +77,3 @@ void TermPrint(Status stat, char* string, ...){
             break;
     }
 }
-

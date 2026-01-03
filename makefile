@@ -20,6 +20,8 @@ amd64pc:
 	make build-amd64pc
 	make run-amd64pc
 
+img-to-vmdk:
+	qemu-img convert -f raw -O vmdk nearlands.img nearlands.vmdk
 
 clean-build:
 	cd nearmonia && make clean

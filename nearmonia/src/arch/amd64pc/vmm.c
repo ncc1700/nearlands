@@ -2,6 +2,7 @@
 #include "../../qol.h"
 
 
+
 __attribute__((aligned(4096))) static uptr pml4[512] = {0};
 
 
@@ -39,34 +40,30 @@ boolean LdrMmMapSinglePage(u64 address, u64 virtAddress){
     u64 ptEntry = GET_PT_ENTRY(virtAddress);
 
     if(pml4[pml4Entry] == 0){
-        
-        uptr addr;
-        boolean result = GetNextLevel(&addr);
+        uptr pdptAddr;
+        boolean result = GetNextLevel(&pdptAddr);
         if(result == FALSE){
-            // TODO: panic
             return FALSE;
         }
-        pml4[pml4Entry] = addr | PG_PRESENT | PG_READ_WRITE;
+        pml4[pml4Entry] = pdptAddr | PG_PRESENT | PG_READ_WRITE;
     } 
     uptr* pdpt = PARSE_ENTRY_VALUE(pml4[pml4Entry]);
     if(pdpt[pdptEntry] == 0){
-        uptr addr;
-        boolean result = GetNextLevel(&addr);
+        uptr pdAddr;
+        boolean result = GetNextLevel(&pdAddr);
         if(result == FALSE){
-            // TODO: panic
             return FALSE;
         }
-        pdpt[pdptEntry] = addr | PG_PRESENT | PG_READ_WRITE;
+        pdpt[pdptEntry] = pdAddr | PG_PRESENT | PG_READ_WRITE;
     }
     uptr* pd = PARSE_ENTRY_VALUE(pdpt[pdptEntry]);
     if(pd[pdEntry] == 0){
-        uptr addr;
-        boolean result = GetNextLevel(&addr);
+        uptr ptAddr;
+        boolean result = GetNextLevel(&ptAddr);
         if(result == FALSE){
-            // TODO: panic
             return FALSE;
         }
-        pd[pdEntry] = addr | PG_PRESENT | PG_READ_WRITE;
+        pd[pdEntry] = ptAddr | PG_PRESENT | PG_READ_WRITE;
     }
 
     u64* pt = PARSE_ENTRY_VALUE(pd[pdEntry]);
@@ -75,12 +72,14 @@ boolean LdrMmMapSinglePage(u64 address, u64 virtAddress){
 }
 
 
-
-
-// identity maps the first 4gb
+// HORRIBLE: PLEASE DO NOT DO THIS BRO
 boolean LdrMmInitPaging(){
-    for(u64 i = 0x0; i < 0x100000000; i+=0x1000){
-        LdrMmMapSinglePage(i, i);
+    // TODO: create a way to free an allocated memory map
+    MemoryMap* memMap = LdrMmRetrieveCurrentMemoryMap();
+    u64 size = memMap->sizeOfEntireMemory + 0x100000000;
+    for(u64 i = 0x0; i < size; i+=0x1000){
+        boolean result = LdrMmMapSinglePage(i, i);
+        if(result == FALSE) return FALSE;
     }
     LdrMmUpdateCr3((u64)pml4);
     return TRUE;
@@ -90,8 +89,9 @@ boolean LdrMmInitPaging(){
 boolean LdrMmMapHigherHalfMemoryForKernel(u64 address){
     u64 addressPlus1g = address + 0x40000000;
     for(u64 i = 0; i < 0x40000000; i+=0x1000){
-        LdrMmMapSinglePage(address + i, HHDM_OFFSET + i);
+        boolean result = LdrMmMapSinglePage(address + i, HHDM_OFFSET + i);
+        if(result == FALSE) return FALSE;
     }
     LdrMmUpdateCr3((u64)pml4);
-    return true;
+    return TRUE;
 }

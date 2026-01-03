@@ -1,7 +1,9 @@
 #include "qol.h"
+#include "arch/includes/serial.h"
 #include "extern/EFI/Uefi.h"
 #include "extern/EFI/UefiBaseType.h"
 #include "extern/nanoprintf/nprintfimpl.h"
+#include "graphics.h"
 
 static EFI_SYSTEM_TABLE* globalSysTab = NULL;
 static EFI_HANDLE globalHandle = NULL;
@@ -48,7 +50,7 @@ void QolAnsiStringToWideString(const char* ansiString, wchar* string, u32 strSiz
 }
 
 
-void QolUefiFormatPrint(const char* string, ...){
+void QolSerialFormatPrint(const char* string, ...){
     char buffer[128];
     wchar wbuffer[128];
     va_list arg;
@@ -56,7 +58,20 @@ void QolUefiFormatPrint(const char* string, ...){
     impl_vsnprintf(buffer, 128, string, arg);
     va_end(arg);
     QolAnsiStringToWideString(buffer, wbuffer, 128);
-    globalSysTab->ConOut->OutputString(globalSysTab->ConOut, wbuffer);
+    LdrArPrintToSerial(string);
+}
+
+void QolPanic(const char* string){
+    QolSerialFormatPrint("An error has occured!!!!\n\n");
+    QolSerialFormatPrint(string);
+    if(GraphicsReturnData()->init == 1){
+        GraphicsDrawRect(0, 0, GraphicsReturnData()->width, GraphicsReturnData()->height, 0x0000FF);
+        GraphicsDrawString("An Error Has Occured", 10, 10, 2, 0xFFFFFF);
+        GraphicsDrawString(string, 10, 50, 1, 0xFFFFFF);
+    }
+    while(1){continue;}
+    
+
 }
 
 

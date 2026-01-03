@@ -29,13 +29,14 @@ typedef struct _MemoryMap {
     MemoryMapEntry* memEntries;
     u64 amountOfEntries;
     u64 sizeOfEntireMemory;
+    u64 mapKey;
 } MemoryMap;
 
 
 #define HHDM_OFFSET 0xFFFFFF8000000000ULL
 
 
-MemoryMap* LdrMmRetrieveCurrentMemoryMap(boolean exitBootServices);
+MemoryMap* LdrMmRetrieveCurrentMemoryMap();
 boolean LdrMmInitPhysicalAllocator();
 void* LdrMmAllocatePhysicalPages(u64 amountOfPages);
 void LdrMmFreePhysicalPages(void* pages, u64 amountOfPages);

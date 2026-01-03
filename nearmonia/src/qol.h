@@ -21,9 +21,11 @@ EFI_SYSTEM_TABLE* QolReturnSystemTable();
 EFI_HANDLE QolReturnImagehandle();
 void QolWideStringToAnsiString(const wchar* wideString, char* string, u32 strSize);
 void QolAnsiStringToWideString(const char* ansiString, wchar* string, u32 strSize);
-void QolUefiFormatPrint(const char* string, ...);
+void QolSerialFormatPrint(const char* string, ...);
+void *memcpy(void* dest, const void* src, size_t n);
 void *memset(void *s, int c, size_t n);
-
+int memcmp(const void *s1, const void *s2, size_t n);
+void QolPanic(const char* string);
 
 
 

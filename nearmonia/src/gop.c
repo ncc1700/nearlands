@@ -19,7 +19,7 @@ boolean LdrSetupGOP(){
     EFI_STATUS status = QolReturnSystemTable()->BootServices->LocateProtocol(&gopGuid, 
                                                             NULL, (void**)&gop);
     if(status != EFI_SUCCESS){
-        QolUefiFormatPrint("LocateProtocol for GOP failed with EFI_STATUS of 0x%x", status);
+        QolSerialFormatPrint("LocateProtocol for GOP failed with EFI_STATUS of 0x%x", status);
         return FALSE;
     }
     // we just use the normal resolution the system is already at, nothing special
