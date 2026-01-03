@@ -6,7 +6,7 @@
 
 
 
-MemoryMap* LdrMmRetrieveCurrentMemoryMap(){
+MemoryMap* LdrMmRetrieveCurrentMemoryMap(boolean exitBootServices){
     u64 memMapSize = 0;
     u64 mapKey = 0;
     u64 descSize = 0;
@@ -75,6 +75,9 @@ MemoryMap* LdrMmRetrieveCurrentMemoryMap(){
                 memMap->memEntries[i].type = MEM_TYPE_USED;
                 break;
         }
+    }
+    if(exitBootServices == TRUE){
+        QolReturnSystemTable()->BootServices->ExitBootServices(QolReturnImagehandle(), mapKey);
     }
     return memMap;
 }   

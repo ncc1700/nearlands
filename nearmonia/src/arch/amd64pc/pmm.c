@@ -2,7 +2,8 @@
 
 
 
-
+// will never need these tbh, but will keep it just in case i incase ever need 
+// it
 boolean LdrMmInitPhysicalAllocator(){
     // UNIMPLEMENTED
     return FALSE;

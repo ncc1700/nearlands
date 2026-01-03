@@ -22,7 +22,7 @@ EFI_HANDLE QolReturnImagehandle();
 void QolWideStringToAnsiString(const wchar* wideString, char* string, u32 strSize);
 void QolAnsiStringToWideString(const char* ansiString, wchar* string, u32 strSize);
 void QolUefiFormatPrint(const char* string, ...);
-
+void *memset(void *s, int c, size_t n);
 
 
 
