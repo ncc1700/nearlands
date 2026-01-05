@@ -1,5 +1,6 @@
 #include "../includes/mem.h"
 #include "../../qol.h"
+#include "../../graphics.h"
 
 
 
@@ -72,30 +73,26 @@ boolean LdrMmMapSinglePage(u64 address, u64 virtAddress){
 }
 
 
-// HORRIBLE: PLEASE DO NOT DO THIS BRO
 boolean LdrMmInitPaging(){
-    // TODO: create a way to free an allocated memory map
     MemoryMap* memMap = LdrMmRetrieveCurrentMemoryMap();
-    u64 size = memMap->sizeOfEntireMemory + 0x100000000;
-    for(u64 i = 0x0; i < size; i+=0x1000){
-        boolean result = LdrMmMapSinglePage(i, i);
-        if(result == FALSE) return FALSE;
+    for(u64 i = 0; i < memMap->amountOfEntries; i++){
+        u64 base = memMap->memEntries[i].base;
+        u64 size = memMap->memEntries[i].size;
+        for(u64 j = 0; j < size; j+=0x1000){
+            LdrMmMapSinglePage(base + j, base + j);
+        }
     }
-    // for(u64 i = 0; i < memMap->amountOfEntries; i++){
-    //     u64 base = memMap->memEntries[i].base;
-    //     u64 size = memMap->memEntries[i].size;
-    //     for(u64 j = base; j < (base + size); j+=0x1000){
-    //         LdrMmMapSinglePage(j, j);
-    //     }
-    // }
+    for(u64 i = 0; i < GraphicsReturnData()->framebufferSize * 0x1000; i+=0x1000){
+        LdrMmMapSinglePage(GraphicsReturnData()->framebufferBase + i, 
+                                GraphicsReturnData()->framebufferBase + i);
+    }
     LdrMmUpdateCr3((u64)pml4);
     return TRUE;
 }
 
-// maps 1gb of memory starting from kernel address
-boolean LdrMmMapHigherHalfMemoryForKernel(u64 address){
+boolean LdrMmMapHigherHalfMemoryForKernel(u64 address, u64 kernSize){
     u64 addressPlus1g = address + 0x40000000;
-    for(u64 i = 0; i < 0x40000000; i+=0x1000){
+    for(u64 i = 0; i < kernSize; i+=0x1000){
         boolean result = LdrMmMapSinglePage(address + i, HHDM_OFFSET + i);
         if(result == FALSE) return FALSE;
     }

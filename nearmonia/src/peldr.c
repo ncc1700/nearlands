@@ -172,7 +172,7 @@ void LdrPeLoadPEImageAsKernel(const char* path){
     if(status != EFI_SUCCESS){
         QolPanic("Not enough memory to load kernel!\n");
     }
-    boolean result = LdrMmMapHigherHalfMemoryForKernel(physBase);
+    boolean result = LdrMmMapHigherHalfMemoryForKernel(physBase, amountOfPagesForImage * 4096);
     if(result == FALSE){
         QolPanic("Couldn't map higher half memory pages for kernel!");
     }

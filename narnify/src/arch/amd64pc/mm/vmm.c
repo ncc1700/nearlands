@@ -1,13 +1,12 @@
-#include "vmm.h"
-#include "pmm.h"
+#include "../../includes/vmm.h"
+#include "../../includes/pmm.h"
 #include "../../../qol.h"
 #include "../../../term.h"
-
-#include "../../includes/serial.h"
-
+#include "../../../graphics.h"
 
 
-__attribute__((aligned(4096))) static uptr pml4[512] = {0};
+
+static PageTable kernPTable = {NULL};
 
 
 #define PG_PRESENT 0x1
@@ -22,10 +21,9 @@ __attribute__((aligned(4096))) static uptr pml4[512] = {0};
 #define PARSE_ENTRY_VALUE(x) (uptr*)(x & ~0xFFF)
 
 static inline boolean GetNextLevel(uptr* pml, u64 entry, u64 flags){
-    //if(entry >= 512) return FALSE;
+    if(entry >= 512) return FALSE;
     uptr* address = (uptr*)MmAllocateSinglePage();
     
-    //TermPrint(TERM_STATUS_INFO, "address: 0x%x", address);
     if(address == NULL){
         return FALSE;
     }
@@ -37,30 +35,25 @@ static inline boolean GetNextLevel(uptr* pml, u64 entry, u64 flags){
 }
 
 
-boolean MmMapPage(u64 physAddr, u64 virtAddr, u64 flags){
+boolean MmMapPage(PageTable* table, u64 physAddr, u64 virtAddr, u64 flags){
     u64 pml4Entry = GET_PML4_ENTRY(virtAddr);
     u64 pdptEntry = GET_PDPT_ENTRY(virtAddr);
     u64 pdEntry = GET_PD_ENTRY(virtAddr);
     u64 ptEntry = GET_PT_ENTRY(virtAddr);
-    if(pml4[pml4Entry] == 0x0){
-        boolean result = GetNextLevel(pml4, pml4Entry, 0);
+    if(table->pml4[pml4Entry] == 0x0){
+        boolean result = GetNextLevel(table->pml4, pml4Entry, 0);
         if(result == FALSE){
             return FALSE;
         }
     }
-
-    uptr* pdpt = PARSE_ENTRY_VALUE(pml4[pml4Entry]);
-    // TermPrint(TERM_STATUS_INFO, "pdpt: 0x%x", pdpt);
-    // TermPrint(TERM_STATUS_INFO, "pdpt has 0x%x (%d) inside", pdpt[pdptEntry]);
+    uptr* pdpt = PARSE_ENTRY_VALUE(table->pml4[pml4Entry]);
     if(pdpt[pdptEntry] == 0x0){
         boolean result = GetNextLevel(pdpt, pdptEntry, 0);
         if(result == FALSE){
             return FALSE;
         }
     }
-
     uptr* pd = PARSE_ENTRY_VALUE(pdpt[pdptEntry]);
-    //TermPrint(TERM_STATUS_INFO, "pd: 0x%x", pd); // this becomes 0
     if(pd[pdEntry] == 0x0){
         boolean result = GetNextLevel(pd, pdEntry, 0);
         if(result == FALSE){
@@ -69,37 +62,38 @@ boolean MmMapPage(u64 physAddr, u64 virtAddr, u64 flags){
     }
     uptr* pt = PARSE_ENTRY_VALUE(pd[pdEntry]);
     pt[ptEntry] = physAddr | PG_PRESENT | PG_READ_WRITE;
-    //ArPrintToSerial("j\n");
-
     return TRUE;
 }
 
-#define HHDM_OFFSET 0xFFFFFF8000000000ULL
 
 boolean MmInitVirtualMemoryManager(BootInfo* info){
     TermPrint(TERM_STATUS_INFO, "kernphys = 0x%x, kernvirt = 0x%x", info->kernelLocPhys, info->kernelLocVirt);
-    memset(pml4, 0, PAGE_SIZE);
-    for(u64 i = 0; i < 0x40000000; i+=PAGE_SIZE){
-        boolean result = MmMapPage(info->kernelLocPhys + i, 
-                                    HHDM_OFFSET + i, 0);
+
+    if(kernPTable.pml4 != NULL){
+        MmFreeSinglePage(kernPTable.pml4);
+    }
+    kernPTable.pml4 = MmAllocateSinglePage();
+    memset(kernPTable.pml4, 0, PAGE_SIZE);
+    TermPrint(TERM_STATUS_INFO, "Mapping Kernel Memory");
+    for(u64 i = 0; i < info->kernelSizeInPages * PAGE_SIZE; i+=PAGE_SIZE){
+        boolean result = MmMapPage(&kernPTable, info->kernelLocPhys + i, 
+                                    info->kernelLocVirt + i, 0);
         if(result == FALSE) return FALSE;
     }
-    // for(u64 i = 0; i < info->memMap->amountOfEntries; i++){
-    //     u64 base = info->memMap->memEntries[i].base;
-    //     u64 size = info->memMap->memEntries[i].size;
-    //     for(u64 j = base; j < (base + size); j+=0x1000){
-    //         MmMapPage(j, j, 0);
-    //     }
-    // }
-    u64 size = info->memMap->sizeOfEntireMemory + 0x100000000;
-    for(u64 i = 0x0; i < size; i+=0x1000){
-        boolean result = MmMapPage(i, i, 0);
-        if(result == FALSE) return FALSE;
+    TermPrint(TERM_STATUS_INFO, "Mapping Memory in Memory Map");
+    for(u64 i = 0; i < info->memMap->amountOfEntries; i++){
+        u64 base = info->memMap->memEntries[i].base;
+        u64 size = info->memMap->memEntries[i].size;
+        for(u64 j = 0; j < size; j+=PAGE_SIZE){
+            MmMapPage(&kernPTable, base + j, base + j, 0);
+        }
     }
-    u64 offset = info->kernelLocVirt - (u64)pml4;
-    u64 pml4PhysLoc = info->kernelLocPhys + offset;
+    TermPrint(TERM_STATUS_INFO, "Mapping Framebuffer Memory");
+    for(u64 i = 0; i < GraphicsReturnData()->framebufferSize; i++){
+        MmMapPage(&kernPTable, GraphicsReturnData()->framebufferBase + i, 
+                     GraphicsReturnData()->framebufferBase + i, 0);
+    }
     TermPrint(TERM_STATUS_INFO, "Updating Cr3");
-    //MmUpdateCr3((u64)pml4PhysLoc);
-    //ArPrintToSerial("j\n");
+    MmUpdateCr3((u64)kernPTable.pml4);
     return TRUE;
 }

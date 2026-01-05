@@ -1,5 +1,5 @@
-#include "arch/amd64pc/mm/pmm.h"
-#include "arch/amd64pc/mm/vmm.h"
+#include "arch/includes/pmm.h"
+#include "arch/includes/vmm.h"
 #include "arch/includes/setupar.h"
 #include "bootinfo.h"
 #include "graphics.h"
@@ -35,6 +35,5 @@ void KernSystemStartup(BootInfo* info){
     TermPrint(TERM_STATUS_PASS, "we have set up the virtual memory manager");
 
     TermPrint(TERM_STATUS_PASS, "Initial Kernel Setup Complete!");
-
     while(1){continue;}
 }

@@ -42,6 +42,5 @@ void* LdrMmAllocatePhysicalPages(u64 amountOfPages);
 void LdrMmFreePhysicalPages(void* pages, u64 amountOfPages);
 void LdrMmUpdateCr3(u64 pml4Addr);
 boolean LdrMmInitPaging();
-boolean LdrMmMapHigherHalfMemoryForKernel(u64 address);
-
+boolean LdrMmMapHigherHalfMemoryForKernel(u64 address, u64 kernSize);
 #endif

@@ -20,12 +20,12 @@
 i32 LdrEfiEntry(EFI_HANDLE imageHandle, EFI_SYSTEM_TABLE* systemTable){
     QolSetupQolAbstractions(imageHandle, systemTable);
     QolSerialFormatPrint("hello!\n");
-    boolean result = LdrMmInitPaging();
-    if(result == FALSE) QolPanic("Failure to setup Paging");
-    QolSerialFormatPrint("set up paging\n");
-    result = LdrSetupGOP();
+    boolean result = LdrSetupGOP();
     if(result == FALSE) LdrArPrintToSerial("Failure to setup Graphics Output Protocol, going off with serial mode");
     QolSerialFormatPrint("set up the graphics output protocol\n");
+    result = LdrMmInitPaging();
+    if(result == FALSE) QolPanic("Failure to setup Paging");
+    QolSerialFormatPrint("set up paging\n");
     result = LdrFsSetupFilesystem();
     if(result == FALSE) QolPanic("Failure to setup Simple File System");
     QolSerialFormatPrint("set up simple file system\n");

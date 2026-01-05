@@ -7,8 +7,8 @@
 
 
 
-#include "../../../types.h"
-#include "../../../bootinfo.h"
+#include "../../types.h"
+#include "../../bootinfo.h"
 
 #define PAGE_SIZE 0x1000
 

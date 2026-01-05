@@ -11,6 +11,7 @@ boolean QolInitSystem(){
 }
 
 void QolPanic(const char* string){
+    ArPrintToSerial("\n\n----------------------------------------------------------------\n");
     ArPrintToSerial("An error has occured!!!!\n\n");
     ArPrintToSerial(string);
     if(GraphicsReturnData()->init == 1){
@@ -18,6 +19,7 @@ void QolPanic(const char* string){
         GraphicsDrawString("An Error Has Occured", 10, 10, 2, 0xFFFFFF);
         GraphicsDrawString(string, 10, 50, 1, 0xFFFFFF);
     }
+    ArPrintToSerial("\n\n----------------------------------------------------------------\n");
     while(1){continue;}
 }
 
