@@ -1,36 +1,39 @@
-#include "pmm.h"
+#include "../pmm.h"
 
 
 
 
 
 
-
+#ifdef BITMAP_PMM
 
 
 
 
 boolean MmInitPhysicalMemoryManager(BootMemoryMap* memMap){
-    // TODO: implement for kernel
+    // TODO: implement
     return FALSE;
 }
 
 void* MmAllocateSinglePage(){
-    // TODO: implement for kernel
+    // TODO: implement
     return NULL;
 }
 
 void* MmAllocateMultiplePages(u64 amount){
-    // TODO: implement for kernel
+    // TODO: implement
     return NULL;
 }
 
 boolean MmFreeSinglePage(void* pageAddress){
-    // TODO: implement for kernel
+    // TODO: implement
     return NULL;
 }
 
 boolean MmFreeMultiplePages(void* pageAddress, u64 amount){
-    // TODO: implement for kernel
+    // TODO: implement
     return NULL;
 }
+
+
+#endif

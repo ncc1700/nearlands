@@ -3,6 +3,7 @@
 #include "arch/includes/setupar.h"
 #include "bootinfo.h"
 #include "graphics.h"
+#include "qol.h"
 #include "term.h"
 
 
@@ -25,14 +26,15 @@ void KernSystemStartup(BootInfo* info){
     TermPrint(TERM_STATUS_PASS, "Physical kernel address is 0x%x", info->kernelLocPhys);
     // a long list of stuff to setup...
     ArSetupArchitecture();
-    TermPrint(TERM_STATUS_PASS, "set up architecture specific structures");
-    MmInitPhysicalMemoryManager(info->memMap);
-    TermPrint(TERM_STATUS_PASS, "set up the physical memory manager (stub)");
-    MmInitVirtualMemoryManager(info->memMap);
-    TermPrint(TERM_STATUS_PASS, "set up the virtual memory manager (stub)");
+    TermPrint(TERM_STATUS_PASS, "we have set up architecture specific structures");
+    boolean result = MmInitPhysicalMemoryManager(info->memMap);
+    if(result == FALSE) QolPanic("Couldn't Setup Physical Memory Manager");
+    TermPrint(TERM_STATUS_PASS, "we have set up the physical memory manager");
+    result = MmInitVirtualMemoryManager(info);
+    if(result == FALSE) QolPanic("Couldn't Setup Physical Memory Manager");
+    TermPrint(TERM_STATUS_PASS, "we have set up the virtual memory manager");
 
     TermPrint(TERM_STATUS_PASS, "Initial Kernel Setup Complete!");
 
-    *(u64*)0x292028298292892 = 'h'; // should crash
     while(1){continue;}
 }

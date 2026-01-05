@@ -10,8 +10,10 @@
 #include "../../../types.h"
 #include "../../../bootinfo.h"
 
+#define PAGE_SIZE 0x1000
 
-
+#define PAGEMAP_PMM
+// #define BITMAP_PMM
 
 
 boolean MmInitPhysicalMemoryManager(BootMemoryMap* memMap);

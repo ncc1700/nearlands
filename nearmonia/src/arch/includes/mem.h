@@ -44,6 +44,4 @@ void LdrMmUpdateCr3(u64 pml4Addr);
 boolean LdrMmInitPaging();
 boolean LdrMmMapHigherHalfMemoryForKernel(u64 address);
 
-
-
 #endif

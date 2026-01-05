@@ -174,7 +174,7 @@ void LdrPeLoadPEImageAsKernel(const char* path){
     }
     boolean result = LdrMmMapHigherHalfMemoryForKernel(physBase);
     if(result == FALSE){
-        QolPanic("Couldn't allocate higher half memory pages for kernel!");
+        QolPanic("Couldn't map higher half memory pages for kernel!");
     }
     TermPrint(TERM_STATUS_PASS, "Kernel physical base is located at 0x%x, page size is %d\n", physBase, amountOfPagesForImage);
     void (*KernelEntry)() = (void (*)())(imageBase + ntHeader->OptionalHeader.AddressOfEntryPoint);
@@ -195,6 +195,7 @@ void LdrPeLoadPEImageAsKernel(const char* path){
     MemoryMap* memmap = LdrMmRetrieveCurrentMemoryMap();
     bInfo.kernelLocPhys = physBase;
     bInfo.kernelLocVirt = HHDM_OFFSET;
+    bInfo.kernelSizeInPages = amountOfPagesForImage;
     bInfo.memMap = (BootMemoryMap*)memmap;
 
     LoadSectionsIntoMemory(content, ntHeader, &bInfo);

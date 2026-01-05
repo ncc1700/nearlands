@@ -42,6 +42,7 @@ typedef struct _BootInfo {
     u64 hhdmOffset;
     u64 kernelLocVirt;
     u64 kernelLocPhys;
+    u64 kernelSizeInPages;
     u64 typeOfBoot;
 } BootInfo;
 

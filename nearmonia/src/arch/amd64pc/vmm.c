@@ -81,6 +81,13 @@ boolean LdrMmInitPaging(){
         boolean result = LdrMmMapSinglePage(i, i);
         if(result == FALSE) return FALSE;
     }
+    // for(u64 i = 0; i < memMap->amountOfEntries; i++){
+    //     u64 base = memMap->memEntries[i].base;
+    //     u64 size = memMap->memEntries[i].size;
+    //     for(u64 j = base; j < (base + size); j+=0x1000){
+    //         LdrMmMapSinglePage(j, j);
+    //     }
+    // }
     LdrMmUpdateCr3((u64)pml4);
     return TRUE;
 }

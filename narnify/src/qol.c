@@ -1,5 +1,6 @@
 #include "qol.h"
-
+#include "arch/includes/serial.h"
+#include "graphics.h"
 
 
 void _fltused(){}
@@ -9,6 +10,16 @@ boolean QolInitSystem(){
     return FALSE;
 }
 
+void QolPanic(const char* string){
+    ArPrintToSerial("An error has occured!!!!\n\n");
+    ArPrintToSerial(string);
+    if(GraphicsReturnData()->init == 1){
+        GraphicsDrawRect(0, 0, GraphicsReturnData()->width, GraphicsReturnData()->height, 0x0000FF);
+        GraphicsDrawString("An Error Has Occured", 10, 10, 2, 0xFFFFFF);
+        GraphicsDrawString(string, 10, 50, 1, 0xFFFFFF);
+    }
+    while(1){continue;}
+}
 
 /*
     Taken from Limines template as i believe my own impl

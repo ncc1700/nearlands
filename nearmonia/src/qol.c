@@ -70,8 +70,6 @@ void QolPanic(const char* string){
         GraphicsDrawString(string, 10, 50, 1, 0xFFFFFF);
     }
     while(1){continue;}
-    
-
 }
 
 
