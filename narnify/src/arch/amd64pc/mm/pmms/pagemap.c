@@ -38,7 +38,6 @@ boolean MmInitPhysicalMemoryManager(BootMemoryMap* memMap){
         }
         u64 base = memMap->memEntries[i].base;
         u64 size = memMap->memEntries[i].size;
-        if(base == 0x0) continue;
         for(u64 j = base; j < (base + size); j+=PAGE_SIZE){
             pageMapAmount++;
         }
@@ -61,8 +60,10 @@ boolean MmInitPhysicalMemoryManager(BootMemoryMap* memMap){
         if(size >= (pageMapAmount * sizeof(PageMap))){
             TermPrint(TERM_STATUS_INFO, "base for pagemap is 0x%x\n", base);
             pageMap = (PageMap*)base;
-            memMap->memEntries[i].size -= (pageMapAmount * sizeof(PageMap));
-            memMap->memEntries[i].base += (pageMapAmount * sizeof(PageMap));
+            u64 pagemapSize = (pageMapAmount * sizeof(PageMap));
+            u64 pmsizeAligned = (pagemapSize + (PAGE_SIZE - 1)) & ~(PAGE_SIZE - 1); 
+            memMap->memEntries[i].size -= (pmsizeAligned);
+            memMap->memEntries[i].base += (pmsizeAligned);
             break;
         }   
     }
@@ -74,10 +75,10 @@ boolean MmInitPhysicalMemoryManager(BootMemoryMap* memMap){
     u64 curPageMap = 0;
     for(u64 i = 0; i < memMap->amountOfEntries; i++){
         if(memMap->memEntries[i].type != BOOT_MEM_TYPE_FREE) continue;
-        u64 base = memMap->memEntries[i].base;
-        u64 size = memMap->memEntries[i].size;
+        u64 base = (memMap->memEntries[i].base + (PAGE_SIZE - 1)) & ~(PAGE_SIZE - 1);
+        u64 size = (memMap->memEntries[i].size) & ~(PAGE_SIZE - 1);
         for(u64 j = base; j < (base + size); j+=PAGE_SIZE){
-            pageMap[curPageMap].address = (j + 0xFFF) & ~0xFFF;
+            pageMap[curPageMap].address = j;
             pageMap[curPageMap].isFree = TRUE;
             curPageMap++;
         }

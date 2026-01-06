@@ -72,7 +72,6 @@ void TermPrint(Status stat, char* string, ...){
             TermPuts(TRUE, buffer, 0xFFFFFF);
             break;
         default:
-            TermPuts(FALSE, "[?] ", 0xFFFFFF);
             TermPuts(TRUE, buffer, 0xFFFFFF);
             break;
     }
