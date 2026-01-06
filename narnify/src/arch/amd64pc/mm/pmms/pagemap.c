@@ -97,24 +97,40 @@ void* MmAllocateSinglePage(){
 }
 
 void* MmAllocateMultiplePages(u64 amount){
-    u64 cur = 0;
-    while(cur + amount <= pageMapAmount){
-        u64 prevAddress = pageMap[cur].address;
-        boolean pass = TRUE;
-        for(u64 i = 1; i < amount; i++){
-            u64 curAddress = pageMap[cur + i].address;
-            if((curAddress - prevAddress) != PAGE_SIZE || pageMap[cur + i].isFree == FALSE){
-                pass = FALSE;
+    u64 indexToAlloc = 0;
+    u64 shouldAlloc = FALSE;
+    for(u64 i = 0; i < pageMapAmount; i++){
+        if((i + amount) >= pageMapAmount) break;
+        if(pageMap[i].isFree == TRUE){
+            u64 base = i;
+            u64 prevAddress = 0;
+            u64 good = TRUE;
+            for(u64 j = 0; j < amount; j++){
+                if(pageMap[base + j].isFree == FALSE){
+                    good = FALSE;
+                    break;
+                }
+                u64 curAddress = pageMap[base + j].address;
+                if(prevAddress != 0){
+                    if((curAddress - prevAddress) != PAGE_SIZE){
+                        good = FALSE;
+                        break;
+                    }
+                }
+                prevAddress = curAddress;
+            }
+            if(good == TRUE){
+                shouldAlloc = TRUE;
+                indexToAlloc = i;
                 break;
             }
-            prevAddress = curAddress;
         }
-        if(pass == TRUE){
-            for(u64 i = 0; i < amount; i++){
-                pageMap[cur + i].isFree = FALSE;
-            }
-            return (void*)pageMap[cur].address;
-        } else cur++;
+    }
+    if(shouldAlloc == TRUE){
+        for(u64 i = 0; i < amount; i++){
+            pageMap[indexToAlloc + i].isFree = FALSE;
+        }
+        return (void*)pageMap[indexToAlloc].address;
     }
     return NULL;
 }
@@ -133,9 +149,7 @@ boolean MmFreeMultiplePages(void* pageAddress, u64 amount){
     // VERY SLOW AND UNSAFE: MAKE IT BETTER
     for(u64 i = 0; i < pageMapAmount; i++){
         if(pageMap[i].address == (u64)pageAddress){
-            // for some reason if i do u64 j = 0
-            // itll sometimes allocate an address before
-            for(u64 j = 1; j < amount; j++){
+            for(u64 j = 0; j < amount; j++){
                 pageMap[i + j].isFree = TRUE;
             }
         }
