@@ -91,7 +91,6 @@ boolean LdrMmInitPaging(){
 }
 
 boolean LdrMmMapHigherHalfMemoryForKernel(u64 address, u64 kernSize){
-    u64 addressPlus1g = address + 0x40000000;
     for(u64 i = 0; i < kernSize; i+=0x1000){
         boolean result = LdrMmMapSinglePage(address + i, HHDM_OFFSET + i);
         if(result == FALSE) return FALSE;

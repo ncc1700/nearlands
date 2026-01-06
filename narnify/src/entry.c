@@ -30,6 +30,9 @@ void KernSystemStartup(BootInfo* info){
     boolean result = MmInitPhysicalMemoryManager(info->memMap);
     if(result == FALSE) QolPanic("Couldn't Setup Physical Memory Manager");
     TermPrint(TERM_STATUS_PASS, "we have set up the physical memory manager");
+    result = MmTestPhysicalMemoryManager();
+    if(result == FALSE) QolPanic("Physical Memory Manager failed tests");
+    TermPrint(TERM_STATUS_PASS, "Physical memory manager has passed all tests");
     result = MmInitVirtualMemoryManager(info);
     if(result == FALSE) QolPanic("Couldn't Setup Virtual Memory Manager");
     TermPrint(TERM_STATUS_PASS, "we have set up the virtual memory manager");

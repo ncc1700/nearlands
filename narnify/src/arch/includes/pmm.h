@@ -21,7 +21,7 @@ void* MmAllocateSinglePage();
 void* MmAllocateMultiplePages(u64 amount);
 boolean MmFreeSinglePage(void* pageAddress);
 boolean MmFreeMultiplePages(void* pageAddress, u64 amount);
-
+boolean MmTestPhysicalMemoryManager();
 
 
 
