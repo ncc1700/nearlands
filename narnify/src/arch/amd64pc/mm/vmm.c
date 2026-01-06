@@ -67,8 +67,6 @@ boolean MmMapPage(PageTable* table, u64 physAddr, u64 virtAddr, u64 flags){
 
 
 boolean MmInitVirtualMemoryManager(BootInfo* info){
-    TermPrint(TERM_STATUS_INFO, "kernphys = 0x%x, kernvirt = 0x%x", info->kernelLocPhys, info->kernelLocVirt);
-
     if(kernPTable.pml4 != NULL){
         MmFreeSinglePage(kernPTable.pml4);
     }

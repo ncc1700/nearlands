@@ -146,8 +146,8 @@ boolean MmFreeSinglePage(void* pageAddress){
 }
 
 boolean MmFreeMultiplePages(void* pageAddress, u64 amount){
-    // VERY SLOW AND UNSAFE: MAKE IT BETTER
-    for(u64 i = 0; i < pageMapAmount; i++){
+    // VERY SLOW: MAKE IT BETTER
+    for(u64 i = 0; i < (pageMapAmount - amount); i++){
         if(pageMap[i].address == (u64)pageAddress){
             for(u64 j = 0; j < amount; j++){
                 pageMap[i + j].isFree = TRUE;
