@@ -98,13 +98,13 @@ void* MmAllocateSinglePage(){
 
 void* MmAllocateMultiplePages(u64 amount){
     u64 indexToAlloc = 0;
-    u64 shouldAlloc = FALSE;
+    boolean shouldAlloc = FALSE;
     for(u64 i = 0; i < pageMapAmount; i++){
         if((i + amount) >= pageMapAmount) break;
         if(pageMap[i].isFree == TRUE){
             u64 base = i;
             u64 prevAddress = 0;
-            u64 good = TRUE;
+            boolean good = TRUE;
             for(u64 j = 0; j < amount; j++){
                 if(pageMap[base + j].isFree == FALSE){
                     good = FALSE;
