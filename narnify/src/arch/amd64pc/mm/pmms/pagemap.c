@@ -140,9 +140,10 @@ boolean MmFreeSinglePage(void* pageAddress){
     for(u64 i = 0; i < pageMapAmount; i++){
         if(pageMap[i].address == (u64)pageAddress){
             pageMap[i].isFree = TRUE;
+            return TRUE;
         }
     }
-    return TRUE;
+    return FALSE;
 }
 
 boolean MmFreeMultiplePages(void* pageAddress, u64 amount){
@@ -152,9 +153,10 @@ boolean MmFreeMultiplePages(void* pageAddress, u64 amount){
             for(u64 j = 0; j < amount; j++){
                 pageMap[i + j].isFree = TRUE;
             }
+            return TRUE;
         }
     }
-    return TRUE;
+    return FALSE;
 }
 
 

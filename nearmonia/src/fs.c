@@ -22,13 +22,13 @@ boolean LdrFsSetupFilesystem(){
     EFI_STATUS status = QolReturnSystemTable()->BootServices->HandleProtocol(QolReturnImagehandle(), 
                                                                             &lipGuid, (void**)&lip);
     if(status != EFI_SUCCESS){
-        QolSerialFormatPrint("Couldn't access loaded image protocal\n");
+        QolSerialFormatPrint("Couldn't access loaded image protocol\n");
         return FALSE; // panic here
     }
     status = QolReturnSystemTable()->BootServices->HandleProtocol(lip->DeviceHandle, 
                                                                             &sfsGuid, (void**)&sfs);
     if(status != EFI_SUCCESS){
-        QolSerialFormatPrint("Couldn't access simple file system protocal\n");
+        QolSerialFormatPrint("Couldn't access simple file system protocol\n");
         return FALSE; // panic here
     }
 
