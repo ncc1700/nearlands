@@ -1,95 +1,105 @@
 #include "../../includes/heap.h"
 #include "../../includes/pmm.h"
+#include "../../../term.h"
 
 
+/**
+    Very bad heap but works i think
 
+*/
 
 #define HEAP_BLOCK_SIZE 32
 
-typedef struct _HeapBlock {
+typedef struct _FreeList {
     u64 address;
-    boolean isFree:1;
-} __attribute__((packed)) HeapBlock;
+    struct _FreeList* next;
+    struct _FreeList* prev;
+    u16 size;
+    boolean isFree;
+} __attribute__((packed)) FreeList;
 
-static HeapBlock* heapBlocks = NULL;
-static void* heap = NULL;
-static u64 heapAmount = 0;
+static u64* heapMem = NULL;
+static u64 curIndex = 0;
+static u64 heapSize = 0;
+static FreeList* freeList = NULL;
+static FreeList* prevIndex = NULL;
+static FreeList* initial = NULL;
 
 
-boolean MmInitHeapAllocator(u64 heapSize){
-    u64 heapSizeInPages = (heapSize + (PAGE_SIZE - 1)) / PAGE_SIZE;
-    heap = MmAllocateMultiplePages(heapSizeInPages);
-    if(heap == NULL) return FALSE;
-    for(u64 i = 0; i < heapSize; i+=HEAP_BLOCK_SIZE){
-        heapAmount++;
+boolean MmInitHeapAllocator(u64 amountInPages){
+    TermPrint(TERM_STATUS_INFO, "h");
+    heapMem = MmAllocateMultiplePages(amountInPages);
+    TermPrint(TERM_STATUS_INFO, "h");
+    if(heapMem == NULL) return FALSE;    
+    heapSize = amountInPages * PAGE_SIZE;
+    return TRUE;
+}
+
+
+void* MmAllocateFromHeap(u16 size){
+    u64 trueSize = 0;
+    if(size < sizeof(FreeList)) trueSize = sizeof(FreeList) + 1;
+    else trueSize = size;
+    if(trueSize >= 0x1000){
+        return NULL;
     }
-    u64 heapBlockSize = heapAmount * sizeof(HeapBlock);
-    u64 heapBlockSizeInPages = (heapBlockSize + (PAGE_SIZE - 1)) / PAGE_SIZE;
+    FreeList* list = initial;
+    while(list != NULL){
+        if(list->isFree == TRUE){
+            if(list->size == trueSize){
+                list->next->prev = list->prev;
+                list->prev->next = list->next;
+                list->isFree = FALSE;
+                return (void*)list->address;
+            }
+            if(list->size > trueSize){
+                u64 cut = list->size - trueSize;
+                list->size = cut;
+                u64 address = list->address;
+                list->address = (u64)((u64)list->address + trueSize);
+                return (void*)(address);
+            }
+        }
+        list = list->next;
+    } 
+    if(heapSize <= (curIndex + trueSize)){
+        return NULL; // kernel heap ran out of memory;
+    }
+    u64 prevIndex = curIndex;
+    curIndex += trueSize;
+    return (void*)((u64)heapMem + curIndex);
+}
 
-    heapBlocks = MmAllocateMultiplePages(heapBlockSizeInPages);
-    if(heapBlocks == NULL) return FALSE;
-    u64 heapIndex = 0;
-    for(u64 i = 0; i < heapSize; i+=HEAP_BLOCK_SIZE){
-        heapBlocks[heapIndex].address = (u64)heap + i;
-        heapBlocks[heapIndex].isFree = TRUE;
-        heapIndex++;
+
+boolean MmFreeFromHeap(void* address, u16 size){
+    u64 trueSize = 0;
+    if(size < sizeof(FreeList)) trueSize = sizeof(FreeList) + 1;
+    else trueSize = size;
+    if(trueSize >= 0x1000){
+        return FALSE;
+    }
+    FreeList* cur = (FreeList*)address;
+    cur->address = (u64)address;
+    cur->size = trueSize;
+    cur->isFree = TRUE;
+    if(initial == NULL){
+        freeList = cur;
+        freeList->next = NULL;
+        freeList->prev = NULL;
+        initial = freeList;
+        prevIndex = freeList;
+        freeList = freeList->next;
+    } else {
+        freeList = cur;
+        freeList->prev = prevIndex;
+        prevIndex = freeList;
+        freeList->next = NULL;
     }
     return TRUE;
 }
 
 
-void* MmAllocateFromHeap(u64 size){
-    u64 sizeAligned = (size + (HEAP_BLOCK_SIZE - 1)) & ~(HEAP_BLOCK_SIZE - 1);
-    u64 heapBlockAmount = (sizeAligned + (HEAP_BLOCK_SIZE - 1)) / HEAP_BLOCK_SIZE;
-    u64 indexToAlloc = 0;
-    boolean shouldAlloc = FALSE;
-    for(u64 i = 0; i < heapAmount; i++){
-        if((i + heapBlockAmount) > heapAmount) break;
-        if(heapBlocks[i].isFree == TRUE){
-            u64 base = i;
-            u64 prevAddress = 0;
-            boolean good = TRUE;
-            for(u64 j = 0; j < heapBlockAmount; j++){
-                if(heapBlocks[base + j].isFree == FALSE){
-                    good = FALSE;
-                    break;
-                }
-                u64 curAddress = heapBlocks[base + j].address;
-                if(prevAddress != 0){
-                    if((curAddress - prevAddress) != HEAP_BLOCK_SIZE){
-                        good = FALSE;
-                        break;
-                    }
-                }
-                prevAddress = curAddress;
-            }
-            if(good == TRUE){
-                shouldAlloc = TRUE;
-                indexToAlloc = i;
-                break;
-            }
-        }
-    }
-    if(shouldAlloc == TRUE){
-        for(u64 i = 0; i < heapBlockAmount; i++){
-            heapBlocks[indexToAlloc + i].isFree = FALSE;
-        }
-        return (void*)heapBlocks[indexToAlloc].address;
-    }
-    return NULL;
-}
-
-
-boolean MmFreeFromHeap(void* address, u64 size){
-    u64 sizeAligned = (size + (HEAP_BLOCK_SIZE - 1)) & ~(HEAP_BLOCK_SIZE - 1);
-    u64 heapBlockAmount = (sizeAligned + (HEAP_BLOCK_SIZE - 1)) / HEAP_BLOCK_SIZE;
-    for(u64 i = 0; i <= (heapAmount - heapBlockAmount); i++){
-        if(heapBlocks[i].address == (u64)address){
-            for(u64 j = 0; j < heapBlockAmount; j++){
-                heapBlocks[i + j].isFree = TRUE;
-            }
-            return TRUE;
-        }
-    }
+boolean MmTestHeapAllocator(){
+    // REIMPLEMENT
     return FALSE;
 }

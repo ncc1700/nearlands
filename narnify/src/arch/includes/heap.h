@@ -14,9 +14,9 @@
 
 
 
-boolean MmInitHeapAllocator(u64 heapSize);
-void* MmAllocateFromHeap(u64 size);
-boolean MmFreeFromHeap(void* address, u64 size);
+boolean MmInitHeapAllocator(u64 amountInPages);
+void* MmAllocateFromHeap(u16 size);
+boolean MmFreeFromHeap(void* address, u16 size);
 
 
 

@@ -10,10 +10,9 @@ static u32 termCurrentX = 10;
 static u32 termCurrentY = 10;
 
 
-
 void TermClear(){
     // ONLY IN UEFI
-    if(GraphicsReturnData()->init == 1){
+    if(GraphicsReturnData()->init == 1 && GraphicsReturnData()->owners == OWNER_DEBUG_TERM){
         GraphicsDrawRect(0, 0, GraphicsReturnData()->width, GraphicsReturnData()->height, 0x000000);
     }
     termCurrentX = 10;
@@ -30,7 +29,7 @@ void TermPuts(boolean addNewLine, const char* string, u64 color){
     // va_start(arg, string);
     // impl_vsnprintf(buffer, 128, string, arg);
     // va_end(arg);
-    if(GraphicsReturnData()->init == 1){
+    if(GraphicsReturnData()->init == 1 && GraphicsReturnData()->owners == OWNER_DEBUG_TERM){
         GraphicsDrawString(string, termCurrentX, termCurrentY, 1, color);
     }
     ArPrintToSerial(string);
@@ -42,7 +41,7 @@ void TermPuts(boolean addNewLine, const char* string, u64 color){
         }
         ArEnterCharacterToSerial('\n');
     } else {
-        if(GraphicsReturnData()->init == 1){
+        if(GraphicsReturnData()->init == 1 && GraphicsReturnData()->owners == OWNER_DEBUG_TERM){
             termCurrentX += GraphicsMeasureTextSizeFromDefaultFont(string, 1);
         }
     }

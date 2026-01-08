@@ -28,6 +28,12 @@ static u64 pageMapAmount = 0;
 static u64* freeList = NULL;
 
 
+
+PageMap* MmReturnPageMap(){
+    return pageMap;
+}
+
+
 boolean MmInitPhysicalMemoryManager(BootMemoryMap* memMap){
     // we calculate the size of the pagemap
     for(u64 i = 0; i < memMap->amountOfEntries; i++){
@@ -43,7 +49,7 @@ boolean MmInitPhysicalMemoryManager(BootMemoryMap* memMap){
         }
     }
     if(pageMapAmount == 0){
-        ArPrintToSerial("Couldn't calculate page map amount!\n");
+        ArPrintToSerial("Couldn't calculate page map amount!");
         return FALSE;
     }
     
@@ -56,9 +62,9 @@ boolean MmInitPhysicalMemoryManager(BootMemoryMap* memMap){
         }
         u64 base = memMap->memEntries[i].base;
         u64 size = memMap->memEntries[i].size;
-        TermPrint(TERM_STATUS_INFO, "page map size is %d, size is %d\n", pageMapAmount, size);
+        TermPrint(TERM_STATUS_INFO, "page map size is %d, size is %d", pageMapAmount, size);
         if(size >= (pageMapAmount * sizeof(PageMap))){
-            TermPrint(TERM_STATUS_INFO, "base for pagemap is 0x%x\n", base);
+            TermPrint(TERM_STATUS_INFO, "base for pagemap is 0x%x", base);
             pageMap = (PageMap*)base;
             u64 pagemapSize = (pageMapAmount * sizeof(PageMap));
             u64 pmsizeAligned = (pagemapSize + (PAGE_SIZE - 1)) & ~(PAGE_SIZE - 1); 

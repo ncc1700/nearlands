@@ -17,6 +17,7 @@ void GraphicsSetup(GraphicsData* data){
     globalGraphics.height = data->height;
     globalGraphics.width = data->width;
     globalGraphics.pixelsPerScanLine = data->pixelsPerScanLine;
+    globalGraphics.owners = data->owners;
     globalGraphics.init = TRUE;
 }
 
@@ -24,6 +25,17 @@ GraphicsData* GraphicsReturnData(){
     return &globalGraphics;
 }
 
+
+void GraphicsClear(u64 color){
+    u32* fbPtr = (u32*)globalGraphics.framebufferBase;
+    for(u32 i = 0; i < globalGraphics.width; i++){
+        if(i >= globalGraphics.width) continue;
+        for(u32 j = 0; j < globalGraphics.height; j++){
+            if(j >= globalGraphics.height) continue;
+            fbPtr[j * globalGraphics.pixelsPerScanLine + i] = color;
+        }
+    }
+}
 
 void GraphicsDrawRect(u32 x, u32 y, u32 width, u32 height, u64 color){
     u32* fbPtr = (u32*)globalGraphics.framebufferBase;

@@ -14,6 +14,12 @@
 
 
 
+typedef enum _GraphicsContextOwners {
+    OWNER_DEBUG_TERM,
+    OWNER_SPLASH_SCREEN
+} GraphicsContextOwners;
+
+
 typedef struct _GraphicsData {
     boolean init;
     u64 framebufferBase;
@@ -21,11 +27,13 @@ typedef struct _GraphicsData {
     u32 width;
     u32 height;
     u32 pixelsPerScanLine;
+    GraphicsContextOwners owners;
 } GraphicsData;
 
 
 void GraphicsSetup(GraphicsData* data);
 GraphicsData* GraphicsReturnData();
+void GraphicsClear(u64 color);
 void GraphicsDrawRect(u32 x, u32 y, u32 width, u32 height, u64 color);
 void GraphicsDrawChar(char c, u32 x, u32 y, u32 size, u64 color);
 void GraphicsDrawString(const char* s, u32 x, u32 y, u32 size, u64 color);
