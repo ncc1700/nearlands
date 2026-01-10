@@ -10,7 +10,7 @@ target("narnify-amd64pc")
     add_files("src/executive/*.c", "src/executive/**/*.c")
     add_files("src/arch/amd64pc/*.c", "src/arch/amd64pc/*.S")
     add_files("src/arch/amd64pc/**/*.c", "src/arch/amd64pc/**/*.S")
-    add_cflags("-target x86_64-pc-win32-coff -ffreestanding -nostdlib", {force = true})
+    add_cflags("-g -target x86_64-pc-win32-coff -ffreestanding -nostdlib", {force = true})
     add_asflags("-f win64", {force = true})
     add_ldflags("/machine:amd64 /subsystem:native /entry:KernLoaderEntry /base:0xFFFFFF8000000000", {force = true})
 

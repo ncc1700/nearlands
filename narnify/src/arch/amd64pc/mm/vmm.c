@@ -20,6 +20,10 @@ static PageTable kernPTable = {NULL};
 
 #define PARSE_ENTRY_VALUE(x) (uptr*)(x & ~0xFFF)
 
+#ifdef PAGEMAP_PMM
+extern PageMap* MmReturnPageMap();
+#endif
+
 static inline boolean GetNextLevel(uptr* pml, u64 entry, u64 flags){
     if(entry >= 512) return FALSE;
     uptr* address = (uptr*)MmAllocateSinglePage();
@@ -29,7 +33,7 @@ static inline boolean GetNextLevel(uptr* pml, u64 entry, u64 flags){
     }
     if((uptr)address == 0x0) return FALSE;
     memset(address, 0, PAGE_SIZE);
-    pml[entry] = (uptr)address | PG_PRESENT | flags;
+    pml[entry] = (uptr)address | PG_PRESENT | PG_READ_WRITE;
     
     return TRUE;
 }
@@ -61,7 +65,7 @@ boolean MmMapPage(PageTable* table, u64 physAddr, u64 virtAddr, u64 flags){
         }
     }
     uptr* pt = PARSE_ENTRY_VALUE(pd[pdEntry]);
-    pt[ptEntry] = physAddr | PG_PRESENT | flags;
+    pt[ptEntry] = physAddr | PG_PRESENT | PG_READ_WRITE;
     return TRUE;
 }
 
@@ -87,10 +91,19 @@ boolean MmInitVirtualMemoryManager(BootInfo* info){
         }
     }
     TermPrint(TERM_STATUS_INFO, "Mapping Framebuffer Memory");
-    for(u64 i = 0; i < GraphicsReturnData()->framebufferSize; i++){
+    for(u64 i = 0; i < GraphicsReturnData()->framebufferSize; i+=0x1000){
         MmMapPage(&kernPTable, GraphicsReturnData()->framebufferBase + i, 
                      GraphicsReturnData()->framebufferBase + i, PG_READ_WRITE);
     }
+    #ifdef PAGEMAP_PMM
+    PageMap* pageMap = MmReturnPageMap();
+    u64 base = (u64)(pageMap);
+    u64 size = MmReturnPageAmount();
+    TermPrint(TERM_STATUS_INFO, "Mapping PageMap (base 0x%x, size %d)", base, size);
+    for(u64 i = 0; i < size; i+=0x1000){
+        MmMapPage(&kernPTable, base + i, base + i, PG_READ_WRITE);
+    }
+    #endif
     TermPrint(TERM_STATUS_INFO, "Updating Cr3");
     MmUpdateCr3((u64)kernPTable.pml4);
     return TRUE;

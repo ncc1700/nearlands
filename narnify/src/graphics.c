@@ -27,6 +27,7 @@ GraphicsData* GraphicsReturnData(){
 
 
 void GraphicsClear(u64 color){
+    if(globalGraphics.init != TRUE) return;
     u32* fbPtr = (u32*)globalGraphics.framebufferBase;
     for(u32 i = 0; i < globalGraphics.width; i++){
         if(i >= globalGraphics.width) continue;
@@ -38,6 +39,7 @@ void GraphicsClear(u64 color){
 }
 
 void GraphicsDrawRect(u32 x, u32 y, u32 width, u32 height, u64 color){
+    if(globalGraphics.init != TRUE) return;
     u32* fbPtr = (u32*)globalGraphics.framebufferBase;
     for(u32 i = x; i < x + width; i++){
         if(i >= globalGraphics.width) continue;
@@ -50,6 +52,7 @@ void GraphicsDrawRect(u32 x, u32 y, u32 width, u32 height, u64 color){
 
 
 void GraphicsDrawChar(char c, u32 x, u32 y, u32 size, u64 color){
+    if(globalGraphics.init != TRUE) return;
     const u8* bmp = font_8x12[c];
     for(int i = 0; i < 12; i++){
         for(int j = 0; j < 12; j++){
@@ -61,6 +64,7 @@ void GraphicsDrawChar(char c, u32 x, u32 y, u32 size, u64 color){
 }
 
 void GraphicsDrawString(const char* s, u32 x, u32 y, u32 size, u64 color){
+    if(globalGraphics.init != TRUE) return;
     u32 currentX = x;
     u32 currentY = y;
     u32 fsize = 8;

@@ -27,9 +27,7 @@ static FreeList* initial = NULL;
 
 
 boolean MmInitHeapAllocator(u64 amountInPages){
-    TermPrint(TERM_STATUS_INFO, "h");
     heapMem = MmAllocateMultiplePages(amountInPages);
-    TermPrint(TERM_STATUS_INFO, "h");
     if(heapMem == NULL) return FALSE;    
     heapSize = amountInPages * PAGE_SIZE;
     return TRUE;
@@ -47,9 +45,15 @@ void* MmAllocateFromHeap(u16 size){
     while(list != NULL){
         if(list->isFree == TRUE){
             if(list->size == trueSize){
-                list->next->prev = list->prev;
-                list->prev->next = list->next;
-                list->isFree = FALSE;
+                if(list->next == NULL){
+                    if(list->prev != NULL){
+                        list->prev->next = NULL;
+                    }
+                } else {
+                    list->isFree = FALSE;
+                    list->next->prev = list->prev;
+                    list->prev->next = list->next;
+                }
                 return (void*)list->address;
             }
             if(list->size > trueSize){
@@ -63,7 +67,7 @@ void* MmAllocateFromHeap(u16 size){
         list = list->next;
     } 
     if(heapSize <= (curIndex + trueSize)){
-        return NULL; // kernel heap ran out of memory;
+        return NULL; // kernel heap ran out of memory
     }
     u64 prevIndex = curIndex;
     curIndex += trueSize;

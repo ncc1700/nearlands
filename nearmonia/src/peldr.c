@@ -145,7 +145,7 @@ static inline void LoadSectionsIntoMemory(char* content, IMAGE_NT_HEADERS64* ntH
 void LdrPeLoadPEImageAsKernel(const char* path){
     EFI_FILE_PROTOCOL* kernFile = LdrFsOpenFile(path, EFI_FILE_MODE_READ);
     if(kernFile == NULL){
-        QolPanic("Couldn't load kernel image! Please Reboot\n");
+        QolPanic("Couldn't load kernel image! Please Reboot");
     }
     u64 length = 0; // we will probably never use this
     char* content = LdrFsReadFileContent(kernFile, &length);
@@ -170,13 +170,13 @@ void LdrPeLoadPEImageAsKernel(const char* path){
     EFI_STATUS status = QolReturnSystemTable()->BootServices->AllocatePages(AllocateAnyPages, EfiLoaderData, 
                                                             amountOfPagesForImage, &physBase);
     if(status != EFI_SUCCESS){
-        QolPanic("Not enough memory to load kernel!\n");
+        QolPanic("Not enough memory to load kernel!");
     }
     boolean result = LdrMmMapHigherHalfMemoryForKernel(physBase, amountOfPagesForImage * 4096);
     if(result == FALSE){
         QolPanic("Couldn't map higher half memory pages for kernel!");
     }
-    TermPrint(TERM_STATUS_PASS, "Kernel physical base is located at 0x%x, page size is %d\n", physBase, amountOfPagesForImage);
+    TermPrint(TERM_STATUS_PASS, "Kernel physical base is located at 0x%x, page size is %d", physBase, amountOfPagesForImage);
     void (*KernelEntry)() = (void (*)())(imageBase + ntHeader->OptionalHeader.AddressOfEntryPoint);
     
 
@@ -203,11 +203,13 @@ void LdrPeLoadPEImageAsKernel(const char* path){
     
 
     TermPrint(TERM_STATUS_PASS, "About to jump to kernel!");
-    TermPrint(TERM_STATUS_INFO, "BootInfo is located at 0x%x\n", bInfo);
+    TermPrint(TERM_STATUS_INFO, "BootInfo is located at 0x%x", bInfo);
+    TermPrint(TERM_STATUS_UNKNOWN, " ");
+    TermPrint(TERM_STATUS_UNKNOWN, " ");
     QolReturnSystemTable()->BootServices->ExitBootServices(QolReturnImagehandle(), memmap->mapKey);
     // goodbye! change da world - Nearmonia to Narnify
     KernelEntry();
-    QolPanic("Kernel returned from entrypoint!\n");
+    QolPanic("Kernel returned from entrypoint!");
     return;
     
 }

@@ -1,13 +1,22 @@
 #include "qol.h"
 #include "arch/includes/serial.h"
 #include "graphics.h"
-
+#include "extern/nanoprintf/nprintfimpl.h"
 
 void _fltused(){}
 
 boolean QolInitSystem(){
     // STUB
     return FALSE;
+}
+
+void QolSerialFormatPrint(const char* string, ...){
+    char buffer[128];
+    va_list arg;
+    va_start(arg, string);
+    impl_vsnprintf(buffer, 128, string, arg);
+    va_end(arg);
+    ArPrintToSerial(string);
 }
 
 void QolPanic(const char* string){

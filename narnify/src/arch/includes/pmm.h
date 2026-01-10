@@ -13,6 +13,15 @@
 #define PAGE_SIZE 0x1000
 
 #define PAGEMAP_PMM
+
+
+
+#ifdef PAGEMAP_PMM
+typedef struct _PageMap {
+    u64 address;
+    boolean isFree:1;
+}  __attribute__((packed)) PageMap;
+#endif
 // #define BITMAP_PMM
 
 
@@ -22,8 +31,7 @@ void* MmAllocateMultiplePages(u64 amount);
 boolean MmFreeSinglePage(void* pageAddress);
 boolean MmFreeMultiplePages(void* pageAddress, u64 amount);
 boolean MmTestPhysicalMemoryManager();
-
-
+u64 MmReturnPageAmount();
 
 
 

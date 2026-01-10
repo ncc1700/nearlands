@@ -16,6 +16,12 @@ run-amd64pc:
 		 -drive file=nearlands.img,format=raw -display sdl \
 		 -m 96M -serial mon:stdio
 
+
+run-amd64pc-mon:
+	qemu-system-x86_64 -bios resources/UEFI/amd64pc/OVMF.fd \
+		 -drive file=nearlands.img,format=raw -display gtk \
+		 -m 96M
+
 amd64pc:
 	make build-amd64pc
 	make run-amd64pc

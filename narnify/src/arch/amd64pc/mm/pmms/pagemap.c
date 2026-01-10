@@ -17,22 +17,13 @@
 
 #ifdef PAGEMAP_PMM
 
-typedef struct _PageMap {
-    u64 address;
-    boolean isFree:1;
-}  __attribute__((packed)) PageMap;
-
 
 static PageMap* pageMap = NULL;
 static u64 pageMapAmount = 0;
-static u64* freeList = NULL;
+static u64 pageUsed = 0;
 
-
-
-PageMap* MmReturnPageMap(){
-    return pageMap;
-}
-
+#define INCREMENT_PAGE_USAGE() if(pageUsed < pageMapAmount) pageUsed++;
+#define DECREMENT_PAGE_USAGE() if(pageUsed > 0) pageUsed--;
 
 boolean MmInitPhysicalMemoryManager(BootMemoryMap* memMap){
     // we calculate the size of the pagemap
@@ -96,6 +87,7 @@ void* MmAllocateSinglePage(){
     for(u64 i = 0; i < pageMapAmount; i++){
         if(pageMap[i].isFree == TRUE){
             pageMap[i].isFree = FALSE;
+            INCREMENT_PAGE_USAGE();
             return (void*)pageMap[i].address;
         }
     }
@@ -135,6 +127,7 @@ void* MmAllocateMultiplePages(u64 amount){
     if(shouldAlloc == TRUE){
         for(u64 i = 0; i < amount; i++){
             pageMap[indexToAlloc + i].isFree = FALSE;
+            INCREMENT_PAGE_USAGE();
         }
         return (void*)pageMap[indexToAlloc].address;
     }
@@ -146,6 +139,7 @@ boolean MmFreeSinglePage(void* pageAddress){
     for(u64 i = 0; i < pageMapAmount; i++){
         if(pageMap[i].address == (u64)pageAddress){
             pageMap[i].isFree = TRUE;
+            DECREMENT_PAGE_USAGE();
             return TRUE;
         }
     }
@@ -158,12 +152,28 @@ boolean MmFreeMultiplePages(void* pageAddress, u64 amount){
         if(pageMap[i].address == (u64)pageAddress){
             for(u64 j = 0; j < amount; j++){
                 pageMap[i + j].isFree = TRUE;
+                DECREMENT_PAGE_USAGE();
             }
             return TRUE;
         }
     }
     return FALSE;
 }
+
+u64 MmReturnPageUsed(){
+    return pageUsed;
+}
+
+u64 MmReturnPageAmount(){
+    return pageMapAmount;
+}
+
+PageMap* MmReturnPageMap(){
+    return pageMap;
+}
+
+
+
 
 
 #endif
