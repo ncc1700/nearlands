@@ -1,4 +1,6 @@
 .xmake/
 build/
-binaries/
+output/
 *.img
+*.vmdk
+*.lck
