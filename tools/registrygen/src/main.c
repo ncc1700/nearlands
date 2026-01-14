@@ -28,11 +28,11 @@ typedef struct _RegistryKeyList RegistryKeyList;
 
 typedef struct _RegistryHive {
     char name[16];
-    RegistryKeyList* keysBegin;
-    RegistryKeyList* keysEnd;
+    RegistryKeyList* keysBegin; // beginning of key list
+    RegistryKeyList* keysEnd; // current key list node
     u32 keyAmount;
-    RegistryHiveList* connectionBegin; // addresses of next hive
-    RegistryHiveList* connectionEnd; // addresses of next hive
+    RegistryHiveList* connectionBegin; // beginning of hive list
+    RegistryHiveList* connectionEnd;  // current hive list node
     u32 connectionAmount;
 } RegistryHive;
 
