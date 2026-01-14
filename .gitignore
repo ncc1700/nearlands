@@ -4,3 +4,4 @@ output/
 *.img
 *.vmdk
 *.lck
+reggen.exe

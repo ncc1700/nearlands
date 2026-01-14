@@ -1,5 +1,8 @@
 
+build-tools:
+	cd tools && make build-tools
 build-amd64pc:
+	make build-tools
 	cd nearmonia && xmake build nearmonia-amd64pc
 	cd narnify && xmake build narnify-amd64pc
 	qemu-img create -f raw nearlands.img 1440K
