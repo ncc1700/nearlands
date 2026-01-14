@@ -76,7 +76,8 @@ boolean MmInitVirtualMemoryManager(BootInfo* info){
     }
     kernPTable.pml4 = MmAllocateSinglePage();
     memset(kernPTable.pml4, 0, PAGE_SIZE);
-    TermPrint(TERM_STATUS_INFO, "Mapping Kernel Memory");
+    TermPrint(TERM_STATUS_INFO, "Mapping Kernel Memory (base 0x%x, size %d)", 
+                    info->kernelLocPhys, info->kernelSizeInPages);
     for(u64 i = 0; i < info->kernelSizeInPages * PAGE_SIZE; i+=PAGE_SIZE){
         boolean result = MmMapPage(&kernPTable, info->kernelLocPhys + i, 
                                     info->kernelLocVirt + i, PG_READ_WRITE);
@@ -90,7 +91,8 @@ boolean MmInitVirtualMemoryManager(BootInfo* info){
             MmMapPage(&kernPTable, base + j, base + j, PG_READ_WRITE);
         }
     }
-    TermPrint(TERM_STATUS_INFO, "Mapping Framebuffer Memory");
+    TermPrint(TERM_STATUS_INFO, "Mapping Framebuffer Memory (base 0x%x, size %d)", 
+                    GraphicsReturnData()->framebufferBase, GraphicsReturnData()->framebufferSize);
     for(u64 i = 0; i < GraphicsReturnData()->framebufferSize; i+=0x1000){
         MmMapPage(&kernPTable, GraphicsReturnData()->framebufferBase + i, 
                      GraphicsReturnData()->framebufferBase + i, PG_READ_WRITE);

@@ -4,14 +4,14 @@
 
 
 
-void ArEnterCharacterToSerial(const char c){
+void ArSerialWrite(const char c){
     Amd64OutByte(0x3f8, c);
 }
 
 
 void ArPrintToSerial(const char* s){
     while(*s != '\0'){
-        ArEnterCharacterToSerial(*s);
+        ArSerialWrite(*s);
         s++;
     }
 }

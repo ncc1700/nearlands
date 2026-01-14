@@ -10,7 +10,7 @@
 
 
 
-void ArEnterCharacterToSerial(const char c);
+void ArSerialWrite(const char c);
 void ArPrintToSerial(const char* s);
 
 

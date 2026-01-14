@@ -60,7 +60,7 @@ void KernSystemStartup(BootInfo* info){
 
     TermPrint(TERM_STATUS_UNKNOWN, "--------------------PHASE 1--------------------");
 
-    result = MmInitHeapAllocator(1);
+    result = MmInitHeapAllocator(10);
     if(result == FALSE) QolPanic("Couldn't Setup Kernel Heap");
     TermPrint(TERM_STATUS_PASS, "we have set up the kernel heap");
     

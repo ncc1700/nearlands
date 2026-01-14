@@ -17,7 +17,7 @@ void TermClear(){
     }
     termCurrentX = 10;
     termCurrentY = 10;
-    ArEnterCharacterToSerial('\n');
+    ArSerialWrite('\n');
 }
 
 
@@ -39,7 +39,7 @@ void TermPuts(boolean addNewLine, const char* string, u64 color){
         if(termCurrentY >= GraphicsReturnData()->height){
             TermClear();
         }
-        ArEnterCharacterToSerial('\n');
+        ArSerialWrite('\n');
     } else {
         if(GraphicsReturnData()->init == 1 && GraphicsReturnData()->owners == OWNER_DEBUG_TERM){
             termCurrentX += GraphicsMeasureTextSizeFromDefaultFont(string, 1);
