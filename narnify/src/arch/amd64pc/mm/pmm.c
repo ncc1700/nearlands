@@ -1,5 +1,6 @@
 #include "../../includes/pmm.h"
 #include "../../../term.h"
+#include "../../../qol.h"
 
 
 
@@ -44,4 +45,15 @@ boolean MmTestPhysicalMemoryManager(){
     MmFreeMultiplePages(c, 10);
     MmFreeMultiplePages(l, 11);    
     return TRUE;
+}
+
+
+void* MmReallocatePages(void* memory, u64 prevSizeInPages, u64 newSizeInPages){
+    void* newMemory = MmAllocateMultiplePages(newSizeInPages);
+    memset(newMemory, 0, newSizeInPages * PAGE_SIZE);
+    if(memory != NULL){
+        memcpy(newMemory, memory, prevSizeInPages * PAGE_SIZE);
+        MmFreeMultiplePages(memory, prevSizeInPages);
+    }
+    return newMemory;
 }

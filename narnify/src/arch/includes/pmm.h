@@ -28,9 +28,10 @@ typedef struct _PageMap {
 boolean MmInitPhysicalMemoryManager(BootMemoryMap* memMap);
 void* MmAllocateSinglePage();
 void* MmAllocateMultiplePages(u64 amount);
+void* MmReallocatePages(void* memory, u64 prevSizeInPages, u64 newSizeInPages);
+boolean MmTestPhysicalMemoryManager();
 boolean MmFreeSinglePage(void* pageAddress);
 boolean MmFreeMultiplePages(void* pageAddress, u64 amount);
-boolean MmTestPhysicalMemoryManager();
 u64 MmReturnPageAmount();
 
 

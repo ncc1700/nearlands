@@ -4,13 +4,18 @@
 
 #include "arch/includes/setupar.h"
 #include "bootinfo.h"
+#include "executive/ecs/components/stackcmp.h"
+#include "executive/ecs/components/threadcmp.h"
+#include "executive/ecs/ecs.h"
 #include "graphics.h"
 #include "qol.h"
 #include "splash.h"
 #include "term.h"
 
 
-
+u64 poo(u64* poo){
+    TermPrint(TERM_STATUS_PASS, "Entered thread!");
+}
 
 
 void KernSystemStartup(BootInfo* info){
@@ -59,11 +64,41 @@ void KernSystemStartup(BootInfo* info){
     TermPrint(TERM_STATUS_UNKNOWN, " ");
 
     TermPrint(TERM_STATUS_UNKNOWN, "--------------------PHASE 1--------------------");
+    TermPrint(TERM_STATUS_INFO, "Testing ECS System...");
 
-    result = MmInitHeapAllocator(10);
-    if(result == FALSE) QolPanic("Couldn't Setup Kernel Heap");
-    TermPrint(TERM_STATUS_PASS, "we have set up the kernel heap");
-    
+    ThreadComponent tComp = {NULL};
+    StackComponent sComp = {NULL};
+
+    Component comp[1];
+    Component comp2[2];
+    comp[0].type = COMP_THREAD;
+    comp[0].componentData = (void*)&tComp;
+    comp2[0].type = COMP_THREAD;
+    comp2[0].componentData = (void*)&tComp;
+    comp2[1].type = COMP_STACK;
+    comp2[1].componentData = (void*)&sComp;
+
+    u32 archeType = 0;
+    u32 entity = 0;
+
+    ref entity1 = EcsCreateEntity(comp, 1);
+    EcsDecodeReference(entity1, &archeType, &entity);
+    TermPrint(TERM_STATUS_PASS, "Created Entity (a: %d, e: %d) (0x%x)", archeType, entity, entity1);
+    ref entity2 = EcsCreateEntity(comp, 1);
+    EcsDecodeReference(entity2, &archeType, &entity);
+        TermPrint(TERM_STATUS_PASS, "Created Entity (a: %d, e: %d) (0x%x)", archeType, entity, entity2);
+    ref entity3 = EcsCreateEntity(comp2, 1);
+    EcsDecodeReference(entity3, &archeType, &entity);
+        TermPrint(TERM_STATUS_PASS, "Created Entity (a: %d, e: %d) (0x%x)", archeType, entity, entity3);
+
+
+    ref entity4 = EcsCreateEntity(comp2, 2);
+    Component* component = EcsGetComponent(entity4, COMP_THREAD);
+    if(component != NULL){
+        TermPrint(TERM_STATUS_PASS, "Found component in Entity");
+        ThreadComponent* threadComp = (ThreadComponent*)component->componentData;
+        // threadComp->SysThreadEntry(NULL); -- wont work for now, make it fixed
+    } else TermPrint(TERM_STATUS_PASS, "Couldn't find component");
 
     TermPrint(TERM_STATUS_ERROR, "WORK IN PROGRESS - come back later!");
     while(1){continue;}

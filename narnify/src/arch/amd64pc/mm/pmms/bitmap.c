@@ -16,6 +16,11 @@ static u8* bitmap = NULL;
 #define BIT_OFFSET(b)  ((b) % sizeof(u8))
 
 
+#define SET_BITMAP(bit) (bitmap[bit / 8] |= (1 << (bit % 8)))
+#define CLEAR_BITMAP(bit) (bitmap[bit / 8] &= ~(1 << (bit % 8)))
+
+
+
 boolean MmInitPhysicalMemoryManager(BootMemoryMap* memMap){
     // TODO: implement
     for(u64 i = 0; i < memMap->amountOfEntries; i++){
@@ -45,6 +50,8 @@ boolean MmInitPhysicalMemoryManager(BootMemoryMap* memMap){
     if(bitmap == NULL){
         return FALSE;
     }
+    
+
     
     return FALSE;
 }

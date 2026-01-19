@@ -191,7 +191,7 @@ void LdrPeLoadPEImageAsKernel(const char* path){
         GraphicsReturnData()->pixelsPerScanLine
     };
     bInfo.hhdmOffset = HHDM_OFFSET;
-    bInfo.typeOfBoot = 0;
+    bInfo.typeOfBoot = 1;
     MemoryMap* memmap = LdrMmRetrieveCurrentMemoryMap();
     bInfo.kernelLocPhys = physBase;
     bInfo.kernelLocVirt = HHDM_OFFSET;
