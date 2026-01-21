@@ -4,7 +4,6 @@
 
 #include "arch/includes/setupar.h"
 #include "bootinfo.h"
-#include "executive/ecs/components/stackcmp.h"
 #include "executive/ecs/components/threadcmp.h"
 #include "executive/ecs/ecs.h"
 #include "graphics.h"
@@ -66,7 +65,10 @@ void KernSystemStartup(BootInfo* info){
     TermPrint(TERM_STATUS_UNKNOWN, " ");
 
     TermPrint(TERM_STATUS_UNKNOWN, "--------------------PHASE 1--------------------");
-    result = MmInitHeapAllocator(1000);
+    u64 heapSize = info->memMap->sizeOfEntireMemory / 23;
+    u64 heapSizeInPages = (heapSize + (PAGE_SIZE - 1)) / PAGE_SIZE;
+    TermPrint(TERM_STATUS_PASS, "heap size is %d", heapSizeInPages);
+    result = MmInitHeapAllocator(heapSizeInPages);
     if(result == FALSE) QolPanic("Couldn't Setup Heap Allocator");
     TermPrint(TERM_STATUS_PASS, "we have set up the heap allocator");
     TermPrint(TERM_STATUS_INFO, "Testing ECS System...");
@@ -80,8 +82,8 @@ void KernSystemStartup(BootInfo* info){
 
     u64 i = 1;
     while(1){
+        Handle entity = EcsCreateEntity(comp, 1);
         TermPrint(TERM_STATUS_INFO, "entity %d created", i);
-        EcsCreateEntity(comp, 1);
         i++;
     }
     TermPrint(TERM_STATUS_ERROR, "WORK IN PROGRESS - come back later!");

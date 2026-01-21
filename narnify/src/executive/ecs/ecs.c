@@ -80,7 +80,7 @@ ArcheTypeData EcsGetArcheType(ComponentTypes* components, u8 componentAmount){
                                     archeTypeArray[i].components,
                                     archeTypeArray[i].componentAmount) == TRUE)
         {
-            TermPrint(TERM_STATUS_INFO, "found previous archeType, returning..");
+            //TermPrint(TERM_STATUS_INFO, "found previous archeType, returning..");
             return (ArcheTypeData){&archeTypeArray[i], i};
         }
     }
@@ -132,10 +132,7 @@ Handle EcsCreateEntity(ComponentTypes* components, u64 componentAmount){
         enIndex = archeType->index;
         archeType->index++;
     }
-    u64 size = 0;
-    for(u64 i = 0; i < componentAmount; i++){
-        size += componentSizeArr[components[i]];
-    }
+    u64 size = EcsGetSizeOfAllComponents(components, componentAmount);
     memset(&archeType->entities[enIndex], 0, sizeof(Entity));
     MmCreateArena(&archeType->entities[enIndex].arena, size);
     archeType->entities[enIndex].componentAmount = componentAmount;
