@@ -102,8 +102,9 @@ boolean MmInitVirtualMemoryManager(BootInfo* info){
     u64 base = (u64)(pageMap);
     u64 size = MmReturnPageAmount();
     TermPrint(TERM_STATUS_INFO, "Mapping PageMap (base 0x%x, size %d)", base, size);
-    for(u64 i = 0; i < size; i+=0x1000){
-        MmMapPage(&kernPTable, base + i, base + i, PG_READ_WRITE);
+    for(u64 i = 0; i < size; i++){
+        MmMapPage(&kernPTable, base + (i * 0x1000), 
+                                base + (i * 0x1000), PG_READ_WRITE);
     }
     #endif
     TermPrint(TERM_STATUS_INFO, "Updating Cr3");

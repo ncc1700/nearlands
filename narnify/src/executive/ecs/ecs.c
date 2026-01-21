@@ -38,13 +38,13 @@ u64 EcsGetSizeOfAllComponents(Component* components, u8 componentAmount){
     return componentSize;
 }
 
-ref EcsEncodeReference(u32 archTypeIndex, u32 entityIndex){
+Handle EcsEncodeHandle(u32 archTypeIndex, u32 entityIndex){
     return ((u64)archTypeIndex << 32) | entityIndex;
 }
 
-void EcsDecodeReference(ref reference, u32* archTypeIndex, u32* entityIndex){
-    *archTypeIndex = (reference >> 32);
-    *entityIndex = (u32)(reference);
+void EcsDecodeHandle(Handle handle, u32* archTypeIndex, u32* entityIndex){
+    *archTypeIndex = (handle >> 32);
+    *entityIndex = (u32)(handle);
 }
 
 
@@ -89,7 +89,7 @@ ArcheTypeData EcsGetArcheType(Component* components, u8 componentAmount){
     return (ArcheTypeData){&archeTypeArray[prevIndex], prevIndex};
 }
 
-ref EcsCreateEntity(Component* components, u64 componentAmount){
+Handle EcsCreateEntity(Component* components, u64 componentAmount){
     ArcheTypeData archeTypeData = EcsGetArcheType(components, componentAmount);
     ArcheType* archeType = archeTypeData.archeType;
     if(archeType->index >= archeType->capacity){
@@ -107,7 +107,7 @@ ref EcsCreateEntity(Component* components, u64 componentAmount){
                                 archeType->sizeInPages, newSizeInPages);
         if(archeType->entities == NULL){
             // panic bc no more memory
-            QolPanic("OUT OF MEMORY: from EcsGetArcheType()");
+            QolPanic("OUT OF MEMORY: from EcsCreateEntity()");
         }
         archeType->size = newSize;
         archeType->capacity = newCapacity;
@@ -119,13 +119,13 @@ ref EcsCreateEntity(Component* components, u64 componentAmount){
     memcpy(archeType->entities[enIndex].components, components, 
                 componentAmount * sizeof(Component));
     
-    return EcsEncodeReference(archeTypeData.index, enIndex);
+    return EcsEncodeHandle(archeTypeData.index, enIndex);
 }
 
-Entity* EcsGetEntity(ref entityRef){
+Entity* EcsGetEntity(Handle entityRef){
     u32 archTypeIndex;
     u32 entityIndex;
-    EcsDecodeReference(entityRef, &archTypeIndex, &entityIndex);
+    EcsDecodeHandle(entityRef, &archTypeIndex, &entityIndex);
     if(archTypeIndex >= ataIndex){
         return NULL;
     }
@@ -137,7 +137,7 @@ Entity* EcsGetEntity(ref entityRef){
 }
 
 
-Component* EcsGetComponent(ref entityRef, ComponentTypes component){
+Component* EcsGetComponent(Handle entityRef, ComponentTypes component){
     Entity* entity = EcsGetEntity(entityRef);
     if(entity == NULL) return NULL;
     for(u8 i = 0; i < entity->componentAmount; i++){

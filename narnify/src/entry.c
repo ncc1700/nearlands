@@ -54,6 +54,7 @@ void KernSystemStartup(BootInfo* info){
     if(result == FALSE) QolPanic("Physical Memory Manager failed tests");
     TermPrint(TERM_STATUS_PASS, "Physical memory manager has passed all tests");
     KernAddToBootScreen();
+
     result = MmInitVirtualMemoryManager(info);
     if(result == FALSE) QolPanic("Couldn't Setup Virtual Memory Manager");
     TermPrint(TERM_STATUS_PASS, "we have set up the virtual memory manager");
@@ -81,19 +82,19 @@ void KernSystemStartup(BootInfo* info){
     u32 archeType = 0;
     u32 entity = 0;
 
-    ref entity1 = EcsCreateEntity(comp, 1);
-    EcsDecodeReference(entity1, &archeType, &entity);
+    Handle entity1 = EcsCreateEntity(comp, 1);
+    EcsDecodeHandle(entity1, &archeType, &entity);
     TermPrint(TERM_STATUS_PASS, "Created Entity (a: %d, e: %d) (0x%x)", archeType, entity, entity1);
-    ref entity2 = EcsCreateEntity(comp, 1);
-    EcsDecodeReference(entity2, &archeType, &entity);
-        TermPrint(TERM_STATUS_PASS, "Created Entity (a: %d, e: %d) (0x%x)", archeType, entity, entity2);
-    ref entity3 = EcsCreateEntity(comp2, 1);
-    EcsDecodeReference(entity3, &archeType, &entity);
-        TermPrint(TERM_STATUS_PASS, "Created Entity (a: %d, e: %d) (0x%x)", archeType, entity, entity3);
+    Handle entity2 = EcsCreateEntity(comp, 1);
+    EcsDecodeHandle(entity2, &archeType, &entity);
+    TermPrint(TERM_STATUS_PASS, "Created Entity (a: %d, e: %d) (0x%x)", archeType, entity, entity2);
+    Handle entity3 = EcsCreateEntity(comp2, 1);
+    EcsDecodeHandle(entity3, &archeType, &entity);
+    TermPrint(TERM_STATUS_PASS, "Created Entity (a: %d, e: %d) (0x%x)", archeType, entity, entity3);
 
 
-    ref entity4 = EcsCreateEntity(comp2, 2);
-    Component* component = EcsGetComponent(entity4, COMP_THREAD);
+    Handle entity4 = EcsCreateEntity(comp2, 2);
+    Component* component = EcsGetComponent(entity1, COMP_THREAD);
     if(component != NULL){
         TermPrint(TERM_STATUS_PASS, "Found component in Entity");
         ThreadComponent* threadComp = (ThreadComponent*)component->componentData;

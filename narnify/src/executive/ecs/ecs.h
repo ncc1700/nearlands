@@ -8,7 +8,7 @@
 
 #define ECS_COMP_SIZE 20
 
-typedef u64 ref;
+typedef u64 Handle;
 
 typedef enum _ComponentTypes {
     COMP_UNKNOWN,
@@ -23,7 +23,7 @@ typedef struct _Component {
 
 typedef struct _Entity {
     Component components[ECS_COMP_SIZE];
-    ref entityRef;
+    Handle entityRef;
     u8 componentAmount;
 } Entity;
 
@@ -46,12 +46,12 @@ typedef struct _ArcheTypeData {
 
 boolean EcsCompareComponents(Component* component1, Component* component2, u8 componentAmount);
 u64 EcsGetSizeOfAllComponents(Component* components, u8 componentAmount);
-u64 EcsEncodeReference(u32 archTypeIndex, u32 entityIndex);
-void EcsDecodeReference(ref reference, u32* archTypeIndex, u32* entityIndex);
+u64 EcsEncodeHandle(u32 archTypeIndex, u32 entityIndex);
+void EcsDecodeHandle(Handle reference, u32* archTypeIndex, u32* entityIndex);
 ArcheTypeData EcsGetArcheType(Component* components, u8 componentAmount);
-ref EcsCreateEntity(Component* components, u64 componentAmount);
-Entity* EcsGetEntity(ref entityRef);
-Component* EcsGetComponent(ref entityRef, ComponentTypes component);
+Handle EcsCreateEntity(Component* components, u64 componentAmount);
+Entity* EcsGetEntity(Handle entityRef);
+Component* EcsGetComponent(Handle entityRef, ComponentTypes component);
 
 
 #endif
