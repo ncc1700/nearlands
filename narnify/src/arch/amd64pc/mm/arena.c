@@ -1,5 +1,6 @@
 #include "../../includes/arena.h"
 #include "../../includes/pmm.h"
+#include "../../includes/heap.h"
 
 
 
@@ -9,7 +10,8 @@
 boolean MmCreateArena(Arena* arena, u64 size){
     arena->size = size;
     arena->sizeInpages = (size + (PAGE_SIZE - 1)) / PAGE_SIZE;
-    arena->base = MmAllocateMultiplePages(arena->sizeInpages);
+    //arena->base = MmAllocateMultiplePages(arena->sizeInpages);
+    arena->base = MmAllocateFromHeap(arena->size);
     if(arena->base == NULL) return FALSE;
     arena->used = 0;
     return TRUE;
@@ -17,6 +19,7 @@ boolean MmCreateArena(Arena* arena, u64 size){
 
 
 void* MmPushMemoryFromArena(Arena* arena, u64 size){
+    if(arena->base == NULL) return NULL;
     if((arena->used + size) > arena->size) return NULL;
     u64 usedBeforeAdd = arena->used;
     arena->used += size;
@@ -34,7 +37,8 @@ void MmResetArena(Arena* arena){
 }
 
 boolean MmDestroyArena(Arena* arena){
-    boolean result = MmFreeMultiplePages(arena->base, arena->sizeInpages);
+    //boolean result = MmFreeMultiplePages(arena->base, arena->sizeInpages);
+    boolean result = MmFreeFromHeap(arena->base, arena->size);
     if(result == FALSE) return FALSE;
     arena->size = 0;
     arena->sizeInpages = 0;

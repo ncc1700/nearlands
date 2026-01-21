@@ -124,7 +124,6 @@ void* MmAllocateMultiplePages(u64 amount){
             }
         }
     }
-    TermPrint(TERM_STATUS_INFO, "Page Usage: %d/%d\n", pageUsed, pageMapAmount);
     if(shouldAlloc == TRUE){
         for(u64 i = 0; i < amount; i++){
             pageMap[indexToAlloc + i].isFree = FALSE;

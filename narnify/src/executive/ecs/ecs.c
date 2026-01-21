@@ -1,6 +1,7 @@
 #include "ecs.h"
 #include "../../qol.h"
 #include "../../arch/includes/pmm.h"
+#include "../../arch/includes/heap.h"
 
 #include "components/stackcmp.h"
 #include "components/threadcmp.h"
@@ -21,35 +22,37 @@ static u64 ataSize = 0;
 static u64 ataSizeInPages = 0;
 
 
-boolean EcsCompareComponents(Component* component1, Component* component2, u8 componentAmount){
+boolean EcsCompareComponents(ComponentTypes* component1, u8 componentAmount1, ComponentTypes* component2, u8 componentAmount2){
+    if(componentAmount1 != componentAmount2) return FALSE;
+    u64 componentAmount = componentAmount1;
     for(u64 i = 0; i < componentAmount; i++){
-        if(component1[i].type != component2[i].type){
+        if(component1[i] != component2[i]){
             return FALSE;
         }
     }
     return TRUE;
 }
 
-u64 EcsGetSizeOfAllComponents(Component* components, u8 componentAmount){
+u64 EcsGetSizeOfAllComponents(ComponentTypes* components, u8 componentAmount){
     u64 componentSize = 0;
     for(u64 i = 0; i < componentAmount; i++){
-        componentSize += componentSizeArr[components[i].type];
+        componentSize += componentSizeArr[components[i]];
     }
     return componentSize;
 }
 
-Handle EcsEncodeHandle(u32 archTypeIndex, u32 entityIndex){
-    return ((u64)archTypeIndex << 32) | entityIndex;
+Handle EcsEncodeHandle(u32 archeTypeIndex, u32 entityIndex){
+    return ((u64)archeTypeIndex << 32) | entityIndex;
 }
 
-void EcsDecodeHandle(Handle handle, u32* archTypeIndex, u32* entityIndex){
-    *archTypeIndex = (handle >> 32);
+void EcsDecodeHandle(Handle handle, u32* archeTypeIndex, u32* entityIndex){
+    *archeTypeIndex = (handle >> 32);
     *entityIndex = (u32)(handle);
 }
 
 
 
-ArcheTypeData EcsGetArcheType(Component* components, u8 componentAmount){
+ArcheTypeData EcsGetArcheType(ComponentTypes* components, u8 componentAmount){
     if(ataIndex >= ataCapacity){
         TermPrint(TERM_STATUS_INFO, "Expanding ArcheTypes Array");
         u64 newAtCapacity = 0;
@@ -73,23 +76,28 @@ ArcheTypeData EcsGetArcheType(Component* components, u8 componentAmount){
         if(archeTypeArray[i].componentAmount != componentAmount){
             continue;
         }
-        if(EcsCompareComponents(components, archeTypeArray[i].components,
-                                    componentAmount) == TRUE)
+        if(EcsCompareComponents(components, componentAmount, 
+                                    archeTypeArray[i].components,
+                                    archeTypeArray[i].componentAmount) == TRUE)
         {
-            TermPrint(TERM_STATUS_INFO, "found previous archtype, returning..");
+            TermPrint(TERM_STATUS_INFO, "found previous archeType, returning..");
             return (ArcheTypeData){&archeTypeArray[i], i};
         }
     }
     memset((void*)&archeTypeArray[ataIndex], 0, sizeof(ArcheType));  
-    memcpy((void*)&archeTypeArray[ataIndex].components, components, 
-                        sizeof(Component) * componentAmount);  
+    for(u8 i = 0; i < componentAmount; i++){
+        archeTypeArray[ataIndex].components[i] = components[i];
+    }
+    
     archeTypeArray[ataIndex].componentAmount = componentAmount;
+    archeTypeArray[ataIndex].initial = NULL;
+    archeTypeArray[ataIndex].freeList = NULL;
     u64 prevIndex = ataIndex;
     ataIndex++;
     return (ArcheTypeData){&archeTypeArray[prevIndex], prevIndex};
 }
 
-Handle EcsCreateEntity(Component* components, u64 componentAmount){
+Handle EcsCreateEntity(ComponentTypes* components, u64 componentAmount){
     ArcheTypeData archeTypeData = EcsGetArcheType(components, componentAmount);
     ArcheType* archeType = archeTypeData.archeType;
     if(archeType->index >= archeType->capacity){
@@ -113,36 +121,109 @@ Handle EcsCreateEntity(Component* components, u64 componentAmount){
         archeType->capacity = newCapacity;
         archeType->sizeInPages = newSizeInPages;
     }
-    u64 enIndex = archeType->index;
-    archeType->index++;
+    u64 enIndex = 0;
+    if(archeType->initial != NULL){
+        TermPrint(TERM_STATUS_INFO, "reusing deleted entity..");
+        EntityFreeList* node = archeType->initial;
+        archeType->initial = archeType->initial->next;
+        enIndex = node->index;
+        MmFreeFromHeap(node, sizeof(EntityFreeList));
+    } else {
+        enIndex = archeType->index;
+        archeType->index++;
+    }
+    u64 size = 0;
+    for(u64 i = 0; i < componentAmount; i++){
+        size += componentSizeArr[components[i]];
+    }
+    memset(&archeType->entities[enIndex], 0, sizeof(Entity));
+    MmCreateArena(&archeType->entities[enIndex].arena, size);
     archeType->entities[enIndex].componentAmount = componentAmount;
-    memcpy(archeType->entities[enIndex].components, components, 
-                componentAmount * sizeof(Component));
-    
+    for(u64 i = 0; i < componentAmount; i++){
+        archeType->entities[enIndex].componentTypes[i] = components[i];
+        archeType->entities[enIndex].components[i] = MmPushMemoryFromArena(&archeType->entities[enIndex].arena,
+                                                            componentSizeArr[components[i]]);
+        if(archeType->entities[enIndex].components[i] == NULL){
+            TermPrint(TERM_STATUS_INFO, "failed at index %d", i);
+            QolPanic("OUT OF MEMORY: from EcsCreateEntity()");
+        }
+    }
+    archeType->entities[enIndex].alive = TRUE;
     return EcsEncodeHandle(archeTypeData.index, enIndex);
 }
 
 Entity* EcsGetEntity(Handle entityRef){
-    u32 archTypeIndex;
+    u32 archeTypeIndex;
     u32 entityIndex;
-    EcsDecodeHandle(entityRef, &archTypeIndex, &entityIndex);
-    if(archTypeIndex >= ataIndex){
+    EcsDecodeHandle(entityRef, &archeTypeIndex, &entityIndex);
+    if(archeTypeIndex >= ataIndex){
         return NULL;
     }
-    ArcheType* archType = &archeTypeArray[archTypeIndex];
-    if(entityIndex >= archType->index){
+    ArcheType* archeType = &archeTypeArray[archeTypeIndex];
+    if(entityIndex >= archeType->index){
         return NULL;
     }
-    return &archType->entities[entityIndex];
+    if(archeType->entities[entityIndex].alive == FALSE){
+        return NULL;
+    }
+    return &archeType->entities[entityIndex];
+}
+
+boolean EcsAddComponentDataToEntity(Handle entityRef, ComponentTypes component, void* componentData){
+    Entity* entity = EcsGetEntity(entityRef);
+    if(entity == NULL) return FALSE;
+    i64 index = -1;
+    for(u8 i = 0; i < entity->componentAmount; i++){
+        if(entity->componentTypes[i] == component){
+            index = i;
+            break;
+        }
+    }
+    if(index == -1){
+        return FALSE;
+    }
+    if(entity->components[index] == NULL) return FALSE;
+    memcpy(entity->components[index], componentData, componentSizeArr[component]);
+    return TRUE;
+}
+
+boolean EcsDeleteEntity(Handle entityHandle){
+    Entity* entity = EcsGetEntity(entityHandle);
+    if(entity == NULL) return FALSE;
+    MmDestroyArena(&entity->arena);
+    for(u64 i = 0; i < entity->componentAmount; i++){
+        entity->componentTypes[i] = 0;
+    }
+    entity->alive = FALSE;
+    u32 archeTypeIndex;
+    u32 entityIndex;
+    EcsDecodeHandle(entityHandle, &archeTypeIndex, &entityIndex);
+    ArcheType* archeType = &archeTypeArray[archeTypeIndex];
+
+    EntityFreeList* node = MmAllocateFromHeap(sizeof(EntityFreeList));
+    if(node == NULL){
+        QolPanic("Failure to create node for ECS");
+    }
+    node->index = entityIndex;
+    node->next = NULL;
+
+    if(archeType->initial == NULL){
+        archeType->initial = node;
+        archeType->freeList = node;
+    } else {
+        archeType->freeList->next = node;
+        archeType->freeList = archeType->freeList->next;
+    }
+    return TRUE;
 }
 
 
-Component* EcsGetComponent(Handle entityRef, ComponentTypes component){
+void* EcsGetComponent(Handle entityRef, ComponentTypes component){
     Entity* entity = EcsGetEntity(entityRef);
     if(entity == NULL) return NULL;
     for(u8 i = 0; i < entity->componentAmount; i++){
-        if(entity->components[i].type == component){
-            return &entity->components[i];
+        if(entity->componentTypes[i] == component){
+            return entity->components[i];
         }
     }
     return NULL;

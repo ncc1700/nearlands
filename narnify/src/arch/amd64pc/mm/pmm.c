@@ -50,6 +50,7 @@ boolean MmTestPhysicalMemoryManager(){
 
 void* MmReallocatePages(void* memory, u64 prevSizeInPages, u64 newSizeInPages){
     void* newMemory = MmAllocateMultiplePages(newSizeInPages);
+    if(newMemory == NULL) return NULL;
     memset(newMemory, 0, newSizeInPages * PAGE_SIZE);
     if(memory != NULL){
         memcpy(newMemory, memory, prevSizeInPages * PAGE_SIZE);

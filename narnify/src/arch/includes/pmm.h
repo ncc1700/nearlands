@@ -32,6 +32,7 @@ void* MmReallocatePages(void* memory, u64 prevSizeInPages, u64 newSizeInPages);
 boolean MmTestPhysicalMemoryManager();
 boolean MmFreeSinglePage(void* pageAddress);
 boolean MmFreeMultiplePages(void* pageAddress, u64 amount);
+u64 MmReturnPageUsed();
 u64 MmReturnPageAmount();
 
 

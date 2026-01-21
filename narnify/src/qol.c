@@ -2,6 +2,7 @@
 #include "arch/includes/serial.h"
 #include "graphics.h"
 #include "extern/nanoprintf/nprintfimpl.h"
+#include "term.h"
 
 void _fltused(){}
 

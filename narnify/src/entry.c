@@ -13,8 +13,9 @@
 #include "term.h"
 
 
-u64 poo(u64* poo){
+u64 poo(void* poo){
     TermPrint(TERM_STATUS_PASS, "Entered thread!");
+    return 69;
 }
 
 
@@ -65,42 +66,24 @@ void KernSystemStartup(BootInfo* info){
     TermPrint(TERM_STATUS_UNKNOWN, " ");
 
     TermPrint(TERM_STATUS_UNKNOWN, "--------------------PHASE 1--------------------");
+    result = MmInitHeapAllocator(1000);
+    if(result == FALSE) QolPanic("Couldn't Setup Heap Allocator");
+    TermPrint(TERM_STATUS_PASS, "we have set up the heap allocator");
     TermPrint(TERM_STATUS_INFO, "Testing ECS System...");
 
-    ThreadComponent tComp = {NULL};
-    StackComponent sComp = {NULL};
+    ThreadComponent tComp;
+    tComp.SysThreadEntry = poo;
 
-    Component comp[1];
-    Component comp2[2];
-    comp[0].type = COMP_THREAD;
-    comp[0].componentData = (void*)&tComp;
-    comp2[0].type = COMP_THREAD;
-    comp2[0].componentData = (void*)&tComp;
-    comp2[1].type = COMP_STACK;
-    comp2[1].componentData = (void*)&sComp;
-
-    u32 archeType = 0;
-    u32 entity = 0;
-
-    Handle entity1 = EcsCreateEntity(comp, 1);
-    EcsDecodeHandle(entity1, &archeType, &entity);
-    TermPrint(TERM_STATUS_PASS, "Created Entity (a: %d, e: %d) (0x%x)", archeType, entity, entity1);
-    Handle entity2 = EcsCreateEntity(comp, 1);
-    EcsDecodeHandle(entity2, &archeType, &entity);
-    TermPrint(TERM_STATUS_PASS, "Created Entity (a: %d, e: %d) (0x%x)", archeType, entity, entity2);
-    Handle entity3 = EcsCreateEntity(comp2, 1);
-    EcsDecodeHandle(entity3, &archeType, &entity);
-    TermPrint(TERM_STATUS_PASS, "Created Entity (a: %d, e: %d) (0x%x)", archeType, entity, entity3);
+    ComponentTypes comp[1];    
+    comp[0] = COMP_THREAD;
 
 
-    Handle entity4 = EcsCreateEntity(comp2, 2);
-    Component* component = EcsGetComponent(entity1, COMP_THREAD);
-    if(component != NULL){
-        TermPrint(TERM_STATUS_PASS, "Found component in Entity");
-        ThreadComponent* threadComp = (ThreadComponent*)component->componentData;
-        // threadComp->SysThreadEntry(NULL); -- wont work for now, make it fixed
-    } else TermPrint(TERM_STATUS_PASS, "Couldn't find component");
-
+    u64 i = 1;
+    while(1){
+        TermPrint(TERM_STATUS_INFO, "entity %d created", i);
+        EcsCreateEntity(comp, 1);
+        i++;
+    }
     TermPrint(TERM_STATUS_ERROR, "WORK IN PROGRESS - come back later!");
     while(1){continue;}
 }
