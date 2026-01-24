@@ -5,12 +5,13 @@
 
 
 #include "../types.h"
+#include "../qol/qstring.h"
 
 
 
 
 
-void KePanic(const char* string);
+void KePanic(QString string);
 
 
 

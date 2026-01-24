@@ -11,6 +11,7 @@
 
 
 #include "../types.h"
+#include "../qol/qstring.h"
 
 
 
@@ -36,7 +37,8 @@ GraphicsData* KeGraphicsReturnData();
 void KeGraphicsClear(u64 color);
 void KeGraphicsDrawRect(u32 x, u32 y, u32 width, u32 height, u64 color);
 void KeGraphicsDrawChar(char c, u32 x, u32 y, u32 size, u64 color);
-void KeGraphicsDrawString(const char* s, u32 x, u32 y, u32 size, u64 color);
+void KeGraphicsDrawStringRaw(const char* s, u32 x, u32 y, u32 size, u64 color);
+void KeGraphicsDrawString(QString string, u32 x, u32 y, u32 size, u64 color);
 u32 KeGraphicsMeasureTextSizeFromDefaultFont(const char* string, u32 size);
 
 

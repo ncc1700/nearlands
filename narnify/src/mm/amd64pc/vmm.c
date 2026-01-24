@@ -1,6 +1,5 @@
 #include "../includes/vmm.h"
 #include "../includes/pmm.h"
-#include "../../ke/term.h"
 #include "../../ke/graphics.h"
 #include "../../qol/qmem.h"
 
@@ -75,14 +74,11 @@ boolean MmInitVirtualMemoryManager(BootInfo* info){
     }
     kernPTable.pml4 = MmAllocateSinglePage();
     memset(kernPTable.pml4, 0, PAGE_SIZE);
-    KeTermPrint(TERM_STATUS_INFO, "Mapping Kernel Memory (base 0x%x, using %d pages)", 
-                    info->kernelLocPhys, info->kernelSizeInPages);
     for(u64 i = 0; i < info->kernelSizeInPages; i++){
         boolean result = MmMapPage(&kernPTable, info->kernelLocPhys + (i * PAGE_SIZE), 
                                     info->kernelLocVirt + (i * PAGE_SIZE), PG_READ_WRITE);
         if(result == FALSE) return FALSE;
     }
-    KeTermPrint(TERM_STATUS_INFO, "Mapping Memory in Memory Map");
     for(u64 i = 0; i < info->memMap->amountOfEntries; i++){
         u64 base = info->memMap->memEntries[i].base;
         u64 size = info->memMap->memEntries[i].size;
@@ -90,8 +86,6 @@ boolean MmInitVirtualMemoryManager(BootInfo* info){
             MmMapPage(&kernPTable, base + j, base + j, PG_READ_WRITE);
         }
     }
-    KeTermPrint(TERM_STATUS_INFO, "Mapping Framebuffer Memory (base 0x%x, %d bytes)", 
-                    KeGraphicsReturnData()->framebufferBase, KeGraphicsReturnData()->framebufferSize);
     for(u64 i = 0; i < KeGraphicsReturnData()->framebufferSize; i+=0x1000){
         MmMapPage(&kernPTable, KeGraphicsReturnData()->framebufferBase + i, 
                      KeGraphicsReturnData()->framebufferBase + i, PG_READ_WRITE);
@@ -100,14 +94,11 @@ boolean MmInitVirtualMemoryManager(BootInfo* info){
     PageMap* pageMap = MmReturnPageMap();
     u64 base = (u64)(pageMap);
     u64 size = MmReturnPageAmount();
-    KeTermPrint(TERM_STATUS_INFO, "Mapping PageMap (base 0x%x, using %d pages)", 
-                                                base, size);
     for(u64 i = 0; i < size; i++){
         MmMapPage(&kernPTable, base + (i * PAGE_SIZE), 
                                 base + (i * PAGE_SIZE), PG_READ_WRITE);
     }
     #endif
-    KeTermPrint(TERM_STATUS_INFO, "Updating Cr3");
     MmUpdateCr3((u64)kernPTable.pml4);
     return TRUE;
 }

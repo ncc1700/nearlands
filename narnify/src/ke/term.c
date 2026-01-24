@@ -34,16 +34,11 @@ void KeTermMoveDown(u32 amount){
 
 
 
-void KeTermPuts(boolean addNewLine, const char* string, u64 color){
-    // char buffer[128];
-    // va_list arg;
-    // va_start(arg, string);
-    // impl_vsnprintf(buffer, 128, string, arg);
-    // va_end(arg);
+void KeTermPuts(boolean addNewLine, QString str, u64 color){
     if(KeGraphicsReturnData()->init == 1 && KeGraphicsReturnData()->owners == OWNER_DEBUG_TERM){
-        KeGraphicsDrawString(string, termCurrentX, termCurrentY, 1, color);
+        KeGraphicsDrawString(str, termCurrentX, termCurrentY, 1, color);
     }
-    ArPrintToSerial(string);
+    ArPrintToSerial(QSTR(str.buffer));
     if(addNewLine == TRUE){
         termCurrentX = 10;
         termCurrentY += 12;
@@ -53,36 +48,39 @@ void KeTermPuts(boolean addNewLine, const char* string, u64 color){
         ArSerialWrite('\n');
     } else {
         if(KeGraphicsReturnData()->init == 1 && KeGraphicsReturnData()->owners == OWNER_DEBUG_TERM){
-            termCurrentX += KeGraphicsMeasureTextSizeFromDefaultFont(string, 1);
+            termCurrentX += KeGraphicsMeasureTextSizeFromDefaultFont(C(str.buffer), 1);
         }
     }
 }
 
-void KeTermPrint(Status stat, char* string, ...){
+
+
+void KeTermPrint(Status stat, QString str, ...){
     char buffer[128];
-    va_list arg;
-    va_start(arg, string);
-    impl_vsnprintf(buffer, 128, string, arg);
-    va_end(arg);
+    NNPFFormatBuffer(buffer, C(str.buffer));
     switch(stat){
         case TERM_STATUS_ERROR:
-            KeTermPuts(FALSE, "[-] ", 0xFF0000);
-            KeTermPuts(TRUE, buffer, 0xFFFFFF);
+            KeTermPuts(FALSE, QSTR("[-] "), 0xFF0000);
+            KeTermPuts(TRUE, QSTR(buffer), 0xFFFFFF);
             break;
         case TERM_STATUS_PASS:
-            KeTermPuts(FALSE, "[+] ", 0x00FF00);
-            KeTermPuts(TRUE, buffer, 0xFFFFFF);
+            KeTermPuts(FALSE, QSTR("[+] "), 0x00FF00);
+            KeTermPuts(TRUE, QSTR(buffer), 0xFFFFFF);
             break;
         case TERM_STATUS_INFO:
-            KeTermPuts(FALSE, "[.] ", 0x00AAFF);
-            KeTermPuts(TRUE, buffer, 0xFFFFFF);
+            KeTermPuts(FALSE, QSTR("[.] "), 0x00AAFF);
+            KeTermPuts(TRUE, QSTR(buffer), 0xFFFFFF);
             break;
         case TERM_STATUS_WARNING:
-            KeTermPuts(FALSE, "[!] ", 0xFFFF00);
-            KeTermPuts(TRUE, buffer, 0xFFFFFF);
+            KeTermPuts(FALSE, QSTR("[!] "), 0xFFFF00);
+            KeTermPuts(TRUE, QSTR(buffer), 0xFFFFFF);
+            break;
+        case TERM_STATUS_IMPINFO:
+            KeTermPuts(FALSE, QSTR("[!] "), 0xFDA172);
+            KeTermPuts(TRUE, QSTR(buffer), 0xFFFFFF);
             break;
         default:
-            KeTermPuts(TRUE, buffer, 0xFFFFFF);
+            KeTermPuts(TRUE, QSTR(buffer), 0xFFFFFF);
             break;
     }
 }

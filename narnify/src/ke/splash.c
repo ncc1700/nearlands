@@ -34,7 +34,7 @@ void KeBeginSplashScreen(u64 dashes){
     KeGraphicsClear(0x000000);
     u64 midWidth = KeGraphicsReturnData()->width / 2;
     u64 midHeight = KeGraphicsReturnData()->height / 2;
-    KeGraphicsDrawString("Starting Nearlands", 10, 10, 2, 0xffffff);
+    KeGraphicsDrawString(QSTR("Starting Nearlands"), 10, 10, 2, 0xffffff);
     for(u64 i = 10; i < 10 + (dashes * 10); i+=10){
         KeGraphicsDrawChar('/', i, 40, 3, 0xffffff);
     }

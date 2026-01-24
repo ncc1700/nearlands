@@ -1,5 +1,4 @@
 #include "../includes/pmm.h"
-#include "../../ke/term.h"
 #include "../../qol/qmem.h"
 
 
@@ -25,7 +24,6 @@ boolean MmTestPhysicalMemoryManager(){
     MmFreeMultiplePages(h, 10);
     void* c = MmAllocateMultiplePages(10);
     if(c == NULL) return FALSE;
-    KeTermPrint(TERM_STATUS_INFO, "(first test) (c) 0x%x  (h) 0x%x (p) 0x%x", (u64)c, hAddress, p);
     if((u64)c != hAddress){
         MmFreeMultiplePages(p, 2);
         MmFreeMultiplePages(c, 10);
@@ -35,7 +33,6 @@ boolean MmTestPhysicalMemoryManager(){
     MmFreeMultiplePages(p, 2);
     void* l = MmAllocateMultiplePages(2);
     if(l == NULL) return FALSE;
-    KeTermPrint(TERM_STATUS_INFO, "(second test) (l) 0x%x  (p) 0x%x", (u64)l, pAddress);
     if((u64)l != pAddress){
         MmFreeMultiplePages(c, 10);
         MmFreeMultiplePages(l, 11);

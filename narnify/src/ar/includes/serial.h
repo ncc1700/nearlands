@@ -5,14 +5,14 @@
 
 
 
-
+#include "../../qol/qstring.h"
 
 
 
 
 void ArSerialWrite(const char c);
-void ArPrintToSerial(const char* s);
-
+void ArPrintToSerialRaw(const char* s);
+void ArPrintToSerial(QString str);
 
 
 

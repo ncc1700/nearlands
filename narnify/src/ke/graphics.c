@@ -2,7 +2,6 @@
 #include "../extern/BitFonts/font_8x12.h"
 
 
-
 static GraphicsData globalGraphics = {FALSE}; // all are 0
 
 
@@ -63,7 +62,7 @@ void KeGraphicsDrawChar(char c, u32 x, u32 y, u32 size, u64 color){
     }
 }
 
-void KeGraphicsDrawString(const char* s, u32 x, u32 y, u32 size, u64 color){
+void KeGraphicsDrawStringRaw(const char* s, u32 x, u32 y, u32 size, u64 color){
     if(globalGraphics.init != TRUE) return;
     u32 currentX = x;
     u32 currentY = y;
@@ -72,6 +71,17 @@ void KeGraphicsDrawString(const char* s, u32 x, u32 y, u32 size, u64 color){
         KeGraphicsDrawChar(*s, currentX, currentY, size, color);
         currentX += size * fsize;
         s++;
+    }
+}
+
+void KeGraphicsDrawString(QString string, u32 x, u32 y, u32 size, u64 color){
+    if(globalGraphics.init != TRUE) return;
+    u32 currentX = x;
+    u32 currentY = y;
+    u32 fsize = 8;
+    for(u64 i = 0; i < string.length; i++){
+        KeGraphicsDrawChar(string.buffer[i], currentX, currentY, size, color);
+        currentX += size * fsize;
     }
 }
 

@@ -55,7 +55,7 @@ void EcsDecodeHandle(Handle handle, u32* archeTypeIndex, u32* entityIndex){
 
 ArcheTypeData EcsGetArcheType(ComponentTypes* components, u8 componentAmount){
     if(ataIndex >= ataCapacity){
-        KeTermPrint(TERM_STATUS_INFO, "Expanding ArcheTypes Array");
+        KeTermPrint(TERM_STATUS_INFO, QSTR("Expanding ArcheTypes Array"));
         u64 newAtCapacity = 0;
         u64 newAtSize = 0;
         u64 newAtSizeInPages = 0;
@@ -67,7 +67,7 @@ ArcheTypeData EcsGetArcheType(ComponentTypes* components, u8 componentAmount){
                         ataSizeInPages, newAtSizeInPages);
         if(archeTypeArray == NULL){
             // panic bc no more memory
-            KePanic("OUT OF MEMORY: from EcsGetArcheType()");
+            KePanic(QSTR("OUT OF MEMORY: from EcsGetArcheType()"));
         }
         ataSize = newAtSize;
         ataCapacity = newAtCapacity;
@@ -81,7 +81,7 @@ ArcheTypeData EcsGetArcheType(ComponentTypes* components, u8 componentAmount){
                                     archeTypeArray[i].components,
                                     archeTypeArray[i].componentAmount) == TRUE)
         {
-            //TermPrint(TERM_STATUS_INFO, "found previous archeType, returning..");
+            //TermPrint(TERM_STATUS_INFO, QSTR("found previous archeType, returning.."));
             return (ArcheTypeData){&archeTypeArray[i], i};
         }
     }
@@ -102,8 +102,8 @@ Handle EcsCreateEntity(ComponentTypes* components, u64 componentAmount){
     ArcheTypeData archeTypeData = EcsGetArcheType(components, componentAmount);
     ArcheType* archeType = archeTypeData.archeType;
     if(archeType->index >= archeType->capacity){
-        KeTermPrint(TERM_STATUS_INFO, "Expanding Entity Array in Archetype");
-        KeTermPrint(TERM_STATUS_INFO, "ataCapacity is %d, ataIndex is %d", 
+        KeTermPrint(TERM_STATUS_INFO, QSTR("Expanding Entity Array in Archetype"));
+        KeTermPrint(TERM_STATUS_INFO, QSTR("ataCapacity is %d, ataIndex is %d"), 
             ataCapacity, ataIndex);
         u64 newCapacity = 0;
         u64 newSize = 0;
@@ -116,7 +116,7 @@ Handle EcsCreateEntity(ComponentTypes* components, u64 componentAmount){
                                 archeType->sizeInPages, newSizeInPages);
         if(archeType->entities == NULL){
             // panic bc no more memory
-            KePanic("OUT OF MEMORY: from EcsCreateEntity()");
+            KePanic(QSTR("OUT OF MEMORY: from EcsCreateEntity()"));
         }
         archeType->size = newSize;
         archeType->capacity = newCapacity;
@@ -124,7 +124,7 @@ Handle EcsCreateEntity(ComponentTypes* components, u64 componentAmount){
     }
     u64 enIndex = 0;
     if(archeType->initial != NULL){
-        KeTermPrint(TERM_STATUS_INFO, "reusing deleted entity..");
+        KeTermPrint(TERM_STATUS_INFO, QSTR("reusing deleted entity.."));
         EntityFreeList* node = archeType->initial;
         archeType->initial = archeType->initial->next;
         enIndex = node->index;
@@ -142,8 +142,8 @@ Handle EcsCreateEntity(ComponentTypes* components, u64 componentAmount){
         archeType->entities[enIndex].components[i] = MmPushMemoryFromArena(&archeType->entities[enIndex].arena,
                                                             componentSizeArr[components[i]]);
         if(archeType->entities[enIndex].components[i] == NULL){
-            KeTermPrint(TERM_STATUS_INFO, "failed at index %d", i);
-            KePanic("OUT OF MEMORY: from EcsCreateEntity()");
+            KeTermPrint(TERM_STATUS_INFO, QSTR("failed at index %d"), i);
+            KePanic(QSTR("OUT OF MEMORY: from EcsCreateEntity()"));
         }
     }
     archeType->entities[enIndex].alive = TRUE;
@@ -200,7 +200,7 @@ boolean EcsDeleteEntity(Handle entityHandle){
 
     EntityFreeList* node = MmAllocateFromHeap(sizeof(EntityFreeList));
     if(node == NULL){
-        KePanic("Failure to create node for ECS");
+        KePanic(QSTR("Failure to create node for ECS"));
     }
     node->index = entityIndex;
     node->next = NULL;

@@ -24,95 +24,95 @@ static IdtR idt;
 // will make it a bit more... sane later on
 
 void IntUnknownHardware(){
-    KePanic("UNKNOWN HARDWARE INTERRUPT");
+    KePanic(QSTR("UNKNOWN HARDWARE INTERRUPT"));
     while(1){continue;}
 }
 
 void IntUnknownSoftware(){
-    KePanic("UNKNOWN SOFTWARE INTERRUPT");
+    KePanic(QSTR("UNKNOWN SOFTWARE INTERRUPT"));
     while(1){continue;}
 }
 
 void IntDivideByZero(){
-    KePanic("Divide By Zero Interrupt");
+    KePanic(QSTR("Divide By Zero Interrupt"));
     //while(1){continue;}
 }
 
 void IntDebugException(){
-    KePanic("Debug Exception");
+    KePanic(QSTR("Debug Exception"));
 }
 
 void IntNMIInterrupt(){
-    KePanic("NMI Interrupt");
+    KePanic(QSTR("NMI Interrupt"));
 }
 
 void IntBreakpointInterrupt(){
-    KePanic("A breakpoint has been reached\n");
+    KePanic(QSTR("A breakpoint has been reached\n"));
 }
 
 void IntOverflowInterrupt(){
-    KePanic("Overflow\n");
+    KePanic(QSTR("Overflow\n"));
 }
 
 void IntBoundRangeInterrupt(){
-    KePanic("BOUND Range has been exceeded\n");
+    KePanic(QSTR("BOUND Range has been exceeded\n"));
 }
 
 void IntInvalidOpcodeInterrupt(){
-    KePanic("an invalid opcode has been reached\n");
+    KePanic(QSTR("an invalid opcode has been reached\n"));
 }
 
 void IntNoMathProcInterrupt(){
-    KePanic("no math coprocessor has been fouud\n");
+    KePanic(QSTR("no math coprocessor has been fouud\n"));
 }
 
 void IntDoubleFaultInterrupt(){
-    KePanic("Double Fault\n");
+    KePanic(QSTR("Double Fault\n"));
 }
 
 void IntInvalidTSSInterrupt(){
-    KePanic("Invalid TSS\n");
+    KePanic(QSTR("Invalid TSS\n"));
 }
 
 void IntSegmentNotPresentInterrupt(){
-    KePanic("Segment Not Present\n");
+    KePanic(QSTR("Segment Not Present\n"));
 }
 
 void IntStackSegmentFaultInterrupt(){
-    KePanic("Stack Segment Fault\n");
+    KePanic(QSTR("Stack Segment Fault\n"));
 }
 
 void IntGeneralProtectionInterrupt(){
-    KePanic("General Protection Error\n");
+    KePanic(QSTR("General Protection Error\n"));
 }
 
 void IntPageFaultInterrupt(){
-    KePanic("A page fault has occured\n");
+    KePanic(QSTR("A page fault has occured\n"));
 }
 
 
 void IntFloatingPointErrorInterrupt(){
-    KePanic("floating point error\n");
+    KePanic(QSTR("floating point error\n"));
 }
 
 void IntAlignmentCheckInterrupt(){
-    KePanic("invalid alignment\n");
+    KePanic(QSTR("invalid alignment\n"));
 }
 
 void IntMachineCheckInterrupt(){
-    KePanic("machine check\n");
+    KePanic(QSTR("machine check\n"));
 }
 
 void IntSIMDFloatingPointErrorInterrupt(){
-    KePanic("SIMD Floating Point Error\n");
+    KePanic(QSTR("SIMD Floating Point Error\n"));
 }
 
 void IntVirtualizationErrorInterrupt(){
-    KePanic("Virtualization Error\n");
+    KePanic(QSTR("Virtualization Error\n"));
 }
 
 void IntControlProtectionExceptionInterrupt(){
-    KePanic("Control Protection Exception\n");
+    KePanic(QSTR("Control Protection Exception\n"));
 }
 
 static inline void IntCreateInterrupt(uint8_t i, void (*handler)(), uint16_t selector, uint8_t ist, uint8_t typeattributes){
