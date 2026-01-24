@@ -7,6 +7,7 @@
 
 
 #include "../types.h"
+#include "../mm/includes/arena.h"
 
 
 typedef struct _QString {
@@ -14,15 +15,24 @@ typedef struct _QString {
     u64 length;
 } QString;
 
-u64 QolGetStringSize(u8* string);
-u64 QolGetStringSizeEx(u8* string, boolean addNewLine);
-QString QolInitStringEx(u8* str, u64 length);
-QString QolInitString(u8* str);
-
-
 #define Q(x) (u8*)x
 #define C(x) (char*)x
 #define QSTR(x) QolInitString(Q(x))
+
+u64 QolGetStringLength(u8* string);
+u64 QolGetStringLengthEx(u8* string, boolean addNewLine);
+QString QolInitStringEx(u8* str, u64 length);
+QString QolInitString(u8* str);
+void QolCopyString(QString src, QString* dest);
+boolean QolCopyStringHeap(QString src, QString* dest);
+boolean QolCopyStringArena(Arena* arena, QString src, QString* dest);
+QString QolDupeString(QString src);
+QString QolDupeStringHeap(QString src);
+QString QolDupeStringArena(Arena* arena, QString src);
+QString QolSliceString(QString string, u64 length);
+
+
+
 
 
 

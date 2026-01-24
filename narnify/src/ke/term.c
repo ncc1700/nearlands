@@ -56,8 +56,20 @@ void KeTermPuts(boolean addNewLine, QString str, u64 color){
 
 
 void KeTermPrint(Status stat, QString str, ...){
-    char buffer[128];
-    NNPFFormatBuffer(buffer, C(str.buffer));
+    char buffer[256];
+    char cstr[128];
+    u64 cindex = 0;
+    for(cindex = 0; cindex < str.length; cindex++){
+        if(cindex >= 127) break;
+        cstr[cindex] = str.buffer[cindex];
+    }
+    cstr[cindex] = '\0';
+    va_list arg;
+    va_start(arg, C(str.buffer));
+
+    impl_vsnprintf(buffer, 256, 
+                    cstr, arg);
+    va_end(arg);
     switch(stat){
         case TERM_STATUS_ERROR:
             KeTermPuts(FALSE, QSTR("[-] "), 0xFF0000);

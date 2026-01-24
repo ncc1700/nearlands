@@ -51,6 +51,12 @@ void KeSystemStartup(BootInfo* info){
     if(result == FALSE) KePanic(QSTR("Couldn't Setup Memory Manager"));
     else KeTermPrint(TERM_STATUS_PASS, QSTR("MmInitSystem PASS"));
 
+
+    QString string = QSTR("Hello World!");
+    QString slicedTo5 = QolSliceString(string, 5);
+    KeTermPrint(TERM_STATUS_INFO, QSTR("%d - %d"), string.length, slicedTo5.length);
+    KeTermPrint(TERM_STATUS_INFO, slicedTo5);
+
     KeTermPrint(TERM_STATUS_ERROR, QSTR("WORK IN PROGRESS - come back later!"));
     while(1){continue;}
 }
