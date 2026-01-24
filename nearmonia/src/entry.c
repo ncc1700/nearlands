@@ -1,12 +1,14 @@
-#include "arch/includes/mem.h"
-#include "arch/includes/serial.h"
+#include "ldr/abs.h"
+#include "ldr/graphics.h"
+#include "ldr/panic.h"
+#include "mm/includes/mem.h"
+#include "ar/includes/serial.h"
 #include "extern/EFI/UefiBaseType.h"
 #include "extern/EFI/UefiSpec.h"
-#include "fs.h"
-#include "gop.h"
-#include "peldr.h"
-#include "qol.h"
-#include "term.h"
+#include "fs/sfs.h"
+#include "ldr/gop.h"
+#include "ldr/peldr.h"
+#include "ldr/term.h"
 #include "types.h"
 
 
@@ -18,22 +20,21 @@
 
 
 i32 LdrEfiEntry(EFI_HANDLE imageHandle, EFI_SYSTEM_TABLE* systemTable){
-    QolSetupQolAbstractions(imageHandle, systemTable);
-    QolSerialFormatPrint("hello!\n");
+    LdrSetupAbstractions(imageHandle, systemTable);
+    ArPrintToSerial(QSTR("hello!\n"));
     boolean result = LdrSetupGOP();
-    if(result == FALSE) LdrArPrintToSerial("Failure to setup Graphics Output Protocol, going off with serial mode");
-    QolSerialFormatPrint("set up the graphics output protocol\n");
-    result = LdrMmInitPaging();
-    if(result == FALSE) QolPanic("Failure to setup Paging");
-    QolSerialFormatPrint("set up paging\n");
-    result = LdrFsSetupFilesystem();
-    if(result == FALSE) QolPanic("Failure to setup Simple File System");
-    QolSerialFormatPrint("set up simple file system\n");
+    if(result == FALSE) ArPrintToSerial(QSTR("Failure to setup Graphics Output Protocol, going off with serial mode"));
+    ArPrintToSerial(QSTR("set up the graphics output protocol\n"));
+    result = MmInitPaging();
+    if(result == FALSE) LdrPanic(QSTR("Failure to setup Paging"));
+    ArPrintToSerial(QSTR("set up paging\n"));
+    result = SFsSetupSimpleFilesystem();
+    if(result == FALSE) LdrPanic(QSTR("Failure to setup Simple File System"));
+    ArPrintToSerial(QSTR("set up simple file system\n"));
 
-    TermClear();
+    LdrTermClear();
     
-    TermPrint(TERM_STATUS_PASS, "Nearmonia Bootloader Init PASS\n");
-
+    LdrTermPrint(TERM_STATUS_PASS, QSTR("Nearmonia Bootloader\n"));
    
     LdrPeLoadPEImageAsKernel("\\SYSTEM\\narnify.sys");
     while(1){continue;}

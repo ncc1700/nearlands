@@ -6,9 +6,8 @@
 
 
 #include <stdint.h>
-#include <stddef.h>
 #include <stdbool.h>
-
+#include "extern/EFI/UefiBaseType.h"
 
 
 
@@ -30,21 +29,15 @@ typedef intptr_t iptr;
 
 typedef bool boolean;
 
-#ifndef TRUE
-#define TRUE 1
-#endif
-
-#ifndef FALSE
-#define FALSE 0
-#endif
-
-
-
-
-
-
-
-
-
 
 #endif
+
+
+
+
+
+
+
+
+
+

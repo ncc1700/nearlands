@@ -1,7 +1,7 @@
 
 section .text
 
-global LdrMmUpdateCr3
+global MmUpdateCr3
 
 
 
@@ -16,7 +16,7 @@ global LdrMmUpdateCr3
 
 
 
-LdrMmUpdateCr3:
+MmUpdateCr3:
     push rbp
     mov rbp, rsp
 

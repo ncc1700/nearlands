@@ -1,11 +1,9 @@
 #include "gop.h"
-#include "extern/EFI/GraphicsOutput.h"
-#include "extern/EFI/UefiBaseType.h"
+#include "../extern/EFI/GraphicsOutput.h"
+#include "../extern/EFI/UefiBaseType.h"
 #include "graphics.h"
-#include "qol.h"
-#include "types.h"
-
-
+#include "abs.h"
+#include "../ar/includes/serial.h"
 
 
 
@@ -16,10 +14,10 @@
 boolean LdrSetupGOP(){
     EFI_GUID gopGuid = EFI_GRAPHICS_OUTPUT_PROTOCOL_GUID;
     EFI_GRAPHICS_OUTPUT_PROTOCOL* gop = NULL;
-    EFI_STATUS status = QolReturnSystemTable()->BootServices->LocateProtocol(&gopGuid, 
+    EFI_STATUS status = LdrReturnSystemTable()->BootServices->LocateProtocol(&gopGuid, 
                                                             NULL, (void**)&gop);
     if(status != EFI_SUCCESS){
-        QolSerialFormatPrint("LocateProtocol for GOP failed with EFI_STATUS of 0x%x", status);
+        ArPrintToSerial(QSTR("LocateProtocol for GOP failed"));
         return FALSE;
     }
     // we just use the normal resolution the system is already at, nothing special
@@ -37,6 +35,6 @@ boolean LdrSetupGOP(){
         gop->Mode->Info->VerticalResolution,
         gop->Mode->Info->PixelsPerScanLine
     };
-    GraphicsSetup(&gData);
+    LdrGraphicsSetup(&gData);
     return TRUE;
 }

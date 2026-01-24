@@ -1,12 +1,12 @@
 #include "../includes/mem.h"
-#include "../../qol.h"
-#include "../../term.h"
+#include "../../ldr/term.h"
+#include "../../ldr/abs.h"
 
 
 
 
 
-MemoryMap* LdrMmRetrieveCurrentMemoryMap(){
+MemoryMap* MmRetrieveCurrentMemoryMap(){
     u64 memMapSize = 0;
     u64 mapKey = 0;
     u64 descSize = 0;
@@ -14,47 +14,48 @@ MemoryMap* LdrMmRetrieveCurrentMemoryMap(){
     EFI_MEMORY_DESCRIPTOR* efiMemMap = NULL;
     MemoryMap* memMap = NULL;
     // we get the size by passing well nothing
-    QolReturnSystemTable()->BootServices->GetMemoryMap(&memMapSize, 
+    LdrReturnSystemTable()->BootServices->GetMemoryMap(&memMapSize, 
                                         efiMemMap, &mapKey, &descSize, 
                                         &descVer);
     memMapSize += descSize * 8;
 
-    EFI_STATUS status = QolReturnSystemTable()->BootServices->AllocatePool(EfiLoaderData, 
+    EFI_STATUS status = LdrReturnSystemTable()->BootServices->AllocatePool(EfiLoaderData, 
         memMapSize, (void**)&efiMemMap);
     if(status != EFI_SUCCESS){
-        TermPrint(TERM_STATUS_ERROR, "Couldn't allocate pool for Efi Memory Map, 0x%x", status);
+        LdrTermPrint(TERM_STATUS_ERROR, QSTR("Couldn't allocate pool for Efi Memory Map, 0x%x"), status);
         return NULL;
     }
 
-    status = QolReturnSystemTable()->BootServices->AllocatePool(EfiLoaderData, 
+    status = LdrReturnSystemTable()->BootServices->AllocatePool(EfiLoaderData, 
         sizeof(MemoryMap), (void**)&memMap);
     if(status != EFI_SUCCESS){
-        TermPrint(TERM_STATUS_ERROR, "Couldn't allocate pool for Nearmonia Memory Map, 0x%x", status);
-        QolReturnSystemTable()->BootServices->FreePool(efiMemMap);
+        LdrTermPrint(TERM_STATUS_ERROR, QSTR("Couldn't allocate pool for Nearmonia Memory Map, 0x%x"), 
+                                    status);
+        LdrReturnSystemTable()->BootServices->FreePool(efiMemMap);
         return NULL;
     }
 
-    QolReturnSystemTable()->BootServices->SetMem(memMap, 
+    LdrReturnSystemTable()->BootServices->SetMem(memMap, 
                         sizeof(MemoryMap), 0);
 
-    status = QolReturnSystemTable()->BootServices->GetMemoryMap(&memMapSize, efiMemMap, &mapKey, 
+    status = LdrReturnSystemTable()->BootServices->GetMemoryMap(&memMapSize, efiMemMap, &mapKey, 
                             &descSize, &descVer);
     if(status != EFI_SUCCESS){
-        TermPrint(TERM_STATUS_ERROR, "Couldn't get EFI memory map, 0x%x", status);
-        QolReturnSystemTable()->BootServices->FreePool(efiMemMap);
-        QolReturnSystemTable()->BootServices->FreePool(memMap);
+        LdrTermPrint(TERM_STATUS_ERROR, QSTR("Couldn't get EFI memory map, 0x%x"), status);
+        LdrReturnSystemTable()->BootServices->FreePool(efiMemMap);
+        LdrReturnSystemTable()->BootServices->FreePool(memMap);
         return NULL;
     }
     u64 amountOfEntries = memMapSize / descSize;
-    status = QolReturnSystemTable()->BootServices->AllocatePool(EfiLoaderData, 
+    status = LdrReturnSystemTable()->BootServices->AllocatePool(EfiLoaderData, 
                         amountOfEntries * sizeof(MemoryMapEntry), (void**)&memMap->memEntries);
     if(status != EFI_SUCCESS){
-        TermPrint(TERM_STATUS_ERROR, "Couldn't get EFI memory map, 0x%x", status);
-        QolReturnSystemTable()->BootServices->FreePool(efiMemMap);
-        QolReturnSystemTable()->BootServices->FreePool(memMap);
+        LdrTermPrint(TERM_STATUS_ERROR, QSTR("Couldn't get EFI memory map, 0x%x"), status);
+        LdrReturnSystemTable()->BootServices->FreePool(efiMemMap);
+        LdrReturnSystemTable()->BootServices->FreePool(memMap);
         return NULL;
     }
-    QolReturnSystemTable()->BootServices->SetMem(memMap->memEntries, 
+    LdrReturnSystemTable()->BootServices->SetMem(memMap->memEntries, 
                         amountOfEntries * sizeof(MemoryMapEntry), 0);
 
     memMap->amountOfEntries = amountOfEntries;

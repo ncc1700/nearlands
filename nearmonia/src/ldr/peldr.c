@@ -1,14 +1,17 @@
 #include "peldr.h"
-#include "arch/includes/mem.h"
-#include "extern/EFI/SimpleFileSystem.h"
-#include "extern/EFI/UefiBaseType.h"
-#include "extern/EFI/UefiMultiPhase.h"
-#include "extern/EFI/UefiSpec.h"
-#include "fs.h"
+#include "../mm/includes/mem.h"
+#include "../extern/EFI/SimpleFileSystem.h"
+#include "../extern/EFI/UefiBaseType.h"
+#include "../extern/EFI/UefiMultiPhase.h"
+#include "../extern/EFI/UefiSpec.h"
+#include "../fs/sfs.h"
 #include "graphics.h"
-#include "qol.h"
 #include "term.h"
-#include "bootinfo.h"
+#include "../bootinfo.h"
+#include "abs.h"
+#include "../qol/qmem.h"
+#include "../qol/qstring.h"
+#include "panic.h"
 
 // stole these structs from MSDN/MS Learn and some other sites
 // thanks to them!
@@ -128,7 +131,7 @@ static inline void LoadSectionsIntoMemory(char* content, IMAGE_NT_HEADERS64* ntH
     for(int i = 0; i < ntHeader->FileHeader.NumberOfSections; i++){
         memset((void*)(imageBase + secHeader->VirtualAddress), 0, 
                                 secHeader->Misc.VirtualSize);
-        TermPrint(TERM_STATUS_INFO, "Loading section %s", secHeader->Name);
+        LdrTermPrint(TERM_STATUS_INFO, QSTR("Loading section %s"), secHeader->Name);
         if(memcmp(secHeader->Name, ".ldr", 4) == 0){
             memcpy((void*)(imageBase + secHeader->VirtualAddress), 
                         (void*)(bInfo), sizeof(BootInfo));
@@ -143,56 +146,56 @@ static inline void LoadSectionsIntoMemory(char* content, IMAGE_NT_HEADERS64* ntH
 
 
 void LdrPeLoadPEImageAsKernel(const char* path){
-    EFI_FILE_PROTOCOL* kernFile = LdrFsOpenFile(path, EFI_FILE_MODE_READ);
+    EFI_FILE_PROTOCOL* kernFile = SFsOpenFile(path, EFI_FILE_MODE_READ);
     if(kernFile == NULL){
-        QolPanic("Couldn't load kernel image! Please Reboot");
+        LdrPanic(QSTR("Couldn't load kernel image! Please Reboot"));
     }
     u64 length = 0; // we will probably never use this
-    char* content = LdrFsReadFileContent(kernFile, &length);
-    LdrFsCloseFile(kernFile);
+    char* content = SFsReadFileContent(kernFile, &length);
+    SFsCloseFile(kernFile);
     if(content == NULL){
-        QolPanic("Kernel image is empty or corrupted! Please Reboot");
+        LdrPanic(QSTR("Kernel image is empty or corrupted! Please Reboot"));
     }
     IMAGE_DOS_HEADER* dosHeader = (IMAGE_DOS_HEADER*)content;
     if(memcmp(dosHeader, "MZ", 2) != 0){
-        QolPanic("Kernel image isn't of PE type! (failed at MZ) Please Reboot");
+        LdrPanic(QSTR("Kernel image isn't of PE type! (failed at MZ) Please Reboot"));
     }
     IMAGE_NT_HEADERS64* ntHeader = (IMAGE_NT_HEADERS64*)(content + dosHeader->e_lfanew);
     if(memcmp(ntHeader, "PE\0\0", 4) != 0){
-        QolPanic("Kernel image isn't of PE type! (failed at PE) Please Reboot");
+        LdrPanic(QSTR("Kernel image isn't of PE type! (failed at PE) Please Reboot"));
     }
-    TermPrint(TERM_STATUS_PASS, "%s is a valid kernel!\n", path);
+    LdrTermPrint(TERM_STATUS_PASS, QSTR("%s is a valid kernel!\n"), path);
 
     u64 sizeOfImage = ntHeader->OptionalHeader.SizeOfImage;
     u64 imageBase = ntHeader->OptionalHeader.ImageBase;
     uint64_t amountOfPagesForImage = (sizeOfImage + 4095) / 4096;
     u64 physBase = 0x0;
-    EFI_STATUS status = QolReturnSystemTable()->BootServices->AllocatePages(AllocateAnyPages, EfiLoaderData, 
+    EFI_STATUS status = LdrReturnSystemTable()->BootServices->AllocatePages(AllocateAnyPages, EfiLoaderData, 
                                                             amountOfPagesForImage, &physBase);
     if(status != EFI_SUCCESS){
-        QolPanic("Not enough memory to load kernel!");
+        LdrPanic(QSTR("Not enough memory to load kernel!"));
     }
-    boolean result = LdrMmMapHigherHalfMemoryForKernel(physBase, amountOfPagesForImage * 4096);
+    boolean result = MmMapHigherHalfMemoryForKernel(physBase, amountOfPagesForImage * 4096);
     if(result == FALSE){
-        QolPanic("Couldn't map higher half memory pages for kernel!");
+        LdrPanic(QSTR("Couldn't map higher half memory pages for kernel!"));
     }
-    TermPrint(TERM_STATUS_PASS, "Kernel physical base is located at 0x%x, page size is %d", physBase, amountOfPagesForImage);
+    LdrTermPrint(TERM_STATUS_PASS, QSTR("Kernel physical base is located at 0x%x, page size is %d"), physBase, amountOfPagesForImage);
     void (*KernelEntry)() = (void (*)())(imageBase + ntHeader->OptionalHeader.AddressOfEntryPoint);
     
 
     
     BootInfo bInfo = {0};
     bInfo.graphicsData = (BootGraphicsData){
-        GraphicsReturnData()->init,
-        GraphicsReturnData()->framebufferBase,
-        GraphicsReturnData()->framebufferSize,
-        GraphicsReturnData()->width,
-        GraphicsReturnData()->height,
-        GraphicsReturnData()->pixelsPerScanLine
+        LdrGraphicsReturnData()->init,
+        LdrGraphicsReturnData()->framebufferBase,
+        LdrGraphicsReturnData()->framebufferSize,
+        LdrGraphicsReturnData()->width,
+        LdrGraphicsReturnData()->height,
+        LdrGraphicsReturnData()->pixelsPerScanLine
     };
     bInfo.hhdmOffset = HHDM_OFFSET;
     bInfo.typeOfBoot = 1;
-    MemoryMap* memmap = LdrMmRetrieveCurrentMemoryMap();
+    MemoryMap* memmap = MmRetrieveCurrentMemoryMap();
     bInfo.kernelLocPhys = physBase;
     bInfo.kernelLocVirt = HHDM_OFFSET;
     bInfo.kernelSizeInPages = amountOfPagesForImage;
@@ -202,14 +205,14 @@ void LdrPeLoadPEImageAsKernel(const char* path){
 
     
 
-    TermPrint(TERM_STATUS_PASS, "About to jump to kernel!");
-    TermPrint(TERM_STATUS_INFO, "BootInfo is located at 0x%x", bInfo);
-    TermPrint(TERM_STATUS_UNKNOWN, " ");
-    TermPrint(TERM_STATUS_UNKNOWN, " ");
-    QolReturnSystemTable()->BootServices->ExitBootServices(QolReturnImagehandle(), memmap->mapKey);
+    LdrTermPrint(TERM_STATUS_PASS, QSTR("About to jump to kernel!"));
+    LdrTermPrint(TERM_STATUS_INFO, QSTR("BootInfo is located at 0x%x"), bInfo);
+    LdrTermPrint(TERM_STATUS_UNKNOWN, QSTR(" "));
+    LdrTermPrint(TERM_STATUS_UNKNOWN, QSTR(" "));
+    LdrReturnSystemTable()->BootServices->ExitBootServices(LdrReturnImagehandle(), memmap->mapKey);
     // goodbye! change da world - Nearmonia to Narnify
     KernelEntry();
-    QolPanic("Kernel returned from entrypoint!");
+    LdrPanic(QSTR("Kernel returned from entrypoint!"));
     return;
     
 }
