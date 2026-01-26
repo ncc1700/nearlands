@@ -83,7 +83,8 @@ boolean MmInitVirtualMemoryManager(BootInfo* info){
         u64 base = info->memMap->memEntries[i].base;
         u64 size = info->memMap->memEntries[i].size;
         for(u64 j = 0; j < size; j+=PAGE_SIZE){
-            MmMapPage(&kernPTable, base + j, base + j, PG_READ_WRITE);
+            boolean result = MmMapPage(&kernPTable, base + j, base + j, PG_READ_WRITE);
+            if(result == FALSE) return FALSE;
         }
     }
     for(u64 i = 0; i < KeGraphicsReturnData()->framebufferSize; i+=0x1000){
@@ -95,8 +96,9 @@ boolean MmInitVirtualMemoryManager(BootInfo* info){
     u64 base = (u64)(pageMap);
     u64 size = MmReturnPageAmount();
     for(u64 i = 0; i < size; i++){
-        MmMapPage(&kernPTable, base + (i * PAGE_SIZE), 
+        boolean result = MmMapPage(&kernPTable, base + (i * PAGE_SIZE), 
                                 base + (i * PAGE_SIZE), PG_READ_WRITE);
+        if(result == FALSE) return FALSE;
     }
     #endif
     MmUpdateCr3((u64)kernPTable.pml4);

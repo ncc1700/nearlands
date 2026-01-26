@@ -3,24 +3,41 @@
 #include "../mm/includes/pmm.h"
 #include "../mm/includes/heap.h"
 
-#include "components/stackcmp.h"
-#include "components/threadcmp.h"
 #include "../ke/term.h"
 #include "../ke/panic.h"
 
+#define MAX_COMPONENT 512
 
-
-
-static const size_t componentSizeArr[] = {
-    [COMP_THREAD] = sizeof(ThreadComponent),
-    [COMP_STACK] = sizeof(StackComponent)
-};
 
 static ArcheType* archeTypeArray = NULL;
 static u64 ataIndex = 0;
 static u64 ataCapacity = 0;
 static u64 ataSize = 0;
 static u64 ataSizeInPages = 0;
+
+static u64* componentSizeArr = NULL;
+static u16 curComponentIndex = 1;
+
+
+
+u16 EcsGetNewComponentIndex(){
+    curComponentIndex++;
+    return curComponentIndex - 1;
+}
+
+u16 EcsCreateNewComponent(u64 size){
+    if(componentSizeArr == NULL){
+        componentSizeArr = MmAllocateSinglePage();
+        if(componentSizeArr == NULL) return 0;
+    }
+    u64 index = curComponentIndex;
+    if(index >= MAX_COMPONENT) return 0;
+    componentSizeArr[index] = size;
+    curComponentIndex++;
+    KeTermPrint(TERM_STATUS_PASS, QSTR("Created component with index of %d"), index);
+    return index;
+}
+
 
 
 boolean EcsCompareComponents(ComponentTypes* component1, u8 componentAmount1, ComponentTypes* component2, u8 componentAmount2){
@@ -37,6 +54,7 @@ boolean EcsCompareComponents(ComponentTypes* component1, u8 componentAmount1, Co
 u64 EcsGetSizeOfAllComponents(ComponentTypes* components, u8 componentAmount){
     u64 componentSize = 0;
     for(u64 i = 0; i < componentAmount; i++){
+        if(components[i] >= curComponentIndex) continue;
         componentSize += componentSizeArr[components[i]];
     }
     return componentSize;
@@ -50,7 +68,6 @@ void EcsDecodeHandle(Handle handle, u32* archeTypeIndex, u32* entityIndex){
     *archeTypeIndex = (handle >> 32);
     *entityIndex = (u32)(handle);
 }
-
 
 
 ArcheTypeData EcsGetArcheType(ComponentTypes* components, u8 componentAmount){

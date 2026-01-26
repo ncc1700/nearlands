@@ -1,4 +1,7 @@
+#include "ecs/ecs.h"
+#include "ke/ke.h"
 #include "ke/panic.h"
+#include "ke/thread.h"
 #include "mm/includes/mm.h"
 
 #include "ar/includes/ar.h"
@@ -50,13 +53,24 @@ void KeSystemStartup(BootInfo* info){
     result = MmInitSystem(info);
     if(result == FALSE) KePanic(QSTR("Couldn't Setup Memory Manager"));
     else KeTermPrint(TERM_STATUS_PASS, QSTR("MmInitSystem PASS"));
+    KeTermPrint(TERM_STATUS_UNKNOWN, QSTR("--------------------PHASE 1--------------------"));
 
-
-    QString string = QSTR("Hello World!");
-    QString slicedTo5 = QolSliceString(string, 5);
-    KeTermPrint(TERM_STATUS_INFO, QSTR("%d - %d"), string.length, slicedTo5.length);
-    KeTermPrint(TERM_STATUS_INFO, slicedTo5);
+    KeTermPrint(TERM_STATUS_IMPINFO, QSTR("Calling KeInitSystem"));
+    result = KeInitSystem();
+    if(result == FALSE) KePanic(QSTR("Couldn't Setup Kernel Components"));
+    else KeTermPrint(TERM_STATUS_PASS, QSTR("KeInitSystem PASS"));
+    KernThreadComponent kt = {NULL};
+    UserThreadComponent ut = {NULL};
+    ComponentTypes types[2] = {KeReturnKtCompIndex(), KeReturnUtCompIndex()};
+    Handle entity = EcsCreateEntity(types, 2);
+    EcsAddComponentDataToEntity(entity, KeReturnKtCompIndex(), 
+        (void*)&kt);
+    EcsAddComponentDataToEntity(entity, KeReturnUtCompIndex(), 
+        (void*)&ut);
+    KernThreadComponent* comp = (KernThreadComponent*)EcsGetComponent(entity, 
+                                    KeReturnUtCompIndex());
 
     KeTermPrint(TERM_STATUS_ERROR, QSTR("WORK IN PROGRESS - come back later!"));
+
     while(1){continue;}
 }

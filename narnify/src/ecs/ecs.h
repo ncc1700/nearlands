@@ -9,12 +9,14 @@
 #define ECS_COMP_SIZE 10
 
 typedef u64 Handle;
+#define MAX_COMPONENT 512
+typedef u16 ComponentTypes;
 
-typedef enum _ComponentTypes {
-    COMP_UNKNOWN,
-    COMP_STACK,
-    COMP_THREAD
-} ComponentTypes;
+
+// typedef enum _ComponentTypes {
+//     COMP_UNKNOWN,
+//     COMP_THREAD
+// } ComponentTypes;
 
 
 // typedef struct _Component {
@@ -55,6 +57,8 @@ typedef struct _ArcheTypeData {
  
 
 
+u16 EcsGetNewComponentIndex();
+u16 EcsCreateNewComponent(u64 size);
 boolean EcsCompareComponents(ComponentTypes* component1, u8 componentAmount1, ComponentTypes* component2, u8 componentAmount2);
 u64 EcsGetSizeOfAllComponents(ComponentTypes* components, u8 componentAmount);
 u64 EcsEncodeHandle(u32 archTypeIndex, u32 entityIndex);
