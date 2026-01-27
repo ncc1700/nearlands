@@ -1,5 +1,5 @@
-#include "../includes/pmm.h"
-#include "../../qol/qmem.h"
+#include <mm/pmm.h>
+#include <qol/qmem.h>
 
 
 /*

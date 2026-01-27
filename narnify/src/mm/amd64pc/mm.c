@@ -1,9 +1,9 @@
-#include "../includes/mm.h"
-#include "../includes/pmm.h"
-#include "../includes/vmm.h"
-#include "../includes/heap.h"
-#include "../../ke/term.h"
-#include "../../qol/qmem.h"
+#include <mm/mm.h>
+#include <mm/pmm.h>
+#include <mm/vmm.h>
+#include <mm/heap.h>
+#include <ke/term.h>
+#include <qol/qmem.h>
 
 
 

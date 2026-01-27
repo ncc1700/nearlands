@@ -1,6 +1,6 @@
-#include "../thread.h"
-#include "../term.h"
-#include "../../ecs/ecs.h"
+#include <ke/thread.h>
+#include <ke/term.h>
+#include <ecs/ecs.h>
 
 
 static u16 ktCIndex = 0;

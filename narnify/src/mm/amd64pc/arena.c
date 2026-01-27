@@ -1,6 +1,6 @@
-#include "../includes/arena.h"
-#include "../includes/pmm.h"
-#include "../includes/heap.h"
+#include <mm/arena.h>
+#include <mm/pmm.h>
+#include <mm/heap.h>
 
 
 

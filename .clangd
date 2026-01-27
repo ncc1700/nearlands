@@ -1,0 +1,4 @@
+CompileFlags: 
+  Add:
+    - "--include-directory=narnify/src/extern/uACPI/includes"  
+    - "-Wall"

@@ -1,17 +1,16 @@
-#include "ecs/ecs.h"
-#include "ke/ke.h"
-#include "ke/panic.h"
-#include "ke/thread.h"
-#include "mm/includes/mm.h"
+#include <ecs/ecs.h>
+#include <ke/ke.h>
+#include <ke/panic.h>
+#include <ke/thread.h>
+#include <mm/mm.h>
 
-#include "ar/includes/ar.h"
-#include "bootinfo.h"
-#include "ke/graphics.h"
-#include "ke/splash.h"
-#include "ke/term.h"
-#include "qol/qstring.h"
-#include "types.h"
-
+#include <ar/ar.h>
+#include <bootinfo.h>
+#include <ke/graphics.h>
+#include <ke/splash.h>
+#include <ke/term.h>
+#include <qol/qstring.h>
+#include <types.h>
 
 void _fltused(){}
 
@@ -31,6 +30,7 @@ void KeSystemStartup(BootInfo* info){
         info->graphicsData.pixelsPerScanLine,
         owners
     };
+    
     KeGraphicsSetup(&data);
     KeBeginSplashScreen(10);
     KeTermClear();

@@ -1,6 +1,6 @@
-#include "panic.h"
-#include "../ar/includes/serial.h"
-#include "graphics.h"
+#include <ke/panic.h>
+#include <ar/serial.h>
+#include <ke/graphics.h>
 
 
 

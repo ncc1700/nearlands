@@ -1,4 +1,7 @@
 
+gen-comp-command:
+	cd narnify && xmake project -k compile_commands --lsp=clangd
+
 build-amd64pc:
 	cd nearmonia && xmake build nearmonia-amd64pc
 	cd narnify && xmake build narnify-amd64pc

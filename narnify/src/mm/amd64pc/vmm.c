@@ -1,7 +1,7 @@
-#include "../includes/vmm.h"
-#include "../includes/pmm.h"
-#include "../../ke/graphics.h"
-#include "../../qol/qmem.h"
+#include <mm/vmm.h>
+#include <mm/pmm.h>
+#include <ke/graphics.h>
+#include <qol/qmem.h>
 
 
 static PageTable kernPTable = {NULL};

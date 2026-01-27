@@ -1,5 +1,5 @@
-#include "graphics.h"
-#include "../extern/BitFonts/font_8x12.h"
+#include <ke/graphics.h>
+#include <../extern/BitFonts/font_8x12.h>
 
 
 static GraphicsData globalGraphics = {FALSE}; // all are 0

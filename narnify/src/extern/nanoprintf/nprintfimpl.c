@@ -1,6 +1,6 @@
 #define NANOPRINTF_IMPLEMENTATION
-#include "nanoprintf.h"
-#include "nprintfimpl.h"
+#include <nanoprintf/nanoprintf.h>
+#include <nanoprintf/nprintfimpl.h>
 
 int impl_vsnprintf(char *const buffer, const size_t bufferCount, const char *const format, va_list argList){
     return npf_vsnprintf(buffer, bufferCount, format, argList);

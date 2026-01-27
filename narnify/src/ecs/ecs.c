@@ -1,10 +1,10 @@
-#include "ecs.h"
-#include "../qol/qmem.h"
-#include "../mm/includes/pmm.h"
-#include "../mm/includes/heap.h"
+#include <ecs/ecs.h>
+#include <qol/qmem.h>
+#include <mm/pmm.h>
+#include <mm/heap.h>
 
-#include "../ke/term.h"
-#include "../ke/panic.h"
+#include <ke/term.h>
+#include <ke/panic.h>
 
 #define MAX_COMPONENT 512
 

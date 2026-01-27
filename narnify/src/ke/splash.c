@@ -1,5 +1,5 @@
-#include "splash.h"
-#include "graphics.h"
+#include <ke/splash.h>
+#include <ke/graphics.h>
 
 
 

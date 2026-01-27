@@ -1,6 +1,6 @@
 #include <stdint.h>
 #include "port.h"
-#include "../../qol/qstring.h"
+#include <qol/qstring.h>
 
 
 

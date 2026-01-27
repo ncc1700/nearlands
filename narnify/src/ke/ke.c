@@ -1,6 +1,6 @@
 
-#include "ke.h"
-#include "thread.h"
+#include <ke/ke.h>
+#include <ke/thread.h>
 
 
 

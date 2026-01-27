@@ -1,8 +1,8 @@
-#include "term.h"
-#include "../ar/includes/serial.h"
-#include "../extern/nanoprintf/nprintfimpl.h"
-#include "graphics.h"
-#include "../types.h"
+#include <ke/term.h>
+#include <ar/serial.h>
+#include <nanoprintf/nprintfimpl.h>
+#include <ke/graphics.h>
+#include <types.h>
 #include <stdarg.h>
 
 

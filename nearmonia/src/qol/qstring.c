@@ -1,5 +1,5 @@
 #include "qstring.h"
-#include <string.h>
+#include "qmem.h"
 #include "../ldr/abs.h"
 
 

@@ -1,6 +1,6 @@
-#include "qstring.h"
-#include "../mm/includes/heap.h"
-#include "../ar/includes/serial.h"
+#include <qol/qstring.h>
+#include <mm/heap.h>
+#include <ar/serial.h>
 #include <string.h>
 
 

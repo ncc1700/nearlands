@@ -1,5 +1,5 @@
 #include "idt.h"
-#include "../../ke/panic.h"
+#include <ke/panic.h>
 #define IDT_SIZE 256
 
 typedef struct _IntDesc {
