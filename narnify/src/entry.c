@@ -1,3 +1,4 @@
+#include "acpi/acpi.h"
 #include <ecs/ecs.h>
 #include <ke/ke.h>
 #include <ke/panic.h>
@@ -60,6 +61,11 @@ void KeSystemStartup(BootInfo* info){
     result = KeInitSystem();
     if(result == FALSE) KePanic(QSTR("Couldn't Setup Kernel Components"));
     else KeTermPrint(TERM_STATUS_PASS, QSTR("KeInitSystem PASS"));
+    
+    // KeTermPrint(TERM_STATUS_IMPINFO, QSTR("Calling AcpiInitSystem"));
+    // result = AcpiInitSystem();
+    // if(result == FALSE) KePanic(QSTR("Couldn't Setup ACPI (via uACPI)"));
+    // else KeTermPrint(TERM_STATUS_PASS, QSTR("AcpiInitSystem PASS"));
     
     
     

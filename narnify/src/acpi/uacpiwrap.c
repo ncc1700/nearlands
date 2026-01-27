@@ -32,7 +32,7 @@ void uacpi_kernel_log(uacpi_log_level log, const uacpi_char* str){
             stat = TERM_STATUS_UNKNOWN;
             break;
     }
-    KeTermPrint(stat, QSTR(str));
+    KeTermPrint(stat, QSTR("[uACPI]: %s"), str);
 }
 
 void *uacpi_kernel_alloc(uacpi_size size){
