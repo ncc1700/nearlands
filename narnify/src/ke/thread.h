@@ -7,7 +7,7 @@
 
 
 #include "../types.h"
-
+#include "../ecs/ecs.h"
 typedef enum _ThreadState {
     THREAD_STATE_STARTING,
     THREAD_STATE_SUSPEND,
@@ -36,14 +36,16 @@ typedef struct _KernThread {
 
 typedef struct _UserThreadComponent {
     UserThread* initialThread;
+    Handle entity;
 } UserThreadComponent;
 
 typedef struct _KernThreadComponent {
     KernThread* initialThread;
+    Handle entity;
 } KernThreadComponent;
 
 
-boolean KeInitalizeThreadComponent();
+boolean KeInitializeThreadComponent();
 u16 KeReturnKtCompIndex();
 u16 KeReturnUtCompIndex();
 

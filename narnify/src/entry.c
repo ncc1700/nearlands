@@ -10,6 +10,7 @@
 #include "ke/splash.h"
 #include "ke/term.h"
 #include "qol/qstring.h"
+#include "types.h"
 
 
 void _fltused(){}
@@ -59,16 +60,15 @@ void KeSystemStartup(BootInfo* info){
     result = KeInitSystem();
     if(result == FALSE) KePanic(QSTR("Couldn't Setup Kernel Components"));
     else KeTermPrint(TERM_STATUS_PASS, QSTR("KeInitSystem PASS"));
-    KernThreadComponent kt = {NULL};
-    UserThreadComponent ut = {NULL};
+    
     ComponentTypes types[2] = {KeReturnKtCompIndex(), KeReturnUtCompIndex()};
-    Handle entity = EcsCreateEntity(types, 2);
-    EcsAddComponentDataToEntity(entity, KeReturnKtCompIndex(), 
-        (void*)&kt);
-    EcsAddComponentDataToEntity(entity, KeReturnUtCompIndex(), 
-        (void*)&ut);
-    KernThreadComponent* comp = (KernThreadComponent*)EcsGetComponent(entity, 
-                                    KeReturnUtCompIndex());
+    u64 i = 0;
+    while(1){
+        Handle entity = EcsCreateEntity(types, 2);
+        KeTermPrint(TERM_STATUS_IMPINFO, QSTR("creating entity %d\n"), i);
+        i++;
+    }   
+    
 
     KeTermPrint(TERM_STATUS_ERROR, QSTR("WORK IN PROGRESS - come back later!"));
 

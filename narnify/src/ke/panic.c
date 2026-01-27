@@ -21,7 +21,7 @@ void KePanic(QString string){
     if(KeGraphicsReturnData()->init == 1){
         KeGraphicsDrawRect(0, 0, KeGraphicsReturnData()->width, 
                                 KeGraphicsReturnData()->height, 0x0000FF);
-        KeGraphicsDrawString(string, 10, 10, 2, 0xFFFFFF);
+        KeGraphicsDrawString(QSTR("An error has occured!!!"), 10, 10, 2, 0xFFFFFF);
         KeGraphicsDrawString(string, 10, 50, 1, 0xFFFFFF);
     }
     ArPrintToSerial(QSTR("\n\n----------------------------------------------------------------\n"));

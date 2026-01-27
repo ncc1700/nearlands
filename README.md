@@ -8,6 +8,10 @@ WIP
 
 [nanoprintf](https://github.com/charlesnicholson/nanoprintf) (simple and usable printf impl for embedded projects)
 
+[uACPI](https://github.com/uACPI/uACPI) (A portable impl of ACPI).
+
+)
+
 # How to build
 
 SOON

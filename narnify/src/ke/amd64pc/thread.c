@@ -6,7 +6,7 @@
 static u16 ktCIndex = 0;
 static u16 utCIndex = 0;
 
-boolean KeInitalizeThreadComponent(){
+boolean KeInitializeThreadComponent(){
     ktCIndex = EcsCreateNewComponent(sizeof(KernThreadComponent));
     if(ktCIndex == 0) return FALSE;
     utCIndex = EcsCreateNewComponent(sizeof(UserThreadComponent));
@@ -25,3 +25,4 @@ u16 KeReturnUtCompIndex(){
 void KeCreateThread(){
 
 }
+

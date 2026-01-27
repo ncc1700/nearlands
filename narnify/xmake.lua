@@ -14,6 +14,7 @@ target("narnify-amd64pc")
                 "src/ar/amd64pc/*.S")
     add_files("src/mm/amd64pc/*.c", "src/mm/amd64pc/**/*.c", 
                 "src/mm/amd64pc/*.S")
+    add_includedirs("src/extern/uACPI/includes")
     add_cflags("-g -target x86_64-pc-win32-coff -ffreestanding -nostdlib", {force = true})
     add_asflags("-f win64", {force = true})
     add_ldflags("/machine:amd64 /subsystem:native /entry:ArArchitectureEntry /base:0xFFFFFF8000000000", {force = true})
