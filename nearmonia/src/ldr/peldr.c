@@ -1,17 +1,17 @@
-#include "peldr.h"
-#include "../mm/includes/mem.h"
-#include "../extern/EFI/SimpleFileSystem.h"
-#include "../extern/EFI/UefiBaseType.h"
-#include "../extern/EFI/UefiMultiPhase.h"
-#include "../extern/EFI/UefiSpec.h"
-#include "../fs/sfs.h"
-#include "graphics.h"
-#include "term.h"
-#include "../bootinfo.h"
-#include "abs.h"
-#include "../qol/qmem.h"
-#include "../qol/qstring.h"
-#include "panic.h"
+#include <ldr/peldr.h>
+#include <mm/mem.h>
+#include <EFI/SimpleFileSystem.h>
+#include <EFI/UefiBaseType.h>
+#include <EFI/UefiMultiPhase.h>
+#include <EFI/UefiSpec.h>
+#include <fs/sfs.h>
+#include <ldr/graphics.h>
+#include <ldr/term.h>
+#include <bootinfo.h>
+#include <ldr/abs.h>
+#include <qol/qmem.h>
+#include <qol/qstring.h>
+#include <ldr/panic.h>
 
 // stole these structs from MSDN/MS Learn and some other sites
 // thanks to them!

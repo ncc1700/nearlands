@@ -11,7 +11,7 @@
 
 
 
-#include "../../types.h"
+#include <types.h>
 
 typedef enum _MemoryEntryTypes {
     MEM_TYPE_FREE,

@@ -1,0 +1,91 @@
+[
+{
+  "directory": "C:\\projects\\nearlands\\nearmonia",
+  "arguments": ["C:\\Users\\ncc\\scoop\\apps\\llvm\\current\\bin\\clang.exe", "-c", "-Qunused-arguments", "-Isrc\\includes", "-g", "-target", "x86_64-pc-win32-coff", "-ffreestanding", "-nostdlib", "-o", "build\\.objs\\nearmonia-amd64pc\\mingw\\x86_64\\release\\src\\entry.c.obj", "src\\entry.c"],
+  "file": "src\\entry.c"
+},
+{
+  "directory": "C:\\projects\\nearlands\\nearmonia",
+  "arguments": ["C:\\Users\\ncc\\scoop\\apps\\llvm\\current\\bin\\clang.exe", "-c", "-Qunused-arguments", "-Isrc\\includes", "-g", "-target", "x86_64-pc-win32-coff", "-ffreestanding", "-nostdlib", "-o", "build\\.objs\\nearmonia-amd64pc\\mingw\\x86_64\\release\\src\\extern\\nanoprintf\\nprintfimpl.c.obj", "src\\extern\\nanoprintf\\nprintfimpl.c"],
+  "file": "src\\extern\\nanoprintf\\nprintfimpl.c"
+},
+{
+  "directory": "C:\\projects\\nearlands\\nearmonia",
+  "arguments": ["C:\\Users\\ncc\\scoop\\apps\\llvm\\current\\bin\\clang.exe", "-c", "-Qunused-arguments", "-Isrc\\includes", "-g", "-target", "x86_64-pc-win32-coff", "-ffreestanding", "-nostdlib", "-o", "build\\.objs\\nearmonia-amd64pc\\mingw\\x86_64\\release\\src\\fs\\sfs.c.obj", "src\\fs\\sfs.c"],
+  "file": "src\\fs\\sfs.c"
+},
+{
+  "directory": "C:\\projects\\nearlands\\nearmonia",
+  "arguments": ["C:\\Users\\ncc\\scoop\\apps\\llvm\\current\\bin\\clang.exe", "-c", "-Qunused-arguments", "-Isrc\\includes", "-g", "-target", "x86_64-pc-win32-coff", "-ffreestanding", "-nostdlib", "-o", "build\\.objs\\nearmonia-amd64pc\\mingw\\x86_64\\release\\src\\ldr\\abs.c.obj", "src\\ldr\\abs.c"],
+  "file": "src\\ldr\\abs.c"
+},
+{
+  "directory": "C:\\projects\\nearlands\\nearmonia",
+  "arguments": ["C:\\Users\\ncc\\scoop\\apps\\llvm\\current\\bin\\clang.exe", "-c", "-Qunused-arguments", "-Isrc\\includes", "-g", "-target", "x86_64-pc-win32-coff", "-ffreestanding", "-nostdlib", "-o", "build\\.objs\\nearmonia-amd64pc\\mingw\\x86_64\\release\\src\\ldr\\gop.c.obj", "src\\ldr\\gop.c"],
+  "file": "src\\ldr\\gop.c"
+},
+{
+  "directory": "C:\\projects\\nearlands\\nearmonia",
+  "arguments": ["C:\\Users\\ncc\\scoop\\apps\\llvm\\current\\bin\\clang.exe", "-c", "-Qunused-arguments", "-Isrc\\includes", "-g", "-target", "x86_64-pc-win32-coff", "-ffreestanding", "-nostdlib", "-o", "build\\.objs\\nearmonia-amd64pc\\mingw\\x86_64\\release\\src\\ldr\\graphics.c.obj", "src\\ldr\\graphics.c"],
+  "file": "src\\ldr\\graphics.c"
+},
+{
+  "directory": "C:\\projects\\nearlands\\nearmonia",
+  "arguments": ["C:\\Users\\ncc\\scoop\\apps\\llvm\\current\\bin\\clang.exe", "-c", "-Qunused-arguments", "-Isrc\\includes", "-g", "-target", "x86_64-pc-win32-coff", "-ffreestanding", "-nostdlib", "-o", "build\\.objs\\nearmonia-amd64pc\\mingw\\x86_64\\release\\src\\ldr\\panic.c.obj", "src\\ldr\\panic.c"],
+  "file": "src\\ldr\\panic.c"
+},
+{
+  "directory": "C:\\projects\\nearlands\\nearmonia",
+  "arguments": ["C:\\Users\\ncc\\scoop\\apps\\llvm\\current\\bin\\clang.exe", "-c", "-Qunused-arguments", "-Isrc\\includes", "-g", "-target", "x86_64-pc-win32-coff", "-ffreestanding", "-nostdlib", "-o", "build\\.objs\\nearmonia-amd64pc\\mingw\\x86_64\\release\\src\\ldr\\peldr.c.obj", "src\\ldr\\peldr.c"],
+  "file": "src\\ldr\\peldr.c"
+},
+{
+  "directory": "C:\\projects\\nearlands\\nearmonia",
+  "arguments": ["C:\\Users\\ncc\\scoop\\apps\\llvm\\current\\bin\\clang.exe", "-c", "-Qunused-arguments", "-Isrc\\includes", "-g", "-target", "x86_64-pc-win32-coff", "-ffreestanding", "-nostdlib", "-o", "build\\.objs\\nearmonia-amd64pc\\mingw\\x86_64\\release\\src\\ldr\\term.c.obj", "src\\ldr\\term.c"],
+  "file": "src\\ldr\\term.c"
+},
+{
+  "directory": "C:\\projects\\nearlands\\nearmonia",
+  "arguments": ["C:\\Users\\ncc\\scoop\\apps\\llvm\\current\\bin\\clang.exe", "-c", "-Qunused-arguments", "-Isrc\\includes", "-g", "-target", "x86_64-pc-win32-coff", "-ffreestanding", "-nostdlib", "-o", "build\\.objs\\nearmonia-amd64pc\\mingw\\x86_64\\release\\src\\qol\\qerror.c.obj", "src\\qol\\qerror.c"],
+  "file": "src\\qol\\qerror.c"
+},
+{
+  "directory": "C:\\projects\\nearlands\\nearmonia",
+  "arguments": ["C:\\Users\\ncc\\scoop\\apps\\llvm\\current\\bin\\clang.exe", "-c", "-Qunused-arguments", "-Isrc\\includes", "-g", "-target", "x86_64-pc-win32-coff", "-ffreestanding", "-nostdlib", "-o", "build\\.objs\\nearmonia-amd64pc\\mingw\\x86_64\\release\\src\\qol\\qmem.c.obj", "src\\qol\\qmem.c"],
+  "file": "src\\qol\\qmem.c"
+},
+{
+  "directory": "C:\\projects\\nearlands\\nearmonia",
+  "arguments": ["C:\\Users\\ncc\\scoop\\apps\\llvm\\current\\bin\\clang.exe", "-c", "-Qunused-arguments", "-Isrc\\includes", "-g", "-target", "x86_64-pc-win32-coff", "-ffreestanding", "-nostdlib", "-o", "build\\.objs\\nearmonia-amd64pc\\mingw\\x86_64\\release\\src\\qol\\qstring.c.obj", "src\\qol\\qstring.c"],
+  "file": "src\\qol\\qstring.c"
+},
+{
+  "directory": "C:\\projects\\nearlands\\nearmonia",
+  "arguments": ["C:\\Users\\ncc\\scoop\\apps\\llvm\\current\\bin\\clang.exe", "-c", "-Qunused-arguments", "-Isrc\\includes", "-g", "-target", "x86_64-pc-win32-coff", "-ffreestanding", "-nostdlib", "-o", "build\\.objs\\nearmonia-amd64pc\\mingw\\x86_64\\release\\src\\ar\\amd64pc\\port.c.obj", "src\\ar\\amd64pc\\port.c"],
+  "file": "src\\ar\\amd64pc\\port.c"
+},
+{
+  "directory": "C:\\projects\\nearlands\\nearmonia",
+  "arguments": ["C:\\Users\\ncc\\scoop\\apps\\llvm\\current\\bin\\clang.exe", "-c", "-Qunused-arguments", "-Isrc\\includes", "-g", "-target", "x86_64-pc-win32-coff", "-ffreestanding", "-nostdlib", "-o", "build\\.objs\\nearmonia-amd64pc\\mingw\\x86_64\\release\\src\\ar\\amd64pc\\serial.c.obj", "src\\ar\\amd64pc\\serial.c"],
+  "file": "src\\ar\\amd64pc\\serial.c"
+},
+{
+  "directory": "C:\\projects\\nearlands\\nearmonia",
+  "arguments": ["C:\\Users\\ncc\\scoop\\apps\\llvm\\current\\bin\\clang.exe", "-c", "-Qunused-arguments", "-Isrc\\includes", "-g", "-target", "x86_64-pc-win32-coff", "-ffreestanding", "-nostdlib", "-o", "build\\.objs\\nearmonia-amd64pc\\mingw\\x86_64\\release\\src\\mm\\amd64pc\\mem.c.obj", "src\\mm\\amd64pc\\mem.c"],
+  "file": "src\\mm\\amd64pc\\mem.c"
+},
+{
+  "directory": "C:\\projects\\nearlands\\nearmonia",
+  "arguments": ["C:\\Users\\ncc\\scoop\\apps\\llvm\\current\\bin\\clang.exe", "-c", "-Qunused-arguments", "-Isrc\\includes", "-g", "-target", "x86_64-pc-win32-coff", "-ffreestanding", "-nostdlib", "-o", "build\\.objs\\nearmonia-amd64pc\\mingw\\x86_64\\release\\src\\mm\\amd64pc\\pmm.c.obj", "src\\mm\\amd64pc\\pmm.c"],
+  "file": "src\\mm\\amd64pc\\pmm.c"
+},
+{
+  "directory": "C:\\projects\\nearlands\\nearmonia",
+  "arguments": ["C:\\Users\\ncc\\scoop\\apps\\llvm\\current\\bin\\clang.exe", "-c", "-Qunused-arguments", "-Isrc\\includes", "-g", "-target", "x86_64-pc-win32-coff", "-ffreestanding", "-nostdlib", "-o", "build\\.objs\\nearmonia-amd64pc\\mingw\\x86_64\\release\\src\\mm\\amd64pc\\vmm.c.obj", "src\\mm\\amd64pc\\vmm.c"],
+  "file": "src\\mm\\amd64pc\\vmm.c"
+},
+{
+  "directory": "C:\\projects\\nearlands\\nearmonia",
+  "arguments": ["C:\\Users\\ncc\\scoop\\shims\\nasm.exe", "-I", "src\\includes", "-f", "win64", "-o", "build\\.objs\\nearmonia-amd64pc\\mingw\\x86_64\\release\\src\\mm\\amd64pc\\memasm.S.obj", "src\\mm\\amd64pc\\memasm.S"],
+  "file": "src\\mm\\amd64pc\\memasm.S"
+}]

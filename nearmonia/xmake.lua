@@ -10,11 +10,12 @@ target("nearmonia-amd64pc")
     add_files("src/fs/*.c", "src/fs/**/*.c")
     add_files("src/ldr/*.c", "src/ldr/**/*.c")
     add_files("src/qol/*.c", "src/qol/**/*.c")
-
+    add_includedirs("src/includes")
     add_files("src/ar/amd64pc/*.c", "src/ar/amd64pc/*.S")
     add_files("src/mm/amd64pc/*.c", "src/mm/amd64pc/*.S")
     add_cflags("-g -target x86_64-pc-win32-coff -ffreestanding -nostdlib", {force = true})
     add_asflags("-f win64", {force = true})
+    add_includedirs("src/includes")
     add_ldflags("/machine:amd64 /subsystem:efi_application /entry:LdrEfiEntry", {force = true})
 
 

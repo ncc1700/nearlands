@@ -10,8 +10,8 @@
 
 
 
-#include "../types.h"
-#include "../qol/qstring.h"
+#include <types.h>
+#include <qol/qstring.h>
 
 
 typedef struct _GraphicsData {

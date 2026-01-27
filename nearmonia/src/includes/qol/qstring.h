@@ -6,8 +6,8 @@
 
 
 
-#include "../types.h"
-#include "../extern/EFI/Uefi.h"
+#include <types.h>
+#include <EFI/Uefi.h>
 
 
 typedef struct _QString {

@@ -1,15 +1,15 @@
-#include "ldr/abs.h"
-#include "ldr/graphics.h"
-#include "ldr/panic.h"
-#include "mm/includes/mem.h"
-#include "ar/includes/serial.h"
-#include "extern/EFI/UefiBaseType.h"
-#include "extern/EFI/UefiSpec.h"
-#include "fs/sfs.h"
-#include "ldr/gop.h"
-#include "ldr/peldr.h"
-#include "ldr/term.h"
-#include "types.h"
+#include <ldr/abs.h>
+#include <ldr/graphics.h>
+#include <ldr/panic.h>
+#include <mm/mem.h>
+#include <ar/serial.h>
+#include <EFI/UefiBaseType.h>
+#include <EFI/UefiSpec.h>
+#include <fs/sfs.h>
+#include <ldr/gop.h>
+#include <ldr/peldr.h>
+#include <ldr/term.h>
+#include <types.h>
 
 
 

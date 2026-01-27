@@ -8,11 +8,11 @@
 
 
 
-#include "../types.h"
+#include <types.h>
 
 
-#include "../extern/EFI/Uefi.h"
-#include "../extern/EFI/UefiBaseType.h"
+#include <EFI/Uefi.h>
+#include <EFI/UefiBaseType.h>
 
 
 

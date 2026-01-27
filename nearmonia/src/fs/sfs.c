@@ -1,10 +1,10 @@
-#include "sfs.h"
-#include "../extern/EFI/LoadedImage.h"
-#include "../extern/EFI/SimpleFileSystem.h"
-#include "../extern/EFI/UefiBaseType.h"
-#include "../extern/EFI/UefiMultiPhase.h"
-#include "../ldr/abs.h"
-#include "../ar/includes/serial.h"
+#include <fs/sfs.h>
+#include <EFI/LoadedImage.h>
+#include <EFI/SimpleFileSystem.h>
+#include <EFI/UefiBaseType.h>
+#include <EFI/UefiMultiPhase.h>
+#include <ldr/abs.h>
+#include <ar/serial.h>
 
 static EFI_FILE_PROTOCOL* root = NULL;
 

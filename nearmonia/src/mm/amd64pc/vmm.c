@@ -1,7 +1,7 @@
-#include "../includes/mem.h"
-#include "../../ldr/abs.h"
-#include "../../qol/qmem.h"
-#include "../../ldr/graphics.h"
+#include <mm/mem.h>
+#include <ldr/abs.h>
+#include <qol/qmem.h>
+#include <ldr/graphics.h>
 
 
 

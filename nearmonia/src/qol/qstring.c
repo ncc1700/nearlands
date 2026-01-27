@@ -1,6 +1,6 @@
-#include "qstring.h"
-#include "qmem.h"
-#include "../ldr/abs.h"
+#include <qol/qstring.h>
+#include <qol/qmem.h>
+#include <ldr/abs.h>
 
 
 

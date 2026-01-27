@@ -8,8 +8,8 @@
 
 
 
-#include "../types.h"
-#include "../qol/qstring.h"
+#include <types.h>
+#include <qol/qstring.h>
 
 typedef enum _Status {
     TERM_STATUS_ERROR,

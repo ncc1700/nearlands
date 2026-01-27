@@ -1,26 +1,6 @@
 [
 {
   "directory": "C:\\projects\\nearlands\\narnify",
-  "arguments": ["C:\\Users\\ncc\\scoop\\shims\\nasm.exe", "-I", "src\\includes", "-f", "win64", "-o", "build\\.objs\\narnify-amd64pc\\mingw\\x86_64\\release\\src\\ar\\amd64pc\\boot.S.obj", "src\\ar\\amd64pc\\boot.S"],
-  "file": "src\\ar\\amd64pc\\boot.S"
-},
-{
-  "directory": "C:\\projects\\nearlands\\narnify",
-  "arguments": ["C:\\Users\\ncc\\scoop\\shims\\nasm.exe", "-I", "src\\includes", "-f", "win64", "-o", "build\\.objs\\narnify-amd64pc\\mingw\\x86_64\\release\\src\\ar\\amd64pc\\gdtasm.S.obj", "src\\ar\\amd64pc\\gdtasm.S"],
-  "file": "src\\ar\\amd64pc\\gdtasm.S"
-},
-{
-  "directory": "C:\\projects\\nearlands\\narnify",
-  "arguments": ["C:\\Users\\ncc\\scoop\\shims\\nasm.exe", "-I", "src\\includes", "-f", "win64", "-o", "build\\.objs\\narnify-amd64pc\\mingw\\x86_64\\release\\src\\ar\\amd64pc\\idtasm.S.obj", "src\\ar\\amd64pc\\idtasm.S"],
-  "file": "src\\ar\\amd64pc\\idtasm.S"
-},
-{
-  "directory": "C:\\projects\\nearlands\\narnify",
-  "arguments": ["C:\\Users\\ncc\\scoop\\shims\\nasm.exe", "-I", "src\\includes", "-f", "win64", "-o", "build\\.objs\\narnify-amd64pc\\mingw\\x86_64\\release\\src\\mm\\amd64pc\\vmmasm.S.obj", "src\\mm\\amd64pc\\vmmasm.S"],
-  "file": "src\\mm\\amd64pc\\vmmasm.S"
-},
-{
-  "directory": "C:\\projects\\nearlands\\narnify",
   "arguments": ["C:\\Users\\ncc\\scoop\\apps\\llvm\\current\\bin\\clang.exe", "-c", "-Qunused-arguments", "-Isrc\\includes", "-g", "-target", "x86_64-pc-win32-coff", "-ffreestanding", "-nostdlib", "-o", "build\\.objs\\narnify-amd64pc\\mingw\\x86_64\\release\\src\\entry.c.obj", "src\\entry.c"],
   "file": "src\\entry.c"
 },
@@ -196,11 +176,6 @@
 },
 {
   "directory": "C:\\projects\\nearlands\\narnify",
-  "arguments": ["C:\\Users\\ncc\\scoop\\apps\\llvm\\current\\bin\\clang.exe", "-c", "-Qunused-arguments", "-Isrc\\includes", "-g", "-target", "x86_64-pc-win32-coff", "-ffreestanding", "-nostdlib", "-o", "build\\.objs\\narnify-amd64pc\\mingw\\x86_64\\release\\src\\ar\\amd64pc\\registers.c.obj", "src\\ar\\amd64pc\\registers.c"],
-  "file": "src\\ar\\amd64pc\\registers.c"
-},
-{
-  "directory": "C:\\projects\\nearlands\\narnify",
   "arguments": ["C:\\Users\\ncc\\scoop\\apps\\llvm\\current\\bin\\clang.exe", "-c", "-Qunused-arguments", "-Isrc\\includes", "-g", "-target", "x86_64-pc-win32-coff", "-ffreestanding", "-nostdlib", "-o", "build\\.objs\\narnify-amd64pc\\mingw\\x86_64\\release\\src\\ar\\amd64pc\\serial.c.obj", "src\\ar\\amd64pc\\serial.c"],
   "file": "src\\ar\\amd64pc\\serial.c"
 },
@@ -238,4 +213,24 @@
   "directory": "C:\\projects\\nearlands\\narnify",
   "arguments": ["C:\\Users\\ncc\\scoop\\apps\\llvm\\current\\bin\\clang.exe", "-c", "-Qunused-arguments", "-Isrc\\includes", "-g", "-target", "x86_64-pc-win32-coff", "-ffreestanding", "-nostdlib", "-o", "build\\.objs\\narnify-amd64pc\\mingw\\x86_64\\release\\src\\mm\\amd64pc\\pmms\\pagemap.c.obj", "src\\mm\\amd64pc\\pmms\\pagemap.c"],
   "file": "src\\mm\\amd64pc\\pmms\\pagemap.c"
+},
+{
+  "directory": "C:\\projects\\nearlands\\narnify",
+  "arguments": ["C:\\Users\\ncc\\scoop\\shims\\nasm.exe", "-I", "src\\includes", "-f", "win64", "-o", "build\\.objs\\narnify-amd64pc\\mingw\\x86_64\\release\\src\\ar\\amd64pc\\boot.S.obj", "src\\ar\\amd64pc\\boot.S"],
+  "file": "src\\ar\\amd64pc\\boot.S"
+},
+{
+  "directory": "C:\\projects\\nearlands\\narnify",
+  "arguments": ["C:\\Users\\ncc\\scoop\\shims\\nasm.exe", "-I", "src\\includes", "-f", "win64", "-o", "build\\.objs\\narnify-amd64pc\\mingw\\x86_64\\release\\src\\ar\\amd64pc\\gdtasm.S.obj", "src\\ar\\amd64pc\\gdtasm.S"],
+  "file": "src\\ar\\amd64pc\\gdtasm.S"
+},
+{
+  "directory": "C:\\projects\\nearlands\\narnify",
+  "arguments": ["C:\\Users\\ncc\\scoop\\shims\\nasm.exe", "-I", "src\\includes", "-f", "win64", "-o", "build\\.objs\\narnify-amd64pc\\mingw\\x86_64\\release\\src\\ar\\amd64pc\\idtasm.S.obj", "src\\ar\\amd64pc\\idtasm.S"],
+  "file": "src\\ar\\amd64pc\\idtasm.S"
+},
+{
+  "directory": "C:\\projects\\nearlands\\narnify",
+  "arguments": ["C:\\Users\\ncc\\scoop\\shims\\nasm.exe", "-I", "src\\includes", "-f", "win64", "-o", "build\\.objs\\narnify-amd64pc\\mingw\\x86_64\\release\\src\\mm\\amd64pc\\vmmasm.S.obj", "src\\mm\\amd64pc\\vmmasm.S"],
+  "file": "src\\mm\\amd64pc\\vmmasm.S"
 }]

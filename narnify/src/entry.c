@@ -61,13 +61,7 @@ void KeSystemStartup(BootInfo* info){
     if(result == FALSE) KePanic(QSTR("Couldn't Setup Kernel Components"));
     else KeTermPrint(TERM_STATUS_PASS, QSTR("KeInitSystem PASS"));
     
-    ComponentTypes types[2] = {KeReturnKtCompIndex(), KeReturnUtCompIndex()};
-    u64 i = 0;
-    while(1){
-        Handle entity = EcsCreateEntity(types, 2);
-        KeTermPrint(TERM_STATUS_IMPINFO, QSTR("creating entity %d\n"), i);
-        i++;
-    }   
+    
     
 
     KeTermPrint(TERM_STATUS_ERROR, QSTR("WORK IN PROGRESS - come back later!"));

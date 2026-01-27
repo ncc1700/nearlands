@@ -6,7 +6,7 @@
 
 
 
-#include "../../qol/qstring.h"
+#include <qol/qstring.h>
 
 
 

@@ -1,6 +1,6 @@
-#include "../includes/mem.h"
-#include "../../ldr/term.h"
-#include "../../ldr/abs.h"
+#include <mm/mem.h>
+#include <ldr/term.h>
+#include <ldr/abs.h>
 
 
 

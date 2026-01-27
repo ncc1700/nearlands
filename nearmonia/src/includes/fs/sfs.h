@@ -10,8 +10,8 @@
 
 
 
-#include "../extern/EFI/SimpleFileSystem.h"
-#include "../types.h"
+#include <EFI/SimpleFileSystem.h>
+#include <types.h>
 
 
 

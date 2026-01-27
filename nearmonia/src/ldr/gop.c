@@ -1,9 +1,9 @@
-#include "gop.h"
-#include "../extern/EFI/GraphicsOutput.h"
-#include "../extern/EFI/UefiBaseType.h"
-#include "graphics.h"
-#include "abs.h"
-#include "../ar/includes/serial.h"
+#include <ldr/gop.h>
+#include <EFI/GraphicsOutput.h>
+#include <EFI/UefiBaseType.h>
+#include <ldr/graphics.h>
+#include <ldr/abs.h>
+#include <ar/serial.h>
 
 
 
