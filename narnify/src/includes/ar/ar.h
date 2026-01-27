@@ -7,12 +7,16 @@
 
 #include <types.h>
 
-
+typedef enum _CPUArch {
+    AMD64,
+    AARCH64,
+    IA64
+} CPUArch;
 
 
 
 boolean ArInitSystem();
-
+CPUArch ArReturnCPUArch();
 
 
 

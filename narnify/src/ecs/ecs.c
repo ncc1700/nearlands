@@ -34,7 +34,6 @@ u16 EcsCreateNewComponent(u64 size){
     if(index >= MAX_COMPONENT) return 0;
     componentSizeArr[index] = size;
     curComponentIndex++;
-    KeTermPrint(TERM_STATUS_PASS, QSTR("Created component with index of %d"), index);
     return index;
 }
 

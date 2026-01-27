@@ -48,7 +48,6 @@ boolean MmInitSystem(BootInfo* info){
     u64 divisor = 24 + (TO_MB(memoryAmount) / 512);
     if(divisor <= 0) divisor = 24;
     if(divisor > 512) divisor = 512;
-    KeTermPrint(TERM_STATUS_INFO, QSTR("divisor is %d\n"), divisor);
     u64 heapSize = info->memMap->sizeOfEntireMemory / divisor;
     u64 heapSizeInPages = (heapSize + (PAGE_SIZE - 1)) / PAGE_SIZE;
     KeTermPrint(TERM_STATUS_INFO, QSTR("setting up the kernel heap (%d pages)"), heapSizeInPages);

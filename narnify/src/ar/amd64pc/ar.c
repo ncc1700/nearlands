@@ -11,3 +11,7 @@ boolean ArInitSystem(){
     Amd64SetupIDT();
     return TRUE; // we will do more here soon dw
 }
+
+CPUArch ArReturnCPUArch(){
+    return AMD64;
+}
