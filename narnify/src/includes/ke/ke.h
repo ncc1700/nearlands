@@ -7,6 +7,7 @@
 
 
 
+#include "bootinfo.h"
 #include <types.h>
 
 
@@ -15,7 +16,7 @@
 
 
 
-boolean KeInitSystem();
+boolean KeInitSystem(BootInfo* info);
 
 
 

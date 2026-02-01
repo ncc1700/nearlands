@@ -67,6 +67,32 @@ boolean MmMapPage(PageTable* table, u64 physAddr, u64 virtAddr, u64 flags){
     return TRUE;
 }
 
+boolean MmUnmapPage(PageTable* table, u64 virtAddr){
+    u64 pml4Entry = GET_PML4_ENTRY(virtAddr);
+    u64 pdptEntry = GET_PDPT_ENTRY(virtAddr);
+    u64 pdEntry = GET_PD_ENTRY(virtAddr);
+    u64 ptEntry = GET_PT_ENTRY(virtAddr);
+    if(table->pml4[pml4Entry] == 0x0){
+        return FALSE; // isn't mapped
+    }
+    uptr* pdpt = PARSE_ENTRY_VALUE(table->pml4[pml4Entry]);
+    if(pdpt[pdptEntry] == 0x0){
+        return FALSE; // isn't mapped
+    }
+    uptr* pd = PARSE_ENTRY_VALUE(pdpt[pdptEntry]);
+    if(pd[pdEntry] == 0x0){
+        return FALSE; // isn't mapped
+    }
+    uptr* pt = PARSE_ENTRY_VALUE(pd[pdEntry]);
+    pt[ptEntry] = 0;
+    MmInvalidatePage(virtAddr);
+    return TRUE;
+}
+
+
+PageTable* MmReturnKernelPageTable(){
+    return &kernPTable;
+}
 
 boolean MmInitVirtualMemoryManager(BootInfo* info){
     if(kernPTable.pml4 != NULL){
