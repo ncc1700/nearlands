@@ -1,3 +1,4 @@
+#include "ke/binfo.h"
 #include "mm/alloc.h"
 #include "uacpi/status.h"
 #include <ke/spinlock.h>
@@ -6,12 +7,13 @@
 
 
 void *uacpi_kernel_map(uacpi_phys_addr addr, uacpi_size len){
-    KeTermPrint(TERM_STATUS_INFO, QSTR("uACPI wants to map 0x%x with size of %d"), addr, len);
+    KeTermPrint(TERM_STATUS_INFO, QSTR("[uACPI] uACPI wants to map 0x%x with size of %d"), 
+                                            addr, len);
     return (void*)addr;
 }
 
 void uacpi_kernel_unmap(void *addr, uacpi_size len){
-    KeTermPrint(TERM_STATUS_ERROR, QSTR("[ACPI]: %s: UNIMPLEMENTED"), __FUNCTION__);
+    return;
 }
 
 void uacpi_kernel_log(uacpi_log_level log, const uacpi_char* str){
@@ -237,8 +239,9 @@ void uacpi_kernel_io_unmap(uacpi_handle handle){
 }
 
 uacpi_status uacpi_kernel_get_rsdp(uacpi_phys_addr *out_rsdp_address){
-    KeTermPrint(TERM_STATUS_ERROR, QSTR("[ACPI]: %s: UNIMPLEMENTED"), __FUNCTION__);
-    return 0;
+    //KeTermPrint(TERM_STATUS_ERROR, QSTR("[ACPI]: %s: UNIMPLEMENTED"), __FUNCTION__);
+    *out_rsdp_address = KeReturnBootInformation()->rsdp;
+    return UACPI_STATUS_OK;
 }
 
 uacpi_handle uacpi_kernel_create_event(void){

@@ -44,6 +44,7 @@ typedef struct _BootInfo {
     u64 kernelLocPhys;
     u64 kernelSizeInPages;
     u64 typeOfBoot;
+    u64 rsdp;
 } BootInfo;
 
 

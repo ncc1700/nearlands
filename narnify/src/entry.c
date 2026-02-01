@@ -66,19 +66,13 @@ void KeSystemStartup(BootInfo* info){
     if(result == FALSE) KePanic(QSTR("Couldn't Setup Kernel Components"));
     else KeTermPrint(TERM_STATUS_PASS, QSTR("KeInitSystem PASS"));
     
-
-    // KeTermPrint(TERM_STATUS_IMPINFO, QSTR("Calling AcpiInitSystem"));
-    // result = AcpiInitSystem();
-    // if(result == FALSE) KePanic(QSTR("Couldn't Setup ACPI (via uACPI)"));
-    // else KeTermPrint(TERM_STATUS_PASS, QSTR("AcpiInitSystem PASS"));
+    KeTermPrint(TERM_STATUS_IMPINFO, QSTR("RSDP: 0x%x"), info->rsdp);
+    KeTermPrint(TERM_STATUS_IMPINFO, QSTR("Calling AcpiInitSystem"));
+    result = AcpiInitSystem();
+    if(result == FALSE) KePanic(QSTR("Couldn't Setup ACPI (via uACPI)"));
+    else KeTermPrint(TERM_STATUS_PASS, QSTR("AcpiInitSystem PASS"));
     
-    void* h = MmAllocateGeneralMemory(3900);
-    void* p = MmAllocateGeneralMemory(600);
-    KeTermPrint(TERM_STATUS_INFO, QSTR("h is located at 0x%x, p is located at 0x%x"), h, p);
-    MmFreeGeneralMemory(h);
-    void* m = MmAllocateGeneralMemory(3000);
-    KeTermPrint(TERM_STATUS_INFO, QSTR("m is located at 0x%x"), m);
-
+    
     
 
     KeTermPrint(TERM_STATUS_ERROR, QSTR("WORK IN PROGRESS - come back later!"));

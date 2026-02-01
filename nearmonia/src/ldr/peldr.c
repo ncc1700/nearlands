@@ -200,6 +200,7 @@ void LdrPeLoadPEImageAsKernel(const char* path){
     bInfo.kernelLocVirt = HHDM_OFFSET;
     bInfo.kernelSizeInPages = amountOfPagesForImage;
     bInfo.memMap = (BootMemoryMap*)memmap;
+    bInfo.rsdp = LdrGetRSDPLocation();
 
     LoadSectionsIntoMemory(content, ntHeader, &bInfo);
 
