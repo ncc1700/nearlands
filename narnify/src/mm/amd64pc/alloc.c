@@ -94,7 +94,8 @@ void* MmAllocateGeneralMemory(u64 allocSize){
             cur = cur->next;
         }
     }
-    if((u64)allocCur + size >= (u64)allocLimit){
+    if(((u64)allocCur + size) >= (u64)allocLimit){
+        KeTermPrint(TERM_STATUS_INFO, QSTR("expanding heap outreach"));
         u64 amountUntilLimit = (u64)allocLimit - (u64)allocCur;
         if(amountUntilLimit >= sizeof(FreeList)){
             FreeList* header = allocCur;
@@ -109,8 +110,8 @@ void* MmAllocateGeneralMemory(u64 allocSize){
             header->header = header;
             MmFreeGeneralMemory(allocCur);
             // we now reinit the allocator
-            MmInitGeneralAllocator();
         }
+        MmInitGeneralAllocator();
     }
     FreeList* header = allocCur;
     memset(header, 0, sizeof(FreeList));

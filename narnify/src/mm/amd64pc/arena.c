@@ -17,8 +17,6 @@ boolean MmCreateArena(Arena* arena, u64 size){
         KeTermPrint(TERM_STATUS_INFO, QSTR("failed to create arena of size %d"), size);
         return FALSE;
     }
-    KeTermPrint(TERM_STATUS_INFO, QSTR("created arena of size %d and base of 0x%x"), size, arena->base);
-
     arena->used = 0;
     return TRUE;
 }

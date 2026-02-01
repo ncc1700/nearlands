@@ -155,7 +155,6 @@ Handle EcsCreateEntity(ComponentTypes* components, u64 componentAmount){
     archeType->entities[enIndex].componentAmount = componentAmount;
     for(u64 i = 0; i < componentAmount; i++){
         archeType->entities[enIndex].componentTypes[i] = components[i];
-        KeTermPrint(TERM_STATUS_INFO, QSTR("Allocating %d.."), componentSizeArr[components[i]]);
         archeType->entities[enIndex].components[i] = MmPushMemoryFromArena(&archeType->entities[enIndex].arena,
                                                             componentSizeArr[components[i]]);
         if(archeType->entities[enIndex].components[i] == NULL){
