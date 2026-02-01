@@ -12,6 +12,7 @@
 
 boolean MmInitGeneralAllocator();
 void* MmAllocateGeneralMemory(u64 allocSize);
+void MmSetAllowFrees(boolean value);
 boolean MmFreeGeneralMemory(void* address);
 
 

@@ -4,6 +4,16 @@
 #include <mm/alloc.h>
 #include <qol/qmem.h>
 
+
+/**
+
+    Bit better heap allocator, then the old one
+
+
+    still scuffed but it..... works
+
+*/
+
 typedef struct _FreeList {
     u64 address;
     struct _FreeList* next;
@@ -21,7 +31,7 @@ static void* allocLimit = 0;
 
 static FreeList* head = NULL;
 static FreeList* tail = NULL;
-static const boolean allowFrees = TRUE;
+static boolean allowFrees = TRUE;
 
 
 static inline void AddToFreeList(FreeList* list){
@@ -130,7 +140,12 @@ void* MmAllocateGeneralMemory(u64 allocSize){
     return prev;
 }
 
+void MmSetAllowFrees(boolean value){
+    allowFrees = value;
+}
+
 boolean MmFreeGeneralMemory(void* address){
+    if(allowFrees == FALSE) return FALSE;
     FreeList* header = address - sizeof(FreeList);
     header->isFree = TRUE;
     AddToFreeList(header);

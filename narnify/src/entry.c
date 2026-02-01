@@ -1,5 +1,6 @@
 #include "acpi/acpi.h"
 #include "ke/binfo.h"
+#include "mm/alloc.h"
 #include "mm/pmm.h"
 #include "mm/vmm.h"
 #include <ecs/ecs.h>
@@ -71,13 +72,13 @@ void KeSystemStartup(BootInfo* info){
     // if(result == FALSE) KePanic(QSTR("Couldn't Setup ACPI (via uACPI)"));
     // else KeTermPrint(TERM_STATUS_PASS, QSTR("AcpiInitSystem PASS"));
     
-    ComponentTypes types[2] = {KeReturnKtCompIndex(), KeReturnUtCompIndex()};
-    int i = 0;
-    while(1){
-        KeTermPrint(TERM_STATUS_PASS, QSTR("Created Entity %d!"), i);
-        EcsCreateEntity(types, 2);
-        i++;
-    }
+    void* h = MmAllocateGeneralMemory(3900);
+    void* p = MmAllocateGeneralMemory(600);
+    KeTermPrint(TERM_STATUS_INFO, QSTR("h is located at 0x%x, p is located at 0x%x"), h, p);
+    MmFreeGeneralMemory(h);
+    void* m = MmAllocateGeneralMemory(3000);
+    KeTermPrint(TERM_STATUS_INFO, QSTR("m is located at 0x%x"), m);
+
     
 
     KeTermPrint(TERM_STATUS_ERROR, QSTR("WORK IN PROGRESS - come back later!"));
