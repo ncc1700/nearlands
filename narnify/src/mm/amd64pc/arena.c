@@ -1,6 +1,7 @@
+#include "ke/term.h"
+#include "mm/alloc.h"
 #include <mm/arena.h>
 #include <mm/pmm.h>
-#include <mm/heap.h>
 
 
 
@@ -11,16 +12,28 @@ boolean MmCreateArena(Arena* arena, u64 size){
     arena->size = size;
     arena->sizeInpages = (size + (PAGE_SIZE - 1)) / PAGE_SIZE;
     //arena->base = MmAllocateMultiplePages(arena->sizeInpages);
-    arena->base = MmAllocateFromHeap(arena->size);
-    if(arena->base == NULL) return FALSE;
+    arena->base = MmAllocateGeneralMemory(arena->size);
+    if(arena->base == NULL){
+        KeTermPrint(TERM_STATUS_INFO, QSTR("failed to create arena of size %d"), size);
+        return FALSE;
+    }
+    KeTermPrint(TERM_STATUS_INFO, QSTR("created arena of size %d and base of 0x%x"), size, arena->base);
+
     arena->used = 0;
     return TRUE;
 }
 
 
 void* MmPushMemoryFromArena(Arena* arena, u64 size){
-    if(arena->base == NULL) return NULL;
-    if((arena->used + size) > arena->size) return NULL;
+    if(arena->base == NULL){
+        KeTermPrint(TERM_STATUS_INFO, QSTR("arena base is NULL"));
+        return NULL;
+    }
+    if((arena->used + size) > arena->size){
+        KeTermPrint(TERM_STATUS_INFO, QSTR("arena overflow, used is %d, size is %d"),
+                               (size), arena->size);
+        return NULL;
+    }
     u64 usedBeforeAdd = arena->used;
     arena->used += size;
     return (void*)((u8*)arena->base + usedBeforeAdd);
@@ -38,7 +51,7 @@ void MmResetArena(Arena* arena){
 
 boolean MmDestroyArena(Arena* arena){
     //boolean result = MmFreeMultiplePages(arena->base, arena->sizeInpages);
-    boolean result = MmFreeFromHeap(arena->base, arena->size);
+    boolean result = MmFreeGeneralMemory(arena->base);
     if(result == FALSE) return FALSE;
     arena->size = 0;
     arena->sizeInpages = 0;

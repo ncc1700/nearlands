@@ -1,4 +1,4 @@
-#include "mm/heap.h"
+#include "mm/alloc.h"
 #include <ke/spinlock.h>
 #include <stdatomic.h>
 
@@ -11,14 +11,14 @@ SpinLock KeCreateSpinLock(){
 }
 
 SpinLock* KeCreateSpinLockHeap(){
-    SpinLock* lock = MmAllocateFromHeap(sizeof(SpinLock));
+    SpinLock* lock = MmAllocateGeneralMemory(sizeof(SpinLock));
     if(lock == NULL) return NULL;
     lock->lock = (atomic_flag)ATOMIC_FLAG_INIT;
     return lock;
 }
 
 boolean KeDeleteSpinLockFromHeap(SpinLock* lock){
-    return MmFreeFromHeap(lock, sizeof(SpinLock));
+    return MmFreeGeneralMemory(lock);
 }
 
 void KeAcquireSpinLock(SpinLock* spinLock){

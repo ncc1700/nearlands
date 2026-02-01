@@ -1,8 +1,8 @@
+#include "mm/alloc.h"
 #include "uacpi/status.h"
 #include <ke/spinlock.h>
 #include <uacpi/kernel_api.h>
 #include <ke/term.h>
-#include <mm/heap.h>
 
 
 void *uacpi_kernel_map(uacpi_phys_addr addr, uacpi_size len){
@@ -38,11 +38,11 @@ void uacpi_kernel_log(uacpi_log_level log, const uacpi_char* str){
 }
 
 void *uacpi_kernel_alloc(uacpi_size size){
-    return MmAllocateFromHeap(size);
+    return MmAllocateGeneralMemory(size);
 }
 
 void uacpi_kernel_free(void *mem, uacpi_size size_hint){
-    MmFreeFromHeap(mem, size_hint);
+    MmFreeGeneralMemory(mem);
 }
 
 uacpi_u64 uacpi_kernel_get_nanoseconds_since_boot(void){

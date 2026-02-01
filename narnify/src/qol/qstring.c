@@ -1,5 +1,5 @@
+#include "mm/alloc.h"
 #include <qol/qstring.h>
-#include <mm/heap.h>
 #include <ar/serial.h>
 #include <string.h>
 
@@ -48,7 +48,7 @@ void QolCopyString(QString src, QString* dest){
 // dest.buffer is allocated from the kernel heap, free it
 boolean QolCopyStringHeap(QString src, QString* dest){
     if(src.buffer == NULL) return FALSE;
-    dest->buffer = MmAllocateFromHeap((src.length + 1) * sizeof(u8));
+    dest->buffer = MmAllocateGeneralMemory((src.length + 1) * sizeof(u8));
     if(dest->buffer == NULL) return FALSE;
     memcpy(dest->buffer, src.buffer, src.length * sizeof(u8));
     dest->buffer[src.length] = '\0'; 
@@ -79,7 +79,7 @@ QString QolDupeString(QString src){
 QString QolDupeStringHeap(QString src){
     QString result = {0};
     if(src.buffer == NULL) goto EXIT;
-    result.buffer = MmAllocateFromHeap((src.length + 1) * sizeof(u8));
+    result.buffer = MmAllocateGeneralMemory((src.length + 1) * sizeof(u8));
     if(result.buffer == NULL) goto EXIT;
     memcpy(result.buffer, src.buffer, src.length * sizeof(u8));
     result.buffer[src.length] = '\0'; 

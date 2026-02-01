@@ -1,7 +1,7 @@
+#include "mm/alloc.h"
 #include <ecs/ecs.h>
 #include <qol/qmem.h>
 #include <mm/pmm.h>
-#include <mm/heap.h>
 
 #include <ke/term.h>
 #include <ke/panic.h>
@@ -144,7 +144,7 @@ Handle EcsCreateEntity(ComponentTypes* components, u64 componentAmount){
         EntityFreeList* node = archeType->initial;
         archeType->initial = archeType->initial->next;
         enIndex = node->index;
-        MmFreeFromHeap(node, sizeof(EntityFreeList));
+        MmFreeGeneralMemory(node);
     } else {
         enIndex = archeType->index;
         archeType->index++;
@@ -155,6 +155,7 @@ Handle EcsCreateEntity(ComponentTypes* components, u64 componentAmount){
     archeType->entities[enIndex].componentAmount = componentAmount;
     for(u64 i = 0; i < componentAmount; i++){
         archeType->entities[enIndex].componentTypes[i] = components[i];
+        KeTermPrint(TERM_STATUS_INFO, QSTR("Allocating %d.."), componentSizeArr[components[i]]);
         archeType->entities[enIndex].components[i] = MmPushMemoryFromArena(&archeType->entities[enIndex].arena,
                                                             componentSizeArr[components[i]]);
         if(archeType->entities[enIndex].components[i] == NULL){
@@ -214,7 +215,7 @@ boolean EcsDeleteEntity(Handle entityHandle){
     EcsDecodeHandle(entityHandle, &archeTypeIndex, &entityIndex);
     ArcheType* archeType = &archeTypeArray[archeTypeIndex];
 
-    EntityFreeList* node = MmAllocateFromHeap(sizeof(EntityFreeList));
+    EntityFreeList* node = MmAllocateGeneralMemory(sizeof(EntityFreeList));
     if(node == NULL){
         KePanic(QSTR("Failure to create node for ECS"));
     }

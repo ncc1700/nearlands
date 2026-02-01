@@ -66,11 +66,18 @@ void KeSystemStartup(BootInfo* info){
     else KeTermPrint(TERM_STATUS_PASS, QSTR("KeInitSystem PASS"));
     
 
-    KeTermPrint(TERM_STATUS_IMPINFO, QSTR("Calling AcpiInitSystem"));
-    result = AcpiInitSystem();
-    if(result == FALSE) KePanic(QSTR("Couldn't Setup ACPI (via uACPI)"));
-    else KeTermPrint(TERM_STATUS_PASS, QSTR("AcpiInitSystem PASS"));
+    // KeTermPrint(TERM_STATUS_IMPINFO, QSTR("Calling AcpiInitSystem"));
+    // result = AcpiInitSystem();
+    // if(result == FALSE) KePanic(QSTR("Couldn't Setup ACPI (via uACPI)"));
+    // else KeTermPrint(TERM_STATUS_PASS, QSTR("AcpiInitSystem PASS"));
     
+    ComponentTypes types[2] = {KeReturnKtCompIndex(), KeReturnUtCompIndex()};
+    int i = 0;
+    while(1){
+        KeTermPrint(TERM_STATUS_PASS, QSTR("Created Entity %d!"), i);
+        EcsCreateEntity(types, 2);
+        i++;
+    }
     
 
     KeTermPrint(TERM_STATUS_ERROR, QSTR("WORK IN PROGRESS - come back later!"));
