@@ -30,6 +30,7 @@ boolean AcpiInitSystem(){
 void AcpiShutdownSystem(){
     uacpi_prepare_for_sleep_state(UACPI_SLEEP_STATE_S5);
     uacpi_enter_sleep_state(UACPI_SLEEP_STATE_S5);
+    // shouldn't go here
     KePanic(QSTR("failure to initiate ACPI shutdown"));
 }
 

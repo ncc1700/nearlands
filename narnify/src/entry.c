@@ -76,21 +76,27 @@ void KeSystemStartup(BootInfo* info){
     else KeTermPrint(TERM_STATUS_PASS, QSTR("AcpiInitSystem PASS"));
     
     void* h = MmAllocateGeneralMemory(300000);
-    if(h == NULL){
-        KeTermPrint(TERM_STATUS_ERROR, QSTR("bruh"));
-    }
+    void* n = MmAllocateGeneralMemory(10);
+
+    KeTermPrint(TERM_STATUS_IMPINFO, QSTR("h = 0x%x, n = 0x%x"), h, n);
     MmFreeGeneralMemory(h);
     h = MmAllocateGeneralMemory(300000);
+    n = MmAllocateGeneralMemory(10);
     if(h == NULL){
         KeTermPrint(TERM_STATUS_ERROR, QSTR("bruh"));
     }
+    KeTermPrint(TERM_STATUS_IMPINFO, QSTR("h = 0x%x, n = 0x%x"), h, n);
+
     MmFreeGeneralMemory(h);
     h = MmAllocateGeneralMemory(300000);
+    n = MmAllocateGeneralMemory(10);
     if(h == NULL){
         KeTermPrint(TERM_STATUS_ERROR, QSTR("bruh"));
     }
+    KeTermPrint(TERM_STATUS_IMPINFO, QSTR("h = 0x%x, n = 0x%x"), h, n);
+
     MmFreeGeneralMemory(h);
-    AcpiShutdownSystem();
+    //AcpiShutdownSystem();
     KeTermPrint(TERM_STATUS_ERROR, QSTR("WORK IN PROGRESS - come back later!"));
 
     while(1){continue;}

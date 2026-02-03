@@ -1,3 +1,4 @@
+#include "ke/spinlock.h"
 #include "ke/term.h"
 #include "mm/pmm.h"
 #include "types.h"
@@ -13,6 +14,8 @@
     still scuffed but it..... works
 
 */
+
+static SpinLock allocSpinLock = {0};
 
 #define FREELIST_HEADER_MAGIC 0x6767
 
@@ -63,7 +66,53 @@ static inline void RemoveFromFreeList(FreeList* list){
     list->next = NULL;
 }
 
+static inline boolean FreeMemory(void* address){
+    if(address == NULL){
+        return FALSE;
+    }
+    if(allowFrees == FALSE){
+        return FALSE;
+    }
+    FreeList* header = address - sizeof(FreeList);
+
+    if(header == NULL){
+        return FALSE;
+    }
+
+    if(header->magic != FREELIST_HEADER_MAGIC){
+        return FALSE;
+    }
+
+    header->isFree = TRUE;
+
+    AddToFreeList(header);
+    return TRUE;
+}
+
+
+
+static boolean ReinitGeneralAllocator(u64 minSize){
+    u64 minSizeInPages = (minSize + (PAGE_SIZE - 1)) / PAGE_SIZE;
+    allocBase = MmAllocateMultiplePages(minSizeInPages + PAGE_SIZE);
+    if(allocBase == NULL) return FALSE;
+    allocCur = allocBase;
+    allocLimit = allocBase + PAGE_SIZE;
+    return TRUE;
+}
+
+static inline void InitFreeList(FreeList* header, boolean isFree, 
+                u64 totalSize, u64 memSize, u64 address)
+{
+    header->magic = FREELIST_HEADER_MAGIC;
+    header->isFree = isFree;
+    header->address = (u64)address;
+    header->size = totalSize;
+    header->memSize = memSize;
+    header->header = header;
+}
+
 boolean MmInitGeneralAllocator(){
+    allocSpinLock = KeCreateSpinLock();
     allocBase = MmAllocateSinglePage();
     if(allocBase == NULL) return FALSE;
     allocCur = allocBase;
@@ -71,34 +120,9 @@ boolean MmInitGeneralAllocator(){
     return TRUE;
 }
 
-
 void* MmAllocateGeneralMemory(u64 allocSize){
+    KeAcquireSpinLock(&allocSpinLock);
     u64 size = allocSize + sizeof(FreeList);
-
-    if(size >= PAGE_SIZE){
-        KeTermPrint(TERM_STATUS_INFO, QSTR("someone tried to allocate a ton of memory!"));
-        // HACK! NOT GOOD
-        // we just give it new pages away from the heap, but freeable and later
-        // accessible by the heap
-        u64 sizeInPages = (size + (PAGE_SIZE - 1)) / PAGE_SIZE;
-        void* newPages = MmAllocateMultiplePages(sizeInPages);
-        if(newPages == NULL){
-            return NULL; // out of memory
-        }
-        FreeList* header = newPages;
-        memset(header, 0, sizeof(FreeList));
-        u64 allocCurAddr = (u64)newPages;
-        allocCurAddr += sizeof(FreeList);
-        void* addr = (void*)allocCurAddr;
-        header->magic = FREELIST_HEADER_MAGIC;
-        header->isFree = FALSE;
-        header->address = (u64)addr;
-        header->size = size;
-        header->memSize = allocSize;
-        header->header = header;
-        KeTermPrint(TERM_STATUS_INFO, QSTR("returning 0x%x"), addr);
-        return addr;
-    }
     if(allowFrees == TRUE){
         FreeList* cur = head;
         while(cur != NULL){
@@ -109,6 +133,7 @@ void* MmAllocateGeneralMemory(u64 allocSize){
                 } else if(cur->size == size){
                     RemoveFromFreeList(cur);
                     cur->isFree = FALSE;
+                    KeReleaseSpinLock(&allocSpinLock);
                     return (void*)cur->address;
                 } else if(cur->size > size){
                     u64 allocAddr = cur->address;
@@ -117,12 +142,10 @@ void* MmAllocateGeneralMemory(u64 allocSize){
                     FreeList* header = (FreeList*)allocAddr;
                     memset(header, 0, sizeof(FreeList));
                     allocAddr += sizeof(FreeList);
-                    header->magic = FREELIST_HEADER_MAGIC;
-                    header->isFree = TRUE;
-                    header->address = (u64)allocAddr;
-                    header->size = size;
-                    header->memSize = allocSize;
-                    header->header = header;
+                    InitFreeList(header, FALSE, size, 
+                        allocSize, 
+                        (u64)allocAddr);
+                    KeReleaseSpinLock(&allocSpinLock);
                     return (void*)allocAddr;
                 }
             }
@@ -138,32 +161,26 @@ void* MmAllocateGeneralMemory(u64 allocSize){
             u64 allocCurAddr = (u64)allocCur;
             allocCurAddr += sizeof(FreeList);
             allocCur = (void*)allocCurAddr;
-            header->magic = FREELIST_HEADER_MAGIC;
-            header->isFree = FALSE;
-            header->address = (u64)allocCur;
-            header->size = amountUntilLimit;
-            header->memSize = amountUntilLimit - sizeof(FreeList);
-            header->header = header;
-            MmFreeGeneralMemory(allocCur);
-            // we now reinit the allocator
+            InitFreeList(header, TRUE, amountUntilLimit, 
+                        amountUntilLimit - sizeof(FreeList), 
+                        (u64)allocCur);
+            FreeMemory(allocCur);
         }
-        MmInitGeneralAllocator();
+        // we now reinit the allocator
+        ReinitGeneralAllocator(size);
     }
     FreeList* header = allocCur;
     memset(header, 0, sizeof(FreeList));
     u64 allocCurAddr = (u64)allocCur;
     allocCurAddr += sizeof(FreeList);
     allocCur = (void*)allocCurAddr;
-    header->magic = FREELIST_HEADER_MAGIC;
-    header->isFree = FALSE;
-    header->address = (u64)allocCur;
-    header->size = size;
-    header->memSize = allocSize;
-    header->header = header;
+    InitFreeList(header, FALSE, size, allocSize, (u64)allocCur);
+    
     void* prev = allocCur;
     allocCurAddr = (u64)allocCur;
     allocCurAddr += allocSize;
     allocCur = (void*)allocCurAddr;
+    KeReleaseSpinLock(&allocSpinLock);
     return prev;
 }
 
@@ -171,15 +188,11 @@ void MmSetAllowFrees(boolean value){
     allowFrees = value;
 }
 
+
+
 boolean MmFreeGeneralMemory(void* address){
-    if(address == NULL) return FALSE;
-    if(allowFrees == FALSE) return FALSE;
-    FreeList* header = address - sizeof(FreeList);
-    if(header == NULL) return FALSE;
-    if(header->magic != FREELIST_HEADER_MAGIC){
-        return FALSE;
-    }
-    header->isFree = TRUE;
-    AddToFreeList(header);
-    return TRUE;
+    KeAcquireSpinLock(&allocSpinLock);
+    boolean result = FreeMemory(address);
+    KeReleaseSpinLock(&allocSpinLock);
+    return result;
 }
