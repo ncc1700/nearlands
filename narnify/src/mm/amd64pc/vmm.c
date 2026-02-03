@@ -7,16 +7,7 @@
 static PageTable kernPTable = {NULL};
 
 
-#define PG_PRESENT 0x1
-#define PG_READ_WRITE 0x2
-#define PG_PS 0x80
 
-#define GET_PML4_ENTRY(x) ((x & ((u64)0x1ff << 39)) >> 39)
-#define GET_PDPT_ENTRY(x) ((x & ((u64)0x1ff << 30)) >> 30)
-#define GET_PD_ENTRY(x) ((x & ((u64)0x1ff << 21)) >> 21)
-#define GET_PT_ENTRY(x) ((x & ((u64)0x1ff << 12)) >> 12)
-
-#define PARSE_ENTRY_VALUE(x) (uptr*)(x & ~0xFFF)
 
 #ifdef PAGEMAP_PMM
 extern PageMap* MmReturnPageMap();
@@ -87,6 +78,29 @@ boolean MmUnmapPage(PageTable* table, u64 virtAddr){
     pt[ptEntry] = 0;
     MmInvalidatePage(virtAddr);
     return TRUE;
+}
+
+boolean MmCheckIfPageIsMapped(PageTable* table, u64 virtAddr){
+    u64 pml4Entry = GET_PML4_ENTRY(virtAddr);
+    u64 pdptEntry = GET_PDPT_ENTRY(virtAddr);
+    u64 pdEntry = GET_PD_ENTRY(virtAddr);
+    u64 ptEntry = GET_PT_ENTRY(virtAddr);
+    if(table->pml4[pml4Entry] == 0x0){
+        return FALSE; 
+    }
+    uptr* pdpt = PARSE_ENTRY_VALUE(table->pml4[pml4Entry]);
+    if(pdpt[pdptEntry] == 0x0){
+        return FALSE; 
+    }
+    uptr* pd = PARSE_ENTRY_VALUE(pdpt[pdptEntry]);
+    if(pd[pdEntry] == 0x0){
+        return FALSE; 
+    }
+    uptr* pt = PARSE_ENTRY_VALUE(pd[pdEntry]);
+    if(pt[ptEntry] == 0x0){
+        return FALSE;
+    }
+    else return TRUE;
 }
 
 

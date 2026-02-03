@@ -13,7 +13,8 @@
 
 
 boolean AcpiInitSystem();
-
+void AcpiShutdownSystem();
+void AcpiRebootSystem();
 
 
 

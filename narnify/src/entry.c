@@ -1,5 +1,8 @@
 #include "acpi/acpi.h"
+#include "includes/ke/spinlock.h"
 #include "ke/binfo.h"
+#include "ke/spinlock.h"
+#include "ke/term.h"
 #include "mm/alloc.h"
 #include "mm/pmm.h"
 #include "mm/vmm.h"
@@ -72,9 +75,22 @@ void KeSystemStartup(BootInfo* info){
     if(result == FALSE) KePanic(QSTR("Couldn't Setup ACPI (via uACPI)"));
     else KeTermPrint(TERM_STATUS_PASS, QSTR("AcpiInitSystem PASS"));
     
-    
-    
-
+    void* h = MmAllocateGeneralMemory(300000);
+    if(h == NULL){
+        KeTermPrint(TERM_STATUS_ERROR, QSTR("bruh"));
+    }
+    MmFreeGeneralMemory(h);
+    h = MmAllocateGeneralMemory(300000);
+    if(h == NULL){
+        KeTermPrint(TERM_STATUS_ERROR, QSTR("bruh"));
+    }
+    MmFreeGeneralMemory(h);
+    h = MmAllocateGeneralMemory(300000);
+    if(h == NULL){
+        KeTermPrint(TERM_STATUS_ERROR, QSTR("bruh"));
+    }
+    MmFreeGeneralMemory(h);
+    AcpiShutdownSystem();
     KeTermPrint(TERM_STATUS_ERROR, QSTR("WORK IN PROGRESS - come back later!"));
 
     while(1){continue;}

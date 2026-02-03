@@ -14,6 +14,8 @@
 
 */
 
+#define FREELIST_HEADER_MAGIC 0x6767
+
 typedef struct _FreeList {
     u64 address;
     struct _FreeList* next;
@@ -21,6 +23,7 @@ typedef struct _FreeList {
     struct _FreeList* header;
     u16 size;
     u16 memSize;
+    u16 magic;
     boolean isFree;
 } __attribute__((packed)) FreeList;
 
@@ -70,11 +73,32 @@ boolean MmInitGeneralAllocator(){
 
 
 void* MmAllocateGeneralMemory(u64 allocSize){
-    if(allocSize >= PAGE_SIZE){
-        KeTermPrint(TERM_STATUS_INFO, QSTR("Someone tried to allocate memory above 4KB!"));
-        return NULL;
-    }
     u64 size = allocSize + sizeof(FreeList);
+
+    if(size >= PAGE_SIZE){
+        KeTermPrint(TERM_STATUS_INFO, QSTR("someone tried to allocate a ton of memory!"));
+        // HACK! NOT GOOD
+        // we just give it new pages away from the heap, but freeable and later
+        // accessible by the heap
+        u64 sizeInPages = (size + (PAGE_SIZE - 1)) / PAGE_SIZE;
+        void* newPages = MmAllocateMultiplePages(sizeInPages);
+        if(newPages == NULL){
+            return NULL; // out of memory
+        }
+        FreeList* header = newPages;
+        memset(header, 0, sizeof(FreeList));
+        u64 allocCurAddr = (u64)newPages;
+        allocCurAddr += sizeof(FreeList);
+        void* addr = (void*)allocCurAddr;
+        header->magic = FREELIST_HEADER_MAGIC;
+        header->isFree = FALSE;
+        header->address = (u64)addr;
+        header->size = size;
+        header->memSize = allocSize;
+        header->header = header;
+        KeTermPrint(TERM_STATUS_INFO, QSTR("returning 0x%x"), addr);
+        return addr;
+    }
     if(allowFrees == TRUE){
         FreeList* cur = head;
         while(cur != NULL){
@@ -93,6 +117,7 @@ void* MmAllocateGeneralMemory(u64 allocSize){
                     FreeList* header = (FreeList*)allocAddr;
                     memset(header, 0, sizeof(FreeList));
                     allocAddr += sizeof(FreeList);
+                    header->magic = FREELIST_HEADER_MAGIC;
                     header->isFree = TRUE;
                     header->address = (u64)allocAddr;
                     header->size = size;
@@ -113,6 +138,7 @@ void* MmAllocateGeneralMemory(u64 allocSize){
             u64 allocCurAddr = (u64)allocCur;
             allocCurAddr += sizeof(FreeList);
             allocCur = (void*)allocCurAddr;
+            header->magic = FREELIST_HEADER_MAGIC;
             header->isFree = FALSE;
             header->address = (u64)allocCur;
             header->size = amountUntilLimit;
@@ -128,6 +154,7 @@ void* MmAllocateGeneralMemory(u64 allocSize){
     u64 allocCurAddr = (u64)allocCur;
     allocCurAddr += sizeof(FreeList);
     allocCur = (void*)allocCurAddr;
+    header->magic = FREELIST_HEADER_MAGIC;
     header->isFree = FALSE;
     header->address = (u64)allocCur;
     header->size = size;
@@ -145,8 +172,13 @@ void MmSetAllowFrees(boolean value){
 }
 
 boolean MmFreeGeneralMemory(void* address){
+    if(address == NULL) return FALSE;
     if(allowFrees == FALSE) return FALSE;
     FreeList* header = address - sizeof(FreeList);
+    if(header == NULL) return FALSE;
+    if(header->magic != FREELIST_HEADER_MAGIC){
+        return FALSE;
+    }
     header->isFree = TRUE;
     AddToFreeList(header);
     return TRUE;

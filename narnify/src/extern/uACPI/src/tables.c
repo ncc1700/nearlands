@@ -1,3 +1,4 @@
+#include "uacpi/internal/log.h"
 #include <uacpi/internal/tables.h>
 #include <uacpi/internal/utilities.h>
 #include <uacpi/internal/stdlib.h>
@@ -1124,7 +1125,6 @@ uacpi_status uacpi_table_load_with_cause(
     ret = table_ctl(idx, &req);
     if (uacpi_unlikely_error(ret))
         return ret;
-
     ret = uacpi_execute_table(req.out_tbl, cause);
 
     req.type = TABLE_CTL_PUT;

@@ -121,13 +121,13 @@ typedef struct _IMAGE_BASE_RELOCATION_BLOCK {
 } IMAGE_BASE_RELOCATION_BLOCK;
 
 #define FIELD_OFFSET(type, field) ((unsigned long long) __builtin_offsetof(type, field))
-#define GetFirstSectionOfImage(h) ((PIMAGE_SECTION_HEADER) ((u64)h+FIELD_OFFSET(IMAGE_NT_HEADERS64,OptionalHeader)+((PIMAGE_NT_HEADERS64)(h))->FileHeader.SizeOfOptionalHeader))
+#define GET_FIRST_SECTION(h) ((PIMAGE_SECTION_HEADER) ((u64)h+FIELD_OFFSET(IMAGE_NT_HEADERS64,OptionalHeader)+((PIMAGE_NT_HEADERS64)(h))->FileHeader.SizeOfOptionalHeader))
 
 
 
 static inline void LoadSectionsIntoMemory(char* content, IMAGE_NT_HEADERS64* ntHeader, BootInfo* bInfo){
     u64 imageBase = ntHeader->OptionalHeader.ImageBase;
-    IMAGE_SECTION_HEADER* secHeader = GetFirstSectionOfImage(ntHeader);
+    IMAGE_SECTION_HEADER* secHeader = GET_FIRST_SECTION(ntHeader);
     for(int i = 0; i < ntHeader->FileHeader.NumberOfSections; i++){
         memset((void*)(imageBase + secHeader->VirtualAddress), 0, 
                                 secHeader->Misc.VirtualSize);

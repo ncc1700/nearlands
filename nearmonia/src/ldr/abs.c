@@ -43,8 +43,7 @@ u64 LdrGetRSDPLocation(){
     GUID acpi2GUID = ACPI_2_TABLE_GUID;
     for(u64 i = 0; i < LdrReturnSystemTable()->NumberOfTableEntries; i++){
         EFI_CONFIGURATION_TABLE* table = &LdrReturnSystemTable()->ConfigurationTable[i];
-        if(LdrCompareGUID(&table->VendorGuid, &acpi1GUID) 
-                || LdrCompareGUID(&table->VendorGuid, &acpi2GUID)){
+        if(LdrCompareGUID(&table->VendorGuid, &acpi2GUID)){
             LdrTermPrint(TERM_STATUS_PASS, QSTR("Got RSDP: location 0x%x"), table->VendorTable);
             return (u64)table->VendorTable;
         }

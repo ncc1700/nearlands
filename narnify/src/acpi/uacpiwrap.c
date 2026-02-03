@@ -1,14 +1,29 @@
+#include "ar/io.h"
+#include "ecs/ecs.h"
 #include "ke/binfo.h"
 #include "mm/alloc.h"
+#include "mm/pmm.h"
+#include "mm/vmm.h"
 #include "uacpi/status.h"
+#include "uacpi/types.h"
 #include <ke/spinlock.h>
 #include <uacpi/kernel_api.h>
 #include <ke/term.h>
 
+// our general allocator is very broken (for freeing)
+// currently, we will just directly
+// use the page allocator until
+// I fix it
+#define USE_PAGE_ALLOCATOR
 
 void *uacpi_kernel_map(uacpi_phys_addr addr, uacpi_size len){
-    KeTermPrint(TERM_STATUS_INFO, QSTR("[uACPI] uACPI wants to map 0x%x with size of %d"), 
-                                            addr, len);
+    for(u64 i = 0; i < len; i+=0x1000){
+        if(MmCheckIfPageIsMapped(MmReturnKernelPageTable(), addr + i) == FALSE){
+            KeTermPrint(TERM_STATUS_INFO, QSTR("[ACPI] uACPI tried to use an unmapped page, mapping..."));
+            MmMapPage(MmReturnKernelPageTable(), addr + i, addr + i, 
+                                PG_READ_WRITE);
+        }
+    }
     return (void*)addr;
 }
 
@@ -40,11 +55,33 @@ void uacpi_kernel_log(uacpi_log_level log, const uacpi_char* str){
 }
 
 void *uacpi_kernel_alloc(uacpi_size size){
+    //KeTermPrint(TERM_STATUS_INFO, QSTR("[ACPI]: allocating memory with %d size"), size);
+    #ifdef USE_PAGE_ALLOCATOR
+    u64 sizeInPages = (size + (PAGE_SIZE - 1)) / PAGE_SIZE;
+    return MmAllocateMultiplePages(sizeInPages);
+    #else
     return MmAllocateGeneralMemory(size);
+    #endif
+    
 }
 
 void uacpi_kernel_free(void *mem, uacpi_size size_hint){
-    MmFreeGeneralMemory(mem);
+    // KeTermPrint(TERM_STATUS_INFO, QSTR("[ACPI]: freeing 0x%x with %d size"), 
+    //                             mem, size_hint);
+    #ifdef USE_PAGE_ALLOCATOR
+    u64 sizeInPages = (size_hint + (PAGE_SIZE - 1)) / PAGE_SIZE;
+    boolean result = MmFreeMultiplePages(mem, sizeInPages);
+    if(result == FALSE){
+        KeTermPrint(TERM_STATUS_ERROR, QSTR("[ACPI]: failed freeing 0x%x with %d pages"), 
+                                mem, sizeInPages);
+    }
+    #else
+    boolean result = MmFreeGeneralMemory(mem);
+    if(result == FALSE){
+        KeTermPrint(TERM_STATUS_ERROR, QSTR("[ACPI]: failed freeing 0x%x with %d size"), 
+                                mem, size_hint);
+    }
+    #endif
 }
 
 uacpi_u64 uacpi_kernel_get_nanoseconds_since_boot(void){
@@ -69,7 +106,7 @@ void uacpi_kernel_free_mutex(uacpi_handle mutexHandle){
 }
 
 uacpi_thread_id uacpi_kernel_get_thread_id(void){
-    KeTermPrint(TERM_STATUS_ERROR, QSTR("[ACPI]: %s: UNIMPLEMENTED"), __FUNCTION__);
+    //KeTermPrint(TERM_STATUS_ERROR, QSTR("[ACPI]: %s: UNIMPLEMENTED"), __FUNCTION__);
     return 0;
 }
 
@@ -129,13 +166,13 @@ void uacpi_kernel_free_spinlock(uacpi_handle spinlockHandle){
     KeDeleteSpinLockFromHeap(spinlockHandle);
 }
 
-uacpi_cpu_flags uacpi_kernel_lock_spinlock(uacpi_handle){
-    KeTermPrint(TERM_STATUS_ERROR, QSTR("[ACPI]: %s: UNIMPLEMENTED"), __FUNCTION__);
+uacpi_cpu_flags uacpi_kernel_lock_spinlock(uacpi_handle spinLockHandle){
+    KeAcquireSpinLock(spinLockHandle);
     return 0;
 }
 
-void uacpi_kernel_unlock_spinlock(uacpi_handle, uacpi_cpu_flags){
-    KeTermPrint(TERM_STATUS_ERROR, QSTR("[ACPI]: %s: UNIMPLEMENTED"), __FUNCTION__);
+void uacpi_kernel_unlock_spinlock(uacpi_handle spinLockHandle, uacpi_cpu_flags cpuFlags){
+    KeReleaseSpinLock(spinLockHandle);
 }
 
 
@@ -144,34 +181,38 @@ uacpi_status uacpi_kernel_wait_for_work_completion(void){
 }
 
 uacpi_status uacpi_kernel_io_read8(
-    uacpi_handle, uacpi_size offset, uacpi_u8 *out_value
+    uacpi_handle handle, uacpi_size offset, uacpi_u8 *out_value
 ){
-    KeTermPrint(TERM_STATUS_ERROR, QSTR("[ACPI]: %s: UNIMPLEMENTED"), __FUNCTION__);
+    uacpi_io_addr target = (uacpi_io_addr)handle + offset;
+    *out_value = ArIoInByte(target);
     return 0;
 }
 uacpi_status uacpi_kernel_io_read16(
-    uacpi_handle, uacpi_size offset, uacpi_u16 *out_value
+    uacpi_handle handle, uacpi_size offset, uacpi_u16 *out_value
 ){
-    KeTermPrint(TERM_STATUS_ERROR, QSTR("[ACPI]: %s: UNIMPLEMENTED"), __FUNCTION__);
+    uacpi_io_addr target = (uacpi_io_addr)handle + offset;
+    *out_value = ArIoInWord(target);
     return 0;
 }
 uacpi_status uacpi_kernel_io_read32(
-    uacpi_handle, uacpi_size offset, uacpi_u32 *out_value
+    uacpi_handle handle, uacpi_size offset, uacpi_u32 *out_value
 ){
     KeTermPrint(TERM_STATUS_ERROR, QSTR("[ACPI]: %s: UNIMPLEMENTED"), __FUNCTION__);
     return 0;
 }
 
 uacpi_status uacpi_kernel_io_write8(
-    uacpi_handle, uacpi_size offset, uacpi_u8 in_value
+    uacpi_handle handle, uacpi_size offset, uacpi_u8 in_value
 ){
-    KeTermPrint(TERM_STATUS_ERROR, QSTR("[ACPI]: %s: UNIMPLEMENTED"), __FUNCTION__);
+    uacpi_io_addr target = (uacpi_io_addr)handle + offset;
+    ArIoOutByte(target, in_value);
     return 0;
 }
 uacpi_status uacpi_kernel_io_write16(
-    uacpi_handle, uacpi_size offset, uacpi_u16 in_value
+    uacpi_handle handle, uacpi_size offset, uacpi_u16 in_value
 ){
-    KeTermPrint(TERM_STATUS_ERROR, QSTR("[ACPI]: %s: UNIMPLEMENTED"), __FUNCTION__);
+    uacpi_io_addr target = (uacpi_io_addr)handle + offset;
+    ArIoOutWord(target, in_value);
     return 0;
 }
 uacpi_status uacpi_kernel_io_write32(
@@ -231,9 +272,11 @@ void uacpi_kernel_pci_device_close(uacpi_handle){
 uacpi_status uacpi_kernel_io_map(
     uacpi_io_addr base, uacpi_size len, uacpi_handle *out_handle
 ){
-    KeTermPrint(TERM_STATUS_ERROR, QSTR("[ACPI]: %s: UNIMPLEMENTED"), __FUNCTION__);
+    //KeTermPrint(TERM_STATUS_ERROR, QSTR("[ACPI]: %s: UNIMPLEMENTED"), __FUNCTION__);
+    *out_handle = (uacpi_handle)base;
     return 0;
 }
+
 void uacpi_kernel_io_unmap(uacpi_handle handle){
     KeTermPrint(TERM_STATUS_ERROR, QSTR("[ACPI]: %s: UNIMPLEMENTED"), __FUNCTION__);
 }
@@ -245,12 +288,14 @@ uacpi_status uacpi_kernel_get_rsdp(uacpi_phys_addr *out_rsdp_address){
 }
 
 uacpi_handle uacpi_kernel_create_event(void){
-    KeTermPrint(TERM_STATUS_ERROR, QSTR("[ACPI]: %s: UNIMPLEMENTED"), __FUNCTION__);
-    return 0;
+
+    //KeTermPrint(TERM_STATUS_ERROR, QSTR("[ACPI]: %s: UNIMPLEMENTED"), __FUNCTION__);
+    return uacpi_kernel_create_mutex();
 }
 
-void uacpi_kernel_free_event(uacpi_handle){
-    KeTermPrint(TERM_STATUS_ERROR, QSTR("[ACPI]: %s: UNIMPLEMENTED"), __FUNCTION__);
+void uacpi_kernel_free_event(uacpi_handle eventHandle){
+    uacpi_kernel_free_mutex(eventHandle);
+    //KeTermPrint(TERM_STATUS_ERROR, QSTR("[ACPI]: %s: UNIMPLEMENTED"), __FUNCTION__);
 }
 
 uacpi_status uacpi_kernel_schedule_work(

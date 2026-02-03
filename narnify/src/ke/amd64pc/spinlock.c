@@ -1,9 +1,23 @@
+#include "ecs/ecs.h"
 #include "mm/alloc.h"
 #include <ke/spinlock.h>
 #include <stdatomic.h>
 
 
 // thanks to https://wiki.osdev.org/Spinlock for the help!
+
+static u16 spinlockCompIndex = 0;
+
+boolean KeInitializeSpinlockComponent(){
+    u16 index = EcsCreateNewComponent(sizeof(SpinLock));
+    if(index == 0) return FALSE;
+    spinlockCompIndex = index;
+    return TRUE;
+}
+
+u16 KeReturnSpinlockCompIndex(){
+    return spinlockCompIndex;
+}
 
 SpinLock KeCreateSpinLock(){
     SpinLock lock = {ATOMIC_FLAG_INIT};

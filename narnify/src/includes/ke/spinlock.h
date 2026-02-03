@@ -18,6 +18,8 @@ typedef struct _SpinLock {
     atomic_flag lock;
 } SpinLock;
 
+boolean KeInitializeSpinlockComponent();
+u16 KeReturnSpinlockCompIndex();
 SpinLock KeCreateSpinLock();
 SpinLock* KeCreateSpinLockHeap();
 boolean KeDeleteSpinLockFromHeap(SpinLock* lock);
