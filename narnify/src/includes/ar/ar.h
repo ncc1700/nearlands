@@ -6,6 +6,7 @@
 
 
 #include <types.h>
+#include <nrstatus.h>
 
 typedef enum _CPUArch {
     AMD64,
@@ -15,7 +16,7 @@ typedef enum _CPUArch {
 
 
 
-boolean ArInitSystem();
+NearStatus ArInitSystem();
 CPUArch ArReturnCPUArch();
 
 

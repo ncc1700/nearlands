@@ -6,6 +6,7 @@
 
 
 
+#include <nrstatus.h>
 #include <types.h>
 #include <ecs/ecs.h>
 typedef enum _ThreadState {
@@ -45,7 +46,7 @@ typedef struct _KernThreadComponent {
 } KernThreadComponent;
 
 
-boolean KeInitializeThreadComponent();
+NearStatus KeInitializeThreadComponent();
 u16 KeReturnKtCompIndex();
 u16 KeReturnUtCompIndex();
 

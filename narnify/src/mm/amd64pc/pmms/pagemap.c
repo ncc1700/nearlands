@@ -1,3 +1,4 @@
+#include <nrstatus.h>
 #include <mm/pmm.h>
 
 
@@ -23,7 +24,7 @@ static u64 pageUsed = 0;
 #define INCREMENT_PAGE_USAGE() if(pageUsed < pageMapAmount) pageUsed++;
 #define DECREMENT_PAGE_USAGE() if(pageUsed > 0) pageUsed--;
 
-boolean MmInitPhysicalMemoryManager(BootMemoryMap* memMap){
+NearStatus MmInitPhysicalMemoryManager(BootMemoryMap* memMap){
     // we calculate the size of the pagemap
     for(u64 i = 0; i < memMap->amountOfEntries; i++){
         if(memMap->memEntries[i].type != BOOT_MEM_TYPE_FREE) continue;
@@ -38,7 +39,7 @@ boolean MmInitPhysicalMemoryManager(BootMemoryMap* memMap){
         }
     }
     if(pageMapAmount == 0){
-        return FALSE;
+        return STATUS_NO_VALID_MEMORY;
     }
     
     // we find a place to put the pagemap in
@@ -60,7 +61,7 @@ boolean MmInitPhysicalMemoryManager(BootMemoryMap* memMap){
         }   
     }
     if(pageMap == NULL){
-        return FALSE;
+        return STATUS_NOT_ENOUGH_MEMORY;
     }
     // we fill the pagemap
     u64 curPageMap = 0;
@@ -74,7 +75,7 @@ boolean MmInitPhysicalMemoryManager(BootMemoryMap* memMap){
             curPageMap++;
         }
     }
-    return TRUE;
+    return STATUS_SUCCESS;
 }
 
 void* MmAllocateSinglePage(){
@@ -128,19 +129,19 @@ void* MmAllocateMultiplePages(u64 amount){
     return NULL;
 }
 
-boolean MmFreeSinglePage(void* pageAddress){
+NearStatus MmFreeSinglePage(void* pageAddress){
     // VERY SLOW: TODO: MAKE IT BETTER
     for(u64 i = 0; i < pageMapAmount; i++){
         if(pageMap[i].address == (u64)pageAddress){
             pageMap[i].isFree = TRUE;
             DECREMENT_PAGE_USAGE();
-            return TRUE;
+            return STATUS_SUCCESS;
         }
     }
-    return FALSE;
+    return STATUS_NOT_FOUND;
 }
 
-boolean MmFreeMultiplePages(void* pageAddress, u64 amount){
+NearStatus MmFreeMultiplePages(void* pageAddress, u64 amount){
     // VERY SLOW: MAKE IT BETTER
     for(u64 i = 0; i < (pageMapAmount - amount); i++){
         if(pageMap[i].address == (u64)pageAddress){
@@ -148,10 +149,10 @@ boolean MmFreeMultiplePages(void* pageAddress, u64 amount){
                 pageMap[i + j].isFree = TRUE;
                 DECREMENT_PAGE_USAGE();
             }
-            return TRUE;
+            return STATUS_SUCCESS;
         }
     }
-    return FALSE;
+    return STATUS_NOT_FOUND;
 }
 
 u64 MmReturnPageUsed(){

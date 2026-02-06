@@ -24,17 +24,9 @@ GraphicsData* KeGraphicsReturnData(){
     return &globalGraphics;
 }
 
-
+// just a thin wrapper
 void KeGraphicsClear(u64 color){
-    if(globalGraphics.init != TRUE) return;
-    u32* fbPtr = (u32*)globalGraphics.framebufferBase;
-    for(u32 j = 0; j < globalGraphics.height; j++){
-        if(j >= globalGraphics.height) continue;
-        for(u32 i = 0; i < globalGraphics.height; i++){
-            if(j >= globalGraphics.height) continue;
-            fbPtr[j * globalGraphics.pixelsPerScanLine + i] = color;
-        }
-    }
+    KeGraphicsDrawRect(0, 0, globalGraphics.width, globalGraphics.height, color);
 }
 
 void KeGraphicsDrawRect(u32 x, u32 y, u32 width, u32 height, u64 color){

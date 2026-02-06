@@ -9,6 +9,7 @@
 
 
 
+#include "nrstatus.h"
 #include <types.h>
 #include <stdatomic.h>
 
@@ -18,7 +19,7 @@ typedef struct _SpinLock {
     atomic_flag lock;
 } SpinLock;
 
-boolean KeInitializeSpinlockComponent();
+NearStatus KeInitializeSpinlockComponent();
 u16 KeReturnSpinlockCompIndex();
 SpinLock KeCreateSpinLock();
 SpinLock* KeCreateSpinLockHeap();

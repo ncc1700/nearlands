@@ -12,7 +12,7 @@
 
 
 
-boolean AcpiInitSystem();
+NearStatus AcpiInitSystem();
 void AcpiShutdownSystem();
 void AcpiRebootSystem();
 

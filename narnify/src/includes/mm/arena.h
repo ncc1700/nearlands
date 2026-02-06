@@ -18,7 +18,7 @@ typedef struct _Arena {
 
 
 
-boolean MmCreateArena(Arena* arena, u64 size);
+NearStatus MmCreateArena(Arena* arena, u64 size);
 void* MmPushMemoryFromArena(Arena* arena, u64 size);
 void MmPopMemoryFromArena(Arena* arena, u64 size);
 void MmResetArena(Arena* arena);

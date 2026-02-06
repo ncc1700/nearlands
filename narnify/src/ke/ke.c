@@ -2,6 +2,7 @@
 #include "bootinfo.h"
 #include "ke/binfo.h"
 #include "ke/spinlock.h"
+#include "nrstatus.h"
 #include <ke/ke.h>
 #include <ke/thread.h>
 
@@ -12,12 +13,12 @@
 
 
 
-boolean KeInitSystem(BootInfo* info){
-    boolean result = KeInitializeThreadComponent();
-    if(result == FALSE) return FALSE;
-    result = KeInitializeSpinlockComponent();
-    if(result == FALSE) return FALSE;
+NearStatus KeInitSystem(BootInfo* info){
+    NearStatus status = KeInitializeThreadComponent();
+    if(!NR_SUCCESS(status)) return status;
+    status = KeInitializeSpinlockComponent();
+    if(!NR_SUCCESS(status)) return status;
     KeStoreBootInformationAddress(info);
     // do more initalization of the kernel
-    return TRUE;
+    return STATUS_SUCCESS;
 }

@@ -1,5 +1,6 @@
 #include "ke/term.h"
 #include "mm/alloc.h"
+#include "nrstatus.h"
 #include <mm/arena.h>
 #include <mm/pmm.h>
 
@@ -8,17 +9,17 @@
 
 
 
-boolean MmCreateArena(Arena* arena, u64 size){
+NearStatus MmCreateArena(Arena* arena, u64 size){
     arena->size = size;
     arena->sizeInpages = (size + (PAGE_SIZE - 1)) / PAGE_SIZE;
     //arena->base = MmAllocateMultiplePages(arena->sizeInpages);
     arena->base = MmAllocateGeneralMemory(arena->size);
     if(arena->base == NULL){
-        KeTermPrint(TERM_STATUS_INFO, QSTR("failed to create arena of size %d"), size);
-        return FALSE;
+        //KeTermPrint(TERM_STATUS_INFO, QSTR("failed to create arena of size %d"), size);
+        return STATUS_OUT_OF_MEMORY;
     }
     arena->used = 0;
-    return TRUE;
+    return STATUS_SUCCESS;
 }
 
 

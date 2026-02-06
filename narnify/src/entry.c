@@ -1,11 +1,10 @@
+
 #include "acpi/acpi.h"
-#include "includes/ke/spinlock.h"
-#include "ke/binfo.h"
+#include "includes/ke/term.h"
+#include "includes/nrstatus.h"
+#include "ke/panic.h"
 #include "ke/spinlock.h"
 #include "ke/term.h"
-#include "mm/alloc.h"
-#include "mm/pmm.h"
-#include "mm/vmm.h"
 #include <ecs/ecs.h>
 #include <ke/ke.h>
 #include <ke/panic.h>
@@ -42,60 +41,59 @@ void KeSystemStartup(BootInfo* info){
     KeGraphicsSetup(&data);
     KeBeginSplashScreen(10);
     KeTermClear();
-    KeGraphicsDrawRect(0, 0, KeGraphicsReturnData()->width, 42, 0xFA8128);
-    KeGraphicsDrawString(QSTR("NEARLANDS"), 
-                                            10, 10, 2, 0x000000);
-
-    KeTermMoveDown(4);
     KeTermPrint(TERM_STATUS_UNKNOWN, QSTR("--------------------PHASE 0--------------------"));
     KeAddToBootScreen();
     KeTermPrint(TERM_STATUS_PASS, QSTR("Physical kernel address is 0x%x"), info->kernelLocPhys);
     // a long list of stuff to setup...
     
     KeTermPrint(TERM_STATUS_IMPINFO, QSTR("Calling ArInitSystem"));
-    boolean result = ArInitSystem();
-    if(result == FALSE) KePanic(QSTR("Couldn't Setup Architecture"));
+    NearStatus status = ArInitSystem();
+    if(!NR_SUCCESS(status)) KePanic(status);
     else KeTermPrint(TERM_STATUS_PASS, QSTR("ArInitSystem PASS"));
 
     KeAddToBootScreen();
     KeTermPrint(TERM_STATUS_IMPINFO, QSTR("Calling MmInitSystem"));
-    result = MmInitSystem(info);
-    if(result == FALSE) KePanic(QSTR("Couldn't Setup Memory Manager"));
+    status = MmInitSystem(info);
+    if(!NR_SUCCESS(status)) KePanic(status);
     else KeTermPrint(TERM_STATUS_PASS, QSTR("MmInitSystem PASS"));
     KeTermPrint(TERM_STATUS_UNKNOWN, QSTR("--------------------PHASE 1--------------------"));
 
     KeTermPrint(TERM_STATUS_IMPINFO, QSTR("Calling KeInitSystem"));
-    result = KeInitSystem(info);
-    if(result == FALSE) KePanic(QSTR("Couldn't Setup Kernel Components"));
+    status = KeInitSystem(info);
+    if(!NR_SUCCESS(status)) KePanic(status);
     else KeTermPrint(TERM_STATUS_PASS, QSTR("KeInitSystem PASS"));
     
     KeTermPrint(TERM_STATUS_IMPINFO, QSTR("RSDP: 0x%x"), info->rsdp);
     KeTermPrint(TERM_STATUS_IMPINFO, QSTR("Calling AcpiInitSystem"));
-    result = AcpiInitSystem();
-    if(result == FALSE) KePanic(QSTR("Couldn't Setup ACPI (via uACPI)"));
+    status = AcpiInitSystem();
+    if(!NR_SUCCESS(status)) KePanic(status);
     else KeTermPrint(TERM_STATUS_PASS, QSTR("AcpiInitSystem PASS"));
     
-    void* h = MmAllocateGeneralMemory(300000);
-    void* n = MmAllocateGeneralMemory(10);
+    SpinLock lock = KeCreateSpinLock();
 
-    KeTermPrint(TERM_STATUS_IMPINFO, QSTR("h = 0x%x, n = 0x%x"), h, n);
-    MmFreeGeneralMemory(h);
-    h = MmAllocateGeneralMemory(300000);
-    n = MmAllocateGeneralMemory(10);
-    if(h == NULL){
-        KeTermPrint(TERM_STATUS_ERROR, QSTR("bruh"));
+    Handle hEntity = 0;
+    ComponentTypes types[] = {KeReturnSpinlockCompIndex(), KeReturnKtCompIndex()};
+    NearStatus stat = EcsCreateEntity(&hEntity, types, 2);
+    if(!NR_SUCCESS(stat)){
+        KePanic(stat);
     }
-    KeTermPrint(TERM_STATUS_IMPINFO, QSTR("h = 0x%x, n = 0x%x"), h, n);
-
-    MmFreeGeneralMemory(h);
-    h = MmAllocateGeneralMemory(300000);
-    n = MmAllocateGeneralMemory(10);
-    if(h == NULL){
-        KeTermPrint(TERM_STATUS_ERROR, QSTR("bruh"));
+    
+    stat = EcsAddComponentDataToEntity(hEntity, KeReturnSpinlockCompIndex(), &lock);
+    if(!NR_SUCCESS(stat)){
+        KePanic(stat);
     }
-    KeTermPrint(TERM_STATUS_IMPINFO, QSTR("h = 0x%x, n = 0x%x"), h, n);
 
-    MmFreeGeneralMemory(h);
+    while(1){
+        SpinLock* lock;
+        stat = EcsGetComponent((void**)&lock, hEntity, 
+                    KeReturnSpinlockCompIndex());
+        if(!NR_SUCCESS(stat)){
+            KePanic(stat);
+        }
+        KeAcquireSpinLock(lock);
+        KeTermPrint(TERM_STATUS_PASS, QSTR("you should only see this once...."));
+    }
+    
     //AcpiShutdownSystem();
     KeTermPrint(TERM_STATUS_ERROR, QSTR("WORK IN PROGRESS - come back later!"));
 

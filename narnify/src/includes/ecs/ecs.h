@@ -64,11 +64,10 @@ u64 EcsGetSizeOfAllComponents(ComponentTypes* components, u8 componentAmount);
 u64 EcsEncodeHandle(u32 archTypeIndex, u32 entityIndex);
 void EcsDecodeHandle(Handle reference, u32* archTypeIndex, u32* entityIndex);
 ArcheTypeData EcsGetArcheType(ComponentTypes* components, u8 componentAmount);
-Handle EcsCreateEntity(ComponentTypes* components, u64 componentAmount);
-Entity* EcsGetEntity(Handle entityRef);
-boolean EcsAddComponentDataToEntity(Handle entityRef, ComponentTypes component, void* componentData);
-boolean EcsDeleteEntity(Handle entityHandle);
-void* EcsGetComponent(Handle entityRef, ComponentTypes component);
-
+NearStatus EcsCreateEntity(Handle* handle, ComponentTypes* components, u64 componentAmount);
+NearStatus EcsGetEntity(Entity** entity, Handle entityRef);
+NearStatus EcsAddComponentDataToEntity(Handle entityRef, ComponentTypes component, void* componentData);
+NearStatus EcsDeleteEntity(Handle entityHandle);
+NearStatus EcsGetComponent(void** component, Handle entityRef, ComponentTypes componentType);
 
 #endif

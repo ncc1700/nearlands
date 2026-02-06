@@ -11,9 +11,8 @@
 
 
 
-void KePanic(QString string);
-
-
+void KePanic(NearStatus panicStatus);
+void KePanicStr(QString str);
 
 
 

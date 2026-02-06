@@ -1,5 +1,6 @@
 #include "ecs/ecs.h"
 #include "mm/alloc.h"
+#include "nrstatus.h"
 #include <ke/spinlock.h>
 #include <stdatomic.h>
 
@@ -8,11 +9,11 @@
 
 static u16 spinlockCompIndex = 0;
 
-boolean KeInitializeSpinlockComponent(){
+NearStatus KeInitializeSpinlockComponent(){
     u16 index = EcsCreateNewComponent(sizeof(SpinLock));
-    if(index == 0) return FALSE;
+    if(index == 0) return STATUS_CANT_CREATE_ECS_COMP;
     spinlockCompIndex = index;
-    return TRUE;
+    return STATUS_SUCCESS;
 }
 
 u16 KeReturnSpinlockCompIndex(){

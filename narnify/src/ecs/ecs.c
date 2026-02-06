@@ -1,4 +1,5 @@
 #include "mm/alloc.h"
+#include "nrstatus.h"
 #include <ecs/ecs.h>
 #include <qol/qmem.h>
 #include <mm/pmm.h>
@@ -83,7 +84,7 @@ ArcheTypeData EcsGetArcheType(ComponentTypes* components, u8 componentAmount){
                         ataSizeInPages, newAtSizeInPages);
         if(archeTypeArray == NULL){
             // panic bc no more memory
-            KePanic(QSTR("OUT OF MEMORY: from EcsGetArcheType()"));
+            KePanic(STATUS_OUT_OF_MEMORY);
         }
         ataSize = newAtSize;
         ataCapacity = newAtCapacity;
@@ -114,7 +115,7 @@ ArcheTypeData EcsGetArcheType(ComponentTypes* components, u8 componentAmount){
     return (ArcheTypeData){&archeTypeArray[prevIndex], prevIndex};
 }
 
-Handle EcsCreateEntity(ComponentTypes* components, u64 componentAmount){
+NearStatus EcsCreateEntity(Handle* handle, ComponentTypes* components, u64 componentAmount){
     ArcheTypeData archeTypeData = EcsGetArcheType(components, componentAmount);
     ArcheType* archeType = archeTypeData.archeType;
     if(archeType->index >= archeType->capacity){
@@ -131,8 +132,7 @@ Handle EcsCreateEntity(ComponentTypes* components, u64 componentAmount){
         archeType->entities = MmReallocatePages(archeType->entities, 
                                 archeType->sizeInPages, newSizeInPages);
         if(archeType->entities == NULL){
-            // panic bc no more memory
-            KePanic(QSTR("OUT OF MEMORY: from EcsCreateEntity()"));
+            return STATUS_OUT_OF_MEMORY;
         }
         archeType->size = newSize;
         archeType->capacity = newCapacity;
@@ -159,33 +159,36 @@ Handle EcsCreateEntity(ComponentTypes* components, u64 componentAmount){
                                                             componentSizeArr[components[i]]);
         if(archeType->entities[enIndex].components[i] == NULL){
             KeTermPrint(TERM_STATUS_INFO, QSTR("failed at index %d"), i);
-            KePanic(QSTR("OUT OF MEMORY: from EcsCreateEntity()"));
+            return STATUS_OUT_OF_MEMORY;
         }
     }
     archeType->entities[enIndex].alive = TRUE;
-    return EcsEncodeHandle(archeTypeData.index, enIndex);
+    *handle = EcsEncodeHandle(archeTypeData.index, enIndex);;
+    return STATUS_SUCCESS;
 }
 
-Entity* EcsGetEntity(Handle entityRef){
+NearStatus EcsGetEntity(Entity** entity, Handle entityRef){
     u32 archeTypeIndex;
     u32 entityIndex;
     EcsDecodeHandle(entityRef, &archeTypeIndex, &entityIndex);
     if(archeTypeIndex >= ataIndex){
-        return NULL;
+        return STATUS_INVALID_HANDLE;
     }
     ArcheType* archeType = &archeTypeArray[archeTypeIndex];
     if(entityIndex >= archeType->index){
-        return NULL;
+        return STATUS_INVALID_HANDLE;
     }
     if(archeType->entities[entityIndex].alive == FALSE){
-        return NULL;
+        return STATUS_INVALID_ENTITY;
     }
-    return &archeType->entities[entityIndex];
+    *entity = &archeType->entities[entityIndex];
+    return STATUS_SUCCESS;
 }
 
-boolean EcsAddComponentDataToEntity(Handle entityRef, ComponentTypes component, void* componentData){
-    Entity* entity = EcsGetEntity(entityRef);
-    if(entity == NULL) return FALSE;
+NearStatus EcsAddComponentDataToEntity(Handle entityRef, ComponentTypes component, void* componentData){
+    Entity* entity = NULL;
+    NearStatus status = EcsGetEntity(&entity, entityRef);
+    if(!NR_SUCCESS(status) || entity == NULL) return STATUS_INVALID_HANDLE;
     i64 index = -1;
     for(u8 i = 0; i < entity->componentAmount; i++){
         if(entity->componentTypes[i] == component){
@@ -194,16 +197,18 @@ boolean EcsAddComponentDataToEntity(Handle entityRef, ComponentTypes component, 
         }
     }
     if(index == -1){
-        return FALSE;
+        return STATUS_NOT_FOUND;
     }
     if(entity->components[index] == NULL) return FALSE;
     memcpy(entity->components[index], componentData, componentSizeArr[component]);
-    return TRUE;
+    return STATUS_SUCCESS;
 }
 
-boolean EcsDeleteEntity(Handle entityHandle){
-    Entity* entity = EcsGetEntity(entityHandle);
-    if(entity == NULL) return FALSE;
+NearStatus EcsDeleteEntity(Handle entityHandle){
+    Entity* entity = NULL;
+    NearStatus status = EcsGetEntity(&entity, entityHandle);
+    if(!NR_SUCCESS(status) || entity == NULL) return STATUS_INVALID_HANDLE;
+
     MmDestroyArena(&entity->arena);
     for(u64 i = 0; i < entity->componentAmount; i++){
         entity->componentTypes[i] = 0;
@@ -216,7 +221,7 @@ boolean EcsDeleteEntity(Handle entityHandle){
 
     EntityFreeList* node = MmAllocateGeneralMemory(sizeof(EntityFreeList));
     if(node == NULL){
-        KePanic(QSTR("Failure to create node for ECS"));
+        return STATUS_OUT_OF_MEMORY;
     }
     node->index = entityIndex;
     node->next = NULL;
@@ -228,17 +233,19 @@ boolean EcsDeleteEntity(Handle entityHandle){
         archeType->freeList->next = node;
         archeType->freeList = archeType->freeList->next;
     }
-    return TRUE;
+    return STATUS_SUCCESS;
 }
 
 
-void* EcsGetComponent(Handle entityRef, ComponentTypes component){
-    Entity* entity = EcsGetEntity(entityRef);
-    if(entity == NULL) return NULL;
+NearStatus EcsGetComponent(void** component, Handle entityRef, ComponentTypes componentType){
+    Entity* entity = NULL;
+    NearStatus status = EcsGetEntity(&entity, entityRef);
+    if(!NR_SUCCESS(status) || entity == NULL) return STATUS_INVALID_HANDLE;
     for(u8 i = 0; i < entity->componentAmount; i++){
-        if(entity->componentTypes[i] == component){
-            return entity->components[i];
+        if(entity->componentTypes[i] == componentType){
+            *component = entity->components[i];
+            return STATUS_SUCCESS;
         }
     }
-    return NULL;
+    return STATUS_NOT_FOUND;
 }

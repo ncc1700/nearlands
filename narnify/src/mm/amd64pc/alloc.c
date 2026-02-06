@@ -1,6 +1,7 @@
 #include "ke/spinlock.h"
 #include "ke/term.h"
 #include "mm/pmm.h"
+#include "nrstatus.h"
 #include "types.h"
 #include <mm/alloc.h>
 #include <qol/qmem.h>
@@ -66,27 +67,27 @@ static inline void RemoveFromFreeList(FreeList* list){
     list->next = NULL;
 }
 
-static inline boolean FreeMemory(void* address){
+static inline NearStatus FreeMemory(void* address){
     if(address == NULL){
-        return FALSE;
+        return STATUS_INVALID_ADDRESS;
     }
     if(allowFrees == FALSE){
-        return FALSE;
+        return STATUS_ACCESS_DENIED;
     }
     FreeList* header = address - sizeof(FreeList);
 
     if(header == NULL){
-        return FALSE;
+        return STATUS_CANT_FIND_HEADER;
     }
 
     if(header->magic != FREELIST_HEADER_MAGIC){
-        return FALSE;
+        return STATUS_CANT_FIND_HEADER;
     }
 
     header->isFree = TRUE;
 
     AddToFreeList(header);
-    return TRUE;
+    return STATUS_SUCCESS;
 }
 
 
@@ -111,13 +112,13 @@ static inline void InitFreeList(FreeList* header, boolean isFree,
     header->header = header;
 }
 
-boolean MmInitGeneralAllocator(){
+NearStatus MmInitGeneralAllocator(){
     allocSpinLock = KeCreateSpinLock();
     allocBase = MmAllocateSinglePage();
-    if(allocBase == NULL) return FALSE;
+    if(allocBase == NULL) return STATUS_OUT_OF_MEMORY;
     allocCur = allocBase;
     allocLimit = allocBase + PAGE_SIZE;
-    return TRUE;
+    return STATUS_SUCCESS;
 }
 
 void* MmAllocateGeneralMemory(u64 allocSize){
@@ -190,9 +191,10 @@ void MmSetAllowFrees(boolean value){
 
 
 
-boolean MmFreeGeneralMemory(void* address){
+NearStatus MmFreeGeneralMemory(void* address){
     KeAcquireSpinLock(&allocSpinLock);
-    boolean result = FreeMemory(address);
+    NearStatus result = FreeMemory(address);
+    if(!NR_SUCCESS(result)) return result;
     KeReleaseSpinLock(&allocSpinLock);
     return result;
 }

@@ -1,3 +1,4 @@
+#include "nrstatus.h"
 #include "uacpi/sleep.h"
 #include "uacpi/status.h"
 #include <ke/panic.h>
@@ -5,38 +6,34 @@
 #include <acpi/acpi.h>
 #include <uacpi/types.h>
 
-/**
-    TODO: implement
-
-*/
 
 
-boolean AcpiInitSystem(){
+NearStatus AcpiInitSystem(){
     uacpi_status status = uacpi_initialize(0);
     if(uacpi_unlikely_error(status)){
-        KePanic(QSTR("couldn't initialize uACPI!"));
+        return STATUS_UACPI_INIT_FAIL;
     }
     status = uacpi_namespace_load();
     if(uacpi_unlikely_error(status)){
-        KePanic(QSTR("couldn't load uACPI namespace!"));
+        return STATUS_ACPI_NAMESPACE_FAIL;
     }
     status = uacpi_namespace_initialize();
     if(uacpi_unlikely_error(status)){
-        KePanic(QSTR("couldn't initialize uACPI namespace!"));
+        return STATUS_ACPI_NAMESPACE_INIT_FAIL;
     }
-    return TRUE;
+    return STATUS_SUCCESS;
 }
 
 void AcpiShutdownSystem(){
     uacpi_prepare_for_sleep_state(UACPI_SLEEP_STATE_S5);
     uacpi_enter_sleep_state(UACPI_SLEEP_STATE_S5);
     // shouldn't go here
-    KePanic(QSTR("failure to initiate ACPI shutdown"));
+    KePanic(STATUS_SHUTDOWN_FAILED);
 }
 
 void AcpiRebootSystem(){
     uacpi_prepare_for_sleep_state(UACPI_SLEEP_STATE_S5);
     uacpi_reboot();
     // shouldn't go here
-    KePanic(QSTR("failure to initiate ACPI reboot"));
+    KePanic(STATUS_REBOOT_FAILED);
 }

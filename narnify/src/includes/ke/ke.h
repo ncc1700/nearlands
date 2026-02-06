@@ -7,7 +7,8 @@
 
 
 
-#include "bootinfo.h"
+#include <bootinfo.h>
+#include <nrstatus.h>
 #include <types.h>
 
 
@@ -16,7 +17,7 @@
 
 
 
-boolean KeInitSystem(BootInfo* info);
+NearStatus KeInitSystem(BootInfo* info);
 
 
 

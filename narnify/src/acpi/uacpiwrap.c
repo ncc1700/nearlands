@@ -4,6 +4,7 @@
 #include "mm/alloc.h"
 #include "mm/pmm.h"
 #include "mm/vmm.h"
+#include "nrstatus.h"
 #include "uacpi/status.h"
 #include "uacpi/types.h"
 #include <ke/spinlock.h>
@@ -14,7 +15,7 @@
 // currently, we will just directly
 // use the page allocator until
 // I fix it
-//#define USE_PAGE_ALLOCATOR
+#define USE_PAGE_ALLOCATOR
 
 void *uacpi_kernel_map(uacpi_phys_addr addr, uacpi_size len){
     // for(u64 i = 0; i < len; i+=0x1000){
@@ -71,13 +72,13 @@ void uacpi_kernel_free(void *mem, uacpi_size size_hint){
     #ifdef USE_PAGE_ALLOCATOR
     u64 sizeInPages = (size_hint + (PAGE_SIZE - 1)) / PAGE_SIZE;
     boolean result = MmFreeMultiplePages(mem, sizeInPages);
-    if(result == FALSE){
+    if(!NR_SUCCESS(result)){
         KeTermPrint(TERM_STATUS_ERROR, QSTR("[ACPI]: failed freeing 0x%x with %d pages"), 
                                 mem, sizeInPages);
     }
     #else
     boolean result = MmFreeGeneralMemory(mem);
-    if(result == FALSE){
+    if(!NR_SUCCESS(result)){
         KeTermPrint(TERM_STATUS_ERROR, QSTR("[ACPI]: failed freeing 0x%x with %d size"), 
                                 mem, size_hint);
     }

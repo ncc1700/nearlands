@@ -10,10 +10,10 @@
 #include <types.h>
 
 
-boolean MmInitGeneralAllocator();
+NearStatus MmInitGeneralAllocator();
 void* MmAllocateGeneralMemory(u64 allocSize);
 void MmSetAllowFrees(boolean value);
-boolean MmFreeGeneralMemory(void* address);
+NearStatus MmFreeGeneralMemory(void* address);
 
 
 

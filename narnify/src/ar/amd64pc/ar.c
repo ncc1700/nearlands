@@ -1,15 +1,16 @@
 #include <ar/ar.h>
 #include "gdt.h"
 #include "idt.h"
+#include "nrstatus.h"
 
 
 
 
 
-boolean ArInitSystem(){
+NearStatus ArInitSystem(){
     Amd64SetupGDT();
     Amd64SetupIDT();
-    return TRUE; // we will do more here soon dw
+    return STATUS_SUCCESS; // we will do more here soon dw
 }
 
 CPUArch ArReturnCPUArch(){

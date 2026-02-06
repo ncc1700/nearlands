@@ -9,6 +9,7 @@
 #include <stddef.h>
 #include <stdbool.h>
 
+#include <nrstatus.h>
 
 
 
@@ -31,6 +32,8 @@ typedef intptr_t iptr;
 typedef bool boolean;
 #define FALSE 0
 #define TRUE 1
+
+#define ARR_LENGTH(x) sizeof(x)/sizeof(x[0]);
 
 
 

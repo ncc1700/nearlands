@@ -9,7 +9,6 @@
 
 #include <types.h>
 #include <bootinfo.h>
-
 #define PAGE_SIZE 0x1000
 
 #define PAGEMAP_PMM
@@ -25,13 +24,13 @@ typedef struct _PageMap {
 // #define BITMAP_PMM
 
 
-boolean MmInitPhysicalMemoryManager(BootMemoryMap* memMap);
+NearStatus MmInitPhysicalMemoryManager(BootMemoryMap* memMap);
 void* MmAllocateSinglePage();
 void* MmAllocateMultiplePages(u64 amount);
 void* MmReallocatePages(void* memory, u64 prevSizeInPages, u64 newSizeInPages);
 boolean MmTestPhysicalMemoryManager();
-boolean MmFreeSinglePage(void* pageAddress);
-boolean MmFreeMultiplePages(void* pageAddress, u64 amount);
+NearStatus MmFreeSinglePage(void* pageAddress);
+NearStatus MmFreeMultiplePages(void* pageAddress, u64 amount);
 u64 MmReturnPageUsed();
 u64 MmReturnPageAmount();
 

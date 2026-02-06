@@ -1,4 +1,5 @@
 #include "mm/alloc.h"
+#include "nrstatus.h"
 #include <mm/mm.h>
 #include <mm/pmm.h>
 #include <mm/vmm.h>
@@ -9,8 +10,7 @@
 
 
 
-boolean MmInitSystem(BootInfo* info){
-    
+NearStatus MmInitSystem(BootInfo* info){
     u64 memoryAmount = info->memMap->sizeOfEntireMemory;
     u64 kernelHeapDivisor = 1;
     if(memoryAmount < MB(1)){
@@ -26,30 +26,30 @@ boolean MmInitSystem(BootInfo* info){
         KeTermPrint(TERM_STATUS_INFO, 
             QSTR("System has %d TB of RAM"), TO_TB(memoryAmount));
     }
-    boolean result = MmInitPhysicalMemoryManager(info->memMap);
+    NearStatus status = MmInitPhysicalMemoryManager(info->memMap);
     KeTermPrint(TERM_STATUS_INFO, QSTR("setting up the physical memory manager"));
-    if(result == FALSE){
+    if(!NR_SUCCESS(status)){
         KeTermPrint(TERM_STATUS_ERROR, QSTR("Couldn't Setup Physical Memory Manager"));
-        return FALSE;
+        return STATUS_PMM_FAIL;
     }
     KeTermPrint(TERM_STATUS_INFO, QSTR("initalized %d pages"), MmReturnPageAmount());
     KeTermPrint(TERM_STATUS_INFO, QSTR("testing the physical memory manager"));
-    result = MmTestPhysicalMemoryManager();
-    if(result == FALSE){
+    boolean testRes = MmTestPhysicalMemoryManager();
+    if(testRes == FALSE){
         KeTermPrint(TERM_STATUS_ERROR, QSTR("Physical Memory Manager failed tests"));
-        return FALSE;
+        return STATUS_PMM_FAIL;
     }
     KeTermPrint(TERM_STATUS_INFO, QSTR("setting up the virtual memory manager"));
-    result = MmInitVirtualMemoryManager(info);
-    if(result == FALSE){
+    status = MmInitVirtualMemoryManager(info);
+    if(!NR_SUCCESS(status)){
         KeTermPrint(TERM_STATUS_ERROR, QSTR("Couldn't Setup the virtual Memory Manager"));
-        return FALSE;
+        return STATUS_VMM_FAIL;
     }
     KeTermPrint(TERM_STATUS_INFO, QSTR("setting up the general memory allocator"));
-    result = MmInitGeneralAllocator();
-    if(result == FALSE){
+    status = MmInitGeneralAllocator();
+    if(!NR_SUCCESS(status)){
         KeTermPrint(TERM_STATUS_ERROR, QSTR("Couldn't Setup the general memory allocator"));
-        return FALSE;
+        return STATUS_GALLOC_FAIL;
     }
-    return TRUE;
+    return STATUS_SUCCESS;
 }

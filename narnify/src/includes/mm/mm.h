@@ -12,7 +12,7 @@
 
 
 
-boolean MmInitSystem(BootInfo* info);
+NearStatus MmInitSystem(BootInfo* info);
 
 
 
