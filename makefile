@@ -6,8 +6,8 @@ gen-comp-command:
 build-amd64pc:
 	cd nearmonia && xmake build nearmonia-amd64pc
 	cd narnify && xmake build narnify-amd64pc
-	qemu-img create -f raw nearlands.img 1440K
-	mformat -i nearlands.img -f 1440 ::
+	qemu-img create -f raw nearlands.img 32M
+	mformat -i nearlands.img ::
 	mmd -i nearlands.img ::/EFI
 	mmd -i nearlands.img ::/EFI/BOOT
 	mmd -i nearlands.img ::/SYSTEM

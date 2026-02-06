@@ -68,7 +68,7 @@ void KeSystemStartup(BootInfo* info){
     status = AcpiInitSystem();
     if(!NR_SUCCESS(status)) KePanic(status);
     else KeTermPrint(TERM_STATUS_PASS, QSTR("AcpiInitSystem PASS"));
-    
+
     SpinLock lock = KeCreateSpinLock();
 
     Handle hEntity = 0;
@@ -94,7 +94,7 @@ void KeSystemStartup(BootInfo* info){
         KeTermPrint(TERM_STATUS_PASS, QSTR("you should only see this once...."));
     }
     
-    //AcpiShutdownSystem();
+    AcpiShutdownSystem();
     KeTermPrint(TERM_STATUS_ERROR, QSTR("WORK IN PROGRESS - come back later!"));
 
     while(1){continue;}
