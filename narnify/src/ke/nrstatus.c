@@ -20,7 +20,7 @@ static const char* statusToString[] = {
     [STATUS_NOT_MAPPED] = "Memory not mapped",
     [STATUS_UACPI_INIT_FAIL] = "Couldn't initialize uACPI",
     [STATUS_ACPI_NAMESPACE_FAIL] = "Couldn't load ACPI namespace",
-    [STATUS_ACPI_NAMESPACE_INIT_FAIL] = "Couldn't initialize ACPI namespace",
+    [STATUS_ACPI_GPE_FAIL] = "Couldn't initialize ACPI GPE",
     [STATUS_REBOOT_FAILED] = "Couldn't reboot the machine",
     [STATUS_SHUTDOWN_FAILED] = "Couldn't shut down the machine",
     [STATUS_INVALID_ADDRESS] = "Tried to access invalid address",
@@ -30,6 +30,7 @@ static const char* statusToString[] = {
     [STATUS_VMM_FAIL] = "Failed setting up the virtual memory manager",
     [STATUS_GALLOC_FAIL] = "Failed setting up the general memory allocator",
     [STATUS_TOO_LARGE] = "The item is too large",
+    [STATUS_NOT_IMPLEMENTED] = "This has not been implemented"
 };
 
 

@@ -15,7 +15,7 @@
 // currently, we will just directly
 // use the page allocator until
 // I fix it
-#define USE_PAGE_ALLOCATOR
+//#define USE_PAGE_ALLOCATOR
 
 void *uacpi_kernel_map(uacpi_phys_addr addr, uacpi_size len){
     // for(u64 i = 0; i < len; i+=0x1000){
@@ -61,7 +61,13 @@ void *uacpi_kernel_alloc(uacpi_size size){
     u64 sizeInPages = (size + (PAGE_SIZE - 1)) / PAGE_SIZE;
     return MmAllocateMultiplePages(sizeInPages);
     #else
-    return MmAllocateGeneralMemory(size);
+    KeTermPrint(TERM_STATUS_INFO, QSTR("size: %d"), size);
+    void* result = MmAllocateGeneralMemory(size);
+    KeTermPrint(TERM_STATUS_PASS, QSTR("!! allocated"));
+    if(result == NULL){
+        KeTermPrint(TERM_STATUS_ERROR, QSTR("?? result is NULL"));
+    }
+    return result;
     #endif
     
 }
@@ -77,11 +83,15 @@ void uacpi_kernel_free(void *mem, uacpi_size size_hint){
                                 mem, sizeInPages);
     }
     #else
+    KeTermPrint(TERM_STATUS_INFO, QSTR("free size: %d"), size_hint);
     boolean result = MmFreeGeneralMemory(mem);
     if(!NR_SUCCESS(result)){
         KeTermPrint(TERM_STATUS_ERROR, QSTR("[ACPI]: failed freeing 0x%x with %d size"), 
                                 mem, size_hint);
-    }
+    } else KeTermPrint(TERM_STATUS_PASS, QSTR("[ACPI]: freed 0x%x with %d size"), 
+            mem, size_hint);
+    KeTermPrint(TERM_STATUS_PASS, QSTR("!! freed"));
+
     #endif
 }
 

@@ -5,6 +5,7 @@
 #include "ke/panic.h"
 #include "ke/spinlock.h"
 #include "ke/term.h"
+#include "mm/alloc.h"
 #include <ecs/ecs.h>
 #include <ke/ke.h>
 #include <ke/panic.h>
@@ -69,32 +70,16 @@ void KeSystemStartup(BootInfo* info){
     if(!NR_SUCCESS(status)) KePanic(status);
     else KeTermPrint(TERM_STATUS_PASS, QSTR("AcpiInitSystem PASS"));
 
-    SpinLock lock = KeCreateSpinLock();
+    void* h = MmAllocateGeneralMemory(1000);
+    void* p = MmAllocateGeneralMemory(10000);
+    KeTermPrint(TERM_STATUS_PASS, QSTR("h: 0x%x, p: 0x%x"), h, p);
+    MmFreeGeneralMemory(h);
+    void* n = MmAllocateGeneralMemory(10);
+    void* l = MmAllocateGeneralMemory(10);
+    KeTermPrint(TERM_STATUS_PASS, QSTR("n: 0x%x, l: 0x%x, p: 0x%x"), n, l, p);
 
-    Handle hEntity = 0;
-    ComponentTypes types[] = {KeReturnSpinlockCompIndex(), KeReturnKtCompIndex()};
-    NearStatus stat = EcsCreateEntity(&hEntity, types, 2);
-    if(!NR_SUCCESS(stat)){
-        KePanic(stat);
-    }
     
-    stat = EcsAddComponentDataToEntity(hEntity, KeReturnSpinlockCompIndex(), &lock);
-    if(!NR_SUCCESS(stat)){
-        KePanic(stat);
-    }
-
-    while(1){
-        SpinLock* lock;
-        stat = EcsGetComponent((void**)&lock, hEntity, 
-                    KeReturnSpinlockCompIndex());
-        if(!NR_SUCCESS(stat)){
-            KePanic(stat);
-        }
-        KeAcquireSpinLock(lock);
-        KeTermPrint(TERM_STATUS_PASS, QSTR("you should only see this once...."));
-    }
-    
-    AcpiShutdownSystem();
+    //AcpiShutdownSystem();
     KeTermPrint(TERM_STATUS_ERROR, QSTR("WORK IN PROGRESS - come back later!"));
 
     while(1){continue;}

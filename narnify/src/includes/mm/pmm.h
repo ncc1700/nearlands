@@ -12,14 +12,21 @@
 #define PAGE_SIZE 0x1000
 
 #define PAGEMAP_PMM
-
+//#define BITMAP_PMM
+//#define LISTMAP_PMM
 
 
 #ifdef PAGEMAP_PMM
 typedef struct _PageMap {
     u64 address;
     boolean isFree:1;
-}  __attribute__((packed)) PageMap;
+} PageMap;
+#endif
+#ifdef LISTMAP_PMM
+typedef struct _ListMap {
+    u64 address;
+    struct _ListMap* next;
+} ListMap;
 #endif
 // #define BITMAP_PMM
 

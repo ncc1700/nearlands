@@ -16,6 +16,11 @@
 
 #ifdef PAGEMAP_PMM
 
+// u64 pp[] = {
+//     1, 1, 1, 1, 0, 0, 1,
+//     1, 1, 1, 1, 1, 1, 1,
+// }
+
 
 static PageMap* pageMap = NULL;
 static u64 pageMapAmount = 0;

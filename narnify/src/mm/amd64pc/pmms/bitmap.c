@@ -1,3 +1,4 @@
+#include "nrstatus.h"
 #include <mm/pmm.h>
 
 
@@ -21,7 +22,7 @@ static u8* bitmap = NULL;
 
 
 
-boolean MmInitPhysicalMemoryManager(BootMemoryMap* memMap){
+NearStatus MmInitPhysicalMemoryManager(BootMemoryMap* memMap){
     // TODO: implement
     for(u64 i = 0; i < memMap->amountOfEntries; i++){
         if(memMap->memEntries[i].type != BOOT_MEM_TYPE_FREE) continue;
@@ -50,7 +51,11 @@ boolean MmInitPhysicalMemoryManager(BootMemoryMap* memMap){
     if(bitmap == NULL){
         return FALSE;
     }
-    
+    for(u64 i = 0; i < bitmapSize; i++){
+        for(u8 i = 0; i < 8; i++){
+            CLEAR_BITMAP(i);
+        }
+    }
 
     
     return FALSE;
@@ -66,12 +71,12 @@ void* MmAllocateMultiplePages(u64 amount){
     return NULL;
 }
 
-boolean MmFreeSinglePage(void* pageAddress){
+NearStatus MmFreeSinglePage(void* pageAddress){
     // TODO: implement
     return NULL;
 }
 
-boolean MmFreeMultiplePages(void* pageAddress, u64 amount){
+NearStatus MmFreeMultiplePages(void* pageAddress, u64 amount){
     // TODO: implement
     return NULL;
 }

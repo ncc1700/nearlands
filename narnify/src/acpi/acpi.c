@@ -1,4 +1,5 @@
 #include "nrstatus.h"
+#include "uacpi/event.h"
 #include "uacpi/sleep.h"
 #include "uacpi/status.h"
 #include <ke/panic.h>
@@ -19,7 +20,11 @@ NearStatus AcpiInitSystem(){
     }
     status = uacpi_namespace_initialize();
     if(uacpi_unlikely_error(status)){
-        return STATUS_ACPI_NAMESPACE_INIT_FAIL;
+        return STATUS_ACPI_NAMESPACE_FAIL;
+    }
+    status = uacpi_finalize_gpe_initialization();
+    if(uacpi_unlikely_error(status)){
+        return STATUS_ACPI_GPE_FAIL;
     }
     return STATUS_SUCCESS;
 }
