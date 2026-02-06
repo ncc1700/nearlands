@@ -32,7 +32,7 @@ NearStatus MmInitSystem(BootInfo* info){
         KeTermPrint(TERM_STATUS_ERROR, QSTR("Couldn't Setup Physical Memory Manager"));
         return STATUS_PMM_FAIL;
     }
-    KeTermPrint(TERM_STATUS_INFO, QSTR("initalized %d pages"), MmReturnPageAmount());
+    KeTermPrint(TERM_STATUS_INFO, QSTR("initialized %d pages"), MmReturnPageAmount());
     KeTermPrint(TERM_STATUS_INFO, QSTR("testing the physical memory manager"));
     boolean testRes = MmTestPhysicalMemoryManager();
     if(testRes == FALSE){
