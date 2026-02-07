@@ -20,7 +20,7 @@ target("narnify-amd64pc")
     add_includedirs("src/includes")
     add_cflags("-g -target x86_64-pc-win32-coff -ffreestanding -nostdlib", {force = true})
     add_asflags("-f win64", {force = true})
-    add_ldflags("/machine:amd64 /subsystem:native /entry:ArArchitectureEntry /base:0xFFFFFF8000000000", {force = true})
+    add_ldflags("/machine:amd64 /subsystem:native /entry:ArArchitectureEntry /base:0xFFFFFF8000000000 /DEBUG /INCREMENTAL:NO", {force = true})
 
 
 toolchain("clang-amd64pc")

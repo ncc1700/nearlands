@@ -7,70 +7,50 @@
 #include <mm/alloc.h>
 #include <qol/qmem.h>
 
-
-/**
-
-    Bit better heap allocator, then the old one
-
-
-    still scuffed but it..... works
-
-*/
-
 static SpinLock allocSpinLock = {0};
 
-#define ALLOCHEADER_MAGIC 0x6767
-#define BLOCKHEADER_MAGIC 0x6161
+#define FREELIST_HEADER_MAGIC 0x6767
 
 typedef struct _FreeList {
     u64 address;
     struct _FreeList* next;
     struct _FreeList* prev;
-    u64 size;
+    struct _FreeList* header;
+    u16 size;
+    u16 memSize;
     u16 magic;
     boolean isFree;
-} AllocHeader;
-
-typedef struct _BlockHeader {
-    struct _BlockHeader* next;
-    struct _BlockHeader* prev;
-    void* allocBase;
-    void* allocCur;
-    u16 magic;
-    u64 allocTotalSize;
-    u64 allocCurSize;
-} BlockHeader;
+} __attribute__((packed)) FreeList;
 
 
+static void* allocBase = 0;
+static void* allocCur = 0;
+static void* allocLimit = 0;
 
-static AllocHeader* flHead = NULL;
-static AllocHeader* flTail = NULL;
-
-static BlockHeader* bhHead = NULL;
-static BlockHeader* bhTail = NULL;
-
-//#define INCREMENT_MEMORY(addr, size)
+static FreeList* head = NULL;
+static FreeList* tail = NULL;
+static boolean allowFrees = TRUE;
 
 
-static inline void AddToFreeList(AllocHeader* list){
+static inline void AddToFreeList(FreeList* list){
     list->next = NULL;
-    list->prev = flTail;
-    if(flTail != NULL) flTail->next = list;
-    flTail = list;
-    if(flHead == NULL){
-        flHead = list;
+    list->prev = tail;
+    if(tail != NULL) tail->next = list;
+    tail = list;
+    if(head == NULL){
+        head = list;
     } 
 }
 
-static inline void RemoveFromFreeList(AllocHeader* list){
-    if(list == flHead){
-        flHead = list->next;
+static inline void RemoveFromFreeList(FreeList* list){
+    if(list == head){
+        head = list->next;
     }
-    if(list == flTail){
-        flTail = list->prev;
+    if(list == tail){
+        tail = list->prev;
     }
-    AllocHeader* prev = list->prev;
-    AllocHeader* next = list->next;
+    FreeList* prev = list->prev;
+    FreeList* next = list->next;
     
     if(prev != NULL) prev->next = next;
     if(next != NULL) next->prev = prev;
@@ -78,180 +58,134 @@ static inline void RemoveFromFreeList(AllocHeader* list){
     list->next = NULL;
 }
 
-static inline void AddToBlockList(BlockHeader* list){
-    list->next = NULL;
-    list->prev = bhTail;
-    if(bhTail != NULL) bhTail->next = list;
-    bhTail = list;
-    if(bhHead == NULL){
-        bhHead = list;
-    } 
-}
+static inline NearStatus FreeMemory(void* address){
+    if(address == NULL){
+        return STATUS_INVALID_ADDRESS;
+    }
+    if(allowFrees == FALSE){
+        return STATUS_ACCESS_DENIED;
+    }
+    FreeList* header = address - sizeof(FreeList);
 
-static inline void RemoveFromBlockList(BlockHeader* list){
-    if(list == bhHead){
-        bhHead = list->next;
+    if(header == NULL){
+        return STATUS_CANT_FIND_HEADER;
     }
-    if(list == bhTail){
-        bhTail = list->prev;
+
+    if(header->magic != FREELIST_HEADER_MAGIC){
+        return STATUS_CANT_FIND_HEADER;
     }
-    BlockHeader* prev = list->prev;
-    BlockHeader* next = list->next;
-    
-    if(prev != NULL) prev->next = next;
-    if(next != NULL) next->prev = prev;
-    list->prev = NULL;
-    list->next = NULL;
+
+    header->isFree = TRUE;
+
+    AddToFreeList(header);
+    return STATUS_SUCCESS;
 }
 
 
-static inline void InitAllocHeader(AllocHeader* header, boolean isFree, u64 size, u64 address)
+
+static boolean ReinitGeneralAllocator(u64 minSize){
+    u64 minSizeInPages = (minSize + (PAGE_SIZE - 1)) / PAGE_SIZE;
+    allocBase = MmAllocateMultiplePages(minSizeInPages + PAGE_SIZE);
+    if(allocBase == NULL) return FALSE;
+    allocCur = allocBase;
+    allocLimit = allocBase + PAGE_SIZE;
+    return TRUE;
+}
+
+static inline void InitFreeList(FreeList* header, boolean isFree, 
+                u64 totalSize, u64 memSize, u64 address)
 {
-    header->magic = ALLOCHEADER_MAGIC;
+    header->magic = FREELIST_HEADER_MAGIC;
     header->isFree = isFree;
     header->address = (u64)address;
-    header->size = size;
-}
-
-static inline void InitBlockHeader(BlockHeader* header, u64 size, u64 address)
-{
-    u64 trueAddr = (u64)address;
-    trueAddr += sizeof(BlockHeader);
-    header->magic = BLOCKHEADER_MAGIC;
-    header->allocBase = (void*)trueAddr;
-    header->allocCur = header->allocBase;
-    header->allocTotalSize = size - sizeof(BlockHeader);
-    header->allocCurSize = 0;
-    AddToBlockList(header);
-}
-
-static inline BlockHeader* ReturnSuitableBlock(u64 size){
-    BlockHeader* header = bhHead;
-    while(header != NULL){
-        u64 freeSize = header->allocTotalSize - header->allocCurSize;
-        if(freeSize >= size){
-            return header;
-        }
-        header = header->next;
-    }
-    return NULL; 
-}
-
-static inline void* AllocateFromBlock(BlockHeader* header, u64 size){
-    u64 freeSize = header->allocTotalSize - header->allocCurSize;
-    if(freeSize < size){
-        return NULL;
-    }
-    void* addr = header->allocCur;
-    header->allocCurSize += size;
-    u64 curAddr = (u64)header->allocCur;
-    curAddr += size;
-    header->allocCur = (void*)curAddr;
-    return addr;
-}
-
-static inline void* ReturnFreeMemory(u64 size){
-    AllocHeader* header = flHead;
-    while(header != NULL){
-        if(header->size == size){
-            RemoveFromFreeList(header);
-            header->isFree = FALSE;
-            return (void*)header->address;
-        } else if(header->size >= (size + sizeof(AllocHeader))){
-            RemoveFromFreeList(header);
-            header->isFree = FALSE;
-            u64 curAddr = header->address;
-            u64 newFreeAddr = curAddr + size;
-            AllocHeader* newHeader = (AllocHeader*)newFreeAddr;
-            u64 remainingSize = (header->size - size) - sizeof(AllocHeader);
-            InitAllocHeader(newHeader, TRUE, remainingSize, 
-                    newFreeAddr + sizeof(AllocHeader));
-            AddToFreeList(newHeader);
-
-            header->size = size;
-            return (void*)header->address;
-        }
-        header = header->next;
-    }
-    return NULL;
+    header->size = totalSize;
+    header->memSize = memSize;
+    header->header = header;
 }
 
 NearStatus MmInitGeneralAllocator(){
-    void* initAlloc = MmAllocateSinglePage();
-    if(initAlloc == NULL){
-        return STATUS_OUT_OF_MEMORY;
-    }
-    BlockHeader* header = (BlockHeader*)initAlloc;
-    InitBlockHeader(header, PAGE_SIZE, (u64)initAlloc);
+    allocSpinLock = KeCreateSpinLock();
+    allocBase = MmAllocateSinglePage();
+    if(allocBase == NULL) return STATUS_OUT_OF_MEMORY;
+    allocCur = allocBase;
+    allocLimit = allocBase + PAGE_SIZE;
     return STATUS_SUCCESS;
 }
 
 void* MmAllocateGeneralMemory(u64 allocSize){
     KeAcquireSpinLock(&allocSpinLock);
-    AllocHeader* aHeader = NULL;
-    void* result = NULL;
-    u64 size = allocSize + sizeof(AllocHeader);
-
-    result = ReturnFreeMemory(size);
-    if(result != NULL){
-        goto SUCCESS_EXIT;
-    }
-
-    BlockHeader* header = ReturnSuitableBlock(size);
-    if(header == NULL){
-        u64 sizeInPages = (size + (PAGE_SIZE - 1)) / PAGE_SIZE;
-        
-        void* initAlloc = MmAllocateMultiplePages(sizeInPages);
-
-        if(initAlloc == NULL){
-            goto FAIL_EXIT; // no more memory
+    u64 size = allocSize + sizeof(FreeList);
+    if(allowFrees == TRUE){
+        FreeList* cur = head;
+        while(cur != NULL){
+            if(cur->isFree == TRUE){
+                if(cur->size < size){
+                    cur = cur->next;
+                    continue;
+                } else if(cur->size == size){
+                    RemoveFromFreeList(cur);
+                    cur->isFree = FALSE;
+                    KeReleaseSpinLock(&allocSpinLock);
+                    return (void*)cur->address;
+                } else if(cur->size > size){
+                    u64 allocAddr = cur->address;
+                    cur->size -= size;
+                    cur->address += size;
+                    FreeList* header = (FreeList*)allocAddr;
+                    memset(header, 0, sizeof(FreeList));
+                    allocAddr += sizeof(FreeList);
+                    InitFreeList(header, FALSE, size, 
+                        allocSize, 
+                        (u64)allocAddr);
+                    KeReleaseSpinLock(&allocSpinLock);
+                    return (void*)allocAddr;
+                }
+            }
+            cur = cur->next;
         }
-        BlockHeader* newHeader = (BlockHeader*)initAlloc;
-        InitBlockHeader(newHeader, sizeInPages * PAGE_SIZE, 
-                                            (u64)initAlloc);
     }
-    header = ReturnSuitableBlock(size);
-    if(header == NULL){
-        goto FAIL_EXIT;
+    if(((u64)allocCur + size) >= (u64)allocLimit){
+        KeTermPrint(TERM_STATUS_INFO, QSTR("expanding heap outreach"));
+        u64 amountUntilLimit = (u64)allocLimit - (u64)allocCur;
+        if(amountUntilLimit >= sizeof(FreeList)){
+            FreeList* header = allocCur;
+            memset(header, 0, sizeof(FreeList));
+            u64 allocCurAddr = (u64)allocCur;
+            allocCurAddr += sizeof(FreeList);
+            allocCur = (void*)allocCurAddr;
+            InitFreeList(header, TRUE, amountUntilLimit, 
+                        amountUntilLimit - sizeof(FreeList), 
+                        (u64)allocCur);
+            FreeMemory(allocCur);
+        }
+        // we now reinit the allocator
+        ReinitGeneralAllocator(size);
     }
-
-    aHeader = AllocateFromBlock(header, size);
-    if(aHeader == NULL){
-        goto FAIL_EXIT;
-    }
-    result = (void*)((u64)aHeader + sizeof(AllocHeader));
-    InitAllocHeader(aHeader, FALSE, allocSize, (u64)result);
-SUCCESS_EXIT:
+    FreeList* header = allocCur;
+    memset(header, 0, sizeof(FreeList));
+    u64 allocCurAddr = (u64)allocCur;
+    allocCurAddr += sizeof(FreeList);
+    allocCur = (void*)allocCurAddr;
+    InitFreeList(header, FALSE, size, allocSize, (u64)allocCur);
+    
+    void* prev = allocCur;
+    allocCurAddr = (u64)allocCur;
+    allocCurAddr += allocSize;
+    allocCur = (void*)allocCurAddr;
     KeReleaseSpinLock(&allocSpinLock);
-    return result;
-FAIL_EXIT:
-    KeReleaseSpinLock(&allocSpinLock);
-    return NULL;
+    return prev;
 }
 
-
+void MmSetAllowFrees(boolean value){
+    allowFrees = value;
+}
 
 
 
 NearStatus MmFreeGeneralMemory(void* address){
     KeAcquireSpinLock(&allocSpinLock);
-    NearStatus status = STATUS_SUCCESS;
-    if(address == NULL){
-        status = STATUS_INVALID_ADDRESS;
-        goto EXIT;
-    }
-    AllocHeader* header = (AllocHeader*)((u64)(address) - sizeof(AllocHeader));
-    if(header->magic != ALLOCHEADER_MAGIC){
-        status = STATUS_CANT_FIND_HEADER;
-        goto EXIT;
-    }
-    if(header->isFree == TRUE){
-        status = STATUS_INVALID_ADDRESS;
-        goto EXIT;
-    }
-    header->isFree = TRUE;
-    AddToFreeList(header);
-EXIT:
+    NearStatus result = FreeMemory(address);
+    if(!NR_SUCCESS(result)) return result;
     KeReleaseSpinLock(&allocSpinLock);
-    return status;
+    return result;
 }

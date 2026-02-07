@@ -6,6 +6,7 @@
 #include "ke/spinlock.h"
 #include "ke/term.h"
 #include "mm/alloc.h"
+#include "mm/pmm.h"
 #include <ecs/ecs.h>
 #include <ke/ke.h>
 #include <ke/panic.h>
@@ -69,7 +70,12 @@ void KeSystemStartup(BootInfo* info){
     status = AcpiInitSystem();
     if(!NR_SUCCESS(status)) KePanic(status);
     else KeTermPrint(TERM_STATUS_PASS, QSTR("AcpiInitSystem PASS"));
-
+    // for(int i = 0;; i++){
+    //     void* p = MmAllocateMultiplePages(10);
+    //     if(i % 100 == 0){
+    //         MmFreeMultiplePages(p, 10);
+    //     }
+    // }
     void* h = MmAllocateGeneralMemory(1000);
     void* p = MmAllocateGeneralMemory(10000);
     KeTermPrint(TERM_STATUS_PASS, QSTR("h: 0x%x, p: 0x%x"), h, p);

@@ -20,7 +20,7 @@
 typedef struct _PageMap {
     u64 address;
     boolean isFree:1;
-} PageMap;
+} __attribute__((packed)) PageMap;
 #endif
 #ifdef LISTMAP_PMM
 typedef struct _ListMap {
