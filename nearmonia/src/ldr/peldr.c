@@ -168,7 +168,7 @@ void LdrPeLoadPEImageAsKernel(const char* path){
 
     u64 sizeOfImage = ntHeader->OptionalHeader.SizeOfImage;
     u64 imageBase = ntHeader->OptionalHeader.ImageBase;
-    uint64_t amountOfPagesForImage = (sizeOfImage + 4095) / 4096;
+    u64 amountOfPagesForImage = (sizeOfImage + 4095) / 4096;
     u64 physBase = 0x0;
     EFI_STATUS status = LdrReturnSystemTable()->BootServices->AllocatePages(AllocateAnyPages, EfiLoaderData, 
                                                             amountOfPagesForImage, &physBase);

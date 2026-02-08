@@ -13,7 +13,7 @@
  * =======================
  */
 #ifndef UACPI_DEFAULT_LOG_LEVEL
-    #define UACPI_DEFAULT_LOG_LEVEL UACPI_LOG_TRACE
+    #define UACPI_DEFAULT_LOG_LEVEL UACPI_LOG_INFO
 #endif
 
 UACPI_BUILD_BUG_ON_WITH_MSG(

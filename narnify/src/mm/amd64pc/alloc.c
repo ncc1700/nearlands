@@ -9,30 +9,37 @@
 
 static SpinLock allocSpinLock = {0};
 
-#define FREELIST_HEADER_MAGIC 0x6767
+#define MEM_SPLIT 16
 
-typedef struct _FreeList {
+
+
+typedef struct _BlockHeader {
+    struct _BlockHeader* next;
+    struct _BlockHeader* prev;
+    struct _BlockHeader* header;
+    Arena* arena;
+    u64 base;
+    u64 cur; 
+    u64 size;
+    u64 curSize;
+    u64 split;
+} BlockHeader;
+
+typedef struct _Freed {
     u64 address;
-    struct _FreeList* next;
-    struct _FreeList* prev;
-    struct _FreeList* header;
-    u16 size;
-    u16 memSize;
-    u16 magic;
-    boolean isFree;
-} __attribute__((packed)) FreeList;
+    u64 size;
+} Freed;
 
 
-static void* allocBase = 0;
-static void* allocCur = 0;
-static void* allocLimit = 0;
 
-static FreeList* head = NULL;
-static FreeList* tail = NULL;
-static boolean allowFrees = TRUE;
+static BlockHeader* head = NULL;
+static BlockHeader* tail = NULL;
 
+static Freed* freedArray = NULL;
+static u64 freedCapacity = 0;
+static u64 freedMaxCapacity = 256;
 
-static inline void AddToFreeList(FreeList* list){
+static inline void AddToBlockList(BlockHeader* list){
     list->next = NULL;
     list->prev = tail;
     if(tail != NULL) tail->next = list;
@@ -42,15 +49,15 @@ static inline void AddToFreeList(FreeList* list){
     } 
 }
 
-static inline void RemoveFromFreeList(FreeList* list){
+static inline void RemoveFromBlockList(BlockHeader* list){
     if(list == head){
         head = list->next;
     }
     if(list == tail){
         tail = list->prev;
     }
-    FreeList* prev = list->prev;
-    FreeList* next = list->next;
+    BlockHeader* prev = list->prev;
+    BlockHeader* next = list->next;
     
     if(prev != NULL) prev->next = next;
     if(next != NULL) next->prev = prev;
@@ -58,134 +65,162 @@ static inline void RemoveFromFreeList(FreeList* list){
     list->next = NULL;
 }
 
-static inline NearStatus FreeMemory(void* address){
-    if(address == NULL){
-        return STATUS_INVALID_ADDRESS;
+static NearStatus CreateBlock(u64 pageAmount){
+    void* mem = MmAllocateMultiplePages(pageAmount);
+    if(mem == NULL){
+        return STATUS_OUT_OF_MEMORY;
     }
-    if(allowFrees == FALSE){
-        return STATUS_ACCESS_DENIED;
-    }
-    FreeList* header = address - sizeof(FreeList);
-
-    if(header == NULL){
-        return STATUS_CANT_FIND_HEADER;
-    }
-
-    if(header->magic != FREELIST_HEADER_MAGIC){
-        return STATUS_CANT_FIND_HEADER;
-    }
-
-    header->isFree = TRUE;
-
-    AddToFreeList(header);
+    BlockHeader* header = (BlockHeader*)mem;
+    u64 base = (u64)mem + sizeof(BlockHeader);
+    u64 size = (pageAmount * PAGE_SIZE) - sizeof(BlockHeader);
+    header->base = base;
+    header->cur = header->base;
+    header->curSize = 0;
+    header->size = size;
+    header->split = MEM_SPLIT;
+    header->next = NULL;
+    header->prev = NULL;
+    AddToBlockList(header);
     return STATUS_SUCCESS;
 }
 
+static void* AllocateFromAvaliableBlock(u64 size){
+    u64 trueAllocSize = ((size + (MEM_SPLIT - 1)) / MEM_SPLIT) * MEM_SPLIT;
+    KeTermPrint(TERM_STATUS_INFO, QSTR("size: %d, trueAllocSize: %d"), size, trueAllocSize);
+    BlockHeader* header = head;
 
-
-static boolean ReinitGeneralAllocator(u64 minSize){
-    u64 minSizeInPages = (minSize + (PAGE_SIZE - 1)) / PAGE_SIZE;
-    allocBase = MmAllocateMultiplePages(minSizeInPages + PAGE_SIZE);
-    if(allocBase == NULL) return FALSE;
-    allocCur = allocBase;
-    allocLimit = allocBase + PAGE_SIZE;
-    return TRUE;
+    while(header != NULL){
+        u64 sizeRemaining = header->size - header->curSize;
+        if(sizeRemaining >= trueAllocSize){
+            header->curSize += trueAllocSize;
+            u64 base = header->cur;
+            header->cur += trueAllocSize;
+            return (void*)base;
+        }
+        header = header->next;
+    }
+    return NULL;
 }
 
-static inline void InitFreeList(FreeList* header, boolean isFree, 
-                u64 totalSize, u64 memSize, u64 address)
-{
-    header->magic = FREELIST_HEADER_MAGIC;
-    header->isFree = isFree;
-    header->address = (u64)address;
-    header->size = totalSize;
-    header->memSize = memSize;
-    header->header = header;
+static NearStatus InitFreedArraySize(){
+    u64 size = freedMaxCapacity * sizeof(Freed);
+    u64 sizeInPages = ((size + 4095) / 4096);
+    freedArray = MmAllocateMultiplePages(sizeInPages);
+    if(freedArray == NULL){
+        return STATUS_OUT_OF_MEMORY;
+    }
+    freedCapacity = 0;
+    return STATUS_SUCCESS;
+}
+
+static NearStatus ExpandFreedArraySize(){
+    u64 size = freedMaxCapacity * sizeof(Freed);
+    u64 oldSizeInPages = ((size + 4095) / 4096);
+
+    freedMaxCapacity = freedMaxCapacity * 2;
+    size = freedMaxCapacity * sizeof(Freed);
+    u64 sizeInPages = ((size + 4095) / 4096);
+
+    freedArray = MmReallocatePages(freedArray, 
+                        oldSizeInPages,
+                        sizeInPages);
+    if(freedArray == NULL){
+        return STATUS_OUT_OF_MEMORY;
+    }
+    return STATUS_SUCCESS;
+}
+
+static void* ReturnMemoryFromFreedArray(u64 size){
+    u64 trueAllocSize = ((size + (MEM_SPLIT - 1)) / MEM_SPLIT) * MEM_SPLIT;
+    for(u64 i = 0; i < freedCapacity; i++){
+        if(freedArray[i].size == trueAllocSize){
+            u64 address = freedArray[i].address;
+            freedArray[i].address = 0;
+            freedArray[i].size = 0;
+            return (void*)address;
+        } else if(freedArray[i].size > trueAllocSize){
+            u64 address = freedArray[i].address;
+            freedArray[i].address += trueAllocSize;
+            freedArray[i].size -= trueAllocSize;
+            return (void*)address; 
+        }
+    }
+    return NULL;
+}
+
+static NearStatus InsertFreedMemoryIntoArray(u64 address, u64 size){
+    u64 trueAllocSize = ((size + (MEM_SPLIT - 1)) / MEM_SPLIT) * MEM_SPLIT;
+    for(u64 i = 0; i < freedCapacity; i++){
+        if(freedArray[i].size == 0 && freedArray[i].address == 0){
+            freedArray[i].address = address;
+            freedArray[i].size = trueAllocSize;
+            return STATUS_SUCCESS;
+        }
+    }
+    if(freedCapacity >= freedMaxCapacity){
+        NearStatus status = ExpandFreedArraySize();
+        if(!NR_SUCCESS(status)){
+            return status;
+        }
+    }
+    freedArray[freedCapacity].address = address;
+    freedArray[freedCapacity].size = trueAllocSize;
+    freedCapacity++;
+    return STATUS_SUCCESS;
 }
 
 NearStatus MmInitGeneralAllocator(){
     allocSpinLock = KeCreateSpinLock();
-    allocBase = MmAllocateSinglePage();
-    if(allocBase == NULL) return STATUS_OUT_OF_MEMORY;
-    allocCur = allocBase;
-    allocLimit = allocBase + PAGE_SIZE;
-    return STATUS_SUCCESS;
+    NearStatus status = InitFreedArraySize();
+    if(!NR_SUCCESS(status)) return status;
+    status = CreateBlock(1);
+    return status;
 }
 
 void* MmAllocateGeneralMemory(u64 allocSize){
     KeAcquireSpinLock(&allocSpinLock);
-    u64 size = allocSize + sizeof(FreeList);
-    if(allowFrees == TRUE){
-        FreeList* cur = head;
-        while(cur != NULL){
-            if(cur->isFree == TRUE){
-                if(cur->size < size){
-                    cur = cur->next;
-                    continue;
-                } else if(cur->size == size){
-                    RemoveFromFreeList(cur);
-                    cur->isFree = FALSE;
-                    KeReleaseSpinLock(&allocSpinLock);
-                    return (void*)cur->address;
-                } else if(cur->size > size){
-                    u64 allocAddr = cur->address;
-                    cur->size -= size;
-                    cur->address += size;
-                    FreeList* header = (FreeList*)allocAddr;
-                    memset(header, 0, sizeof(FreeList));
-                    allocAddr += sizeof(FreeList);
-                    InitFreeList(header, FALSE, size, 
-                        allocSize, 
-                        (u64)allocAddr);
-                    KeReleaseSpinLock(&allocSpinLock);
-                    return (void*)allocAddr;
-                }
-            }
-            cur = cur->next;
+    void* mem = ReturnMemoryFromFreedArray(allocSize);
+    if(mem != NULL){
+        goto PASS;
+    }
+    mem = AllocateFromAvaliableBlock(allocSize);
+    if(mem == NULL){
+        KeTermPrint(TERM_STATUS_INFO, QSTR("creating new block for kernel heap...."));
+        u64 amountOfPagesForBlock = (((allocSize + sizeof(BlockHeader)) + 4095) / 4096) + 1;
+        NearStatus status = CreateBlock(amountOfPagesForBlock);
+        if(!NR_SUCCESS(status)){
+            KeTermPrint(TERM_STATUS_INFO, QSTR("couldn't create new block!"));
+            goto FAIL;
         }
     }
-    if(((u64)allocCur + size) >= (u64)allocLimit){
-        KeTermPrint(TERM_STATUS_INFO, QSTR("expanding heap outreach"));
-        u64 amountUntilLimit = (u64)allocLimit - (u64)allocCur;
-        if(amountUntilLimit >= sizeof(FreeList)){
-            FreeList* header = allocCur;
-            memset(header, 0, sizeof(FreeList));
-            u64 allocCurAddr = (u64)allocCur;
-            allocCurAddr += sizeof(FreeList);
-            allocCur = (void*)allocCurAddr;
-            InitFreeList(header, TRUE, amountUntilLimit, 
-                        amountUntilLimit - sizeof(FreeList), 
-                        (u64)allocCur);
-            FreeMemory(allocCur);
-        }
-        // we now reinit the allocator
-        ReinitGeneralAllocator(size);
+    // we try again, mimicks life =)
+    mem = AllocateFromAvaliableBlock(allocSize);
+    if(mem == NULL){
+        KeTermPrint(TERM_STATUS_INFO, QSTR("couldn't find new block AGAIN"));
+        goto FAIL;
     }
-    FreeList* header = allocCur;
-    memset(header, 0, sizeof(FreeList));
-    u64 allocCurAddr = (u64)allocCur;
-    allocCurAddr += sizeof(FreeList);
-    allocCur = (void*)allocCurAddr;
-    InitFreeList(header, FALSE, size, allocSize, (u64)allocCur);
-    
-    void* prev = allocCur;
-    allocCurAddr = (u64)allocCur;
-    allocCurAddr += allocSize;
-    allocCur = (void*)allocCurAddr;
+PASS:
     KeReleaseSpinLock(&allocSpinLock);
-    return prev;
+    return mem;
+FAIL:
+    KeReleaseSpinLock(&allocSpinLock);
+    return NULL;
 }
 
 void MmSetAllowFrees(boolean value){
-    allowFrees = value;
+    //allowFrees = value;
+    return;
 }
 
 
 
-NearStatus MmFreeGeneralMemory(void* address){
+NearStatus MmFreeGeneralMemory(void* address, u64 size){
     KeAcquireSpinLock(&allocSpinLock);
-    NearStatus result = FreeMemory(address);
-    if(!NR_SUCCESS(result)) return result;
+    if(address == NULL || size == 0){
+        KeReleaseSpinLock(&allocSpinLock);
+        return STATUS_INVALID_ADDRESS;
+    }
+    NearStatus status = InsertFreedMemoryIntoArray((u64)address, size);
     KeReleaseSpinLock(&allocSpinLock);
-    return result;
+    return status;
 }

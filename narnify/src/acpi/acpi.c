@@ -22,16 +22,16 @@ NearStatus AcpiInitSystem(){
     if(uacpi_unlikely_error(status)){
         return STATUS_ACPI_NAMESPACE_FAIL;
     }
-    // status = uacpi_namespace_initialize();
-    // if(uacpi_unlikely_error(status)){
-    //     return STATUS_ACPI_NAMESPACE_FAIL;
-    // }
-    // status = uacpi_finalize_gpe_initialization();
-    // if(uacpi_unlikely_error(status)){
-    //     return STATUS_ACPI_GPE_FAIL;
-    // }
-    // size = MmReturnPageUsed();
-    // KeTermPrint(TERM_STATUS_INFO, QSTR("page finally used is %d\n"), size);
+    status = uacpi_namespace_initialize();
+    if(uacpi_unlikely_error(status)){
+        return STATUS_ACPI_NAMESPACE_FAIL;
+    }
+    status = uacpi_finalize_gpe_initialization();
+    if(uacpi_unlikely_error(status)){
+        return STATUS_ACPI_GPE_FAIL;
+    }
+    size = MmReturnPageUsed();
+    KeTermPrint(TERM_STATUS_INFO, QSTR("page finally used is %d\n"), size);
     return STATUS_SUCCESS;
 }
 

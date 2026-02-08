@@ -50,7 +50,7 @@ void MmResetArena(Arena* arena){
 
 boolean MmDestroyArena(Arena* arena){
     //boolean result = MmFreeMultiplePages(arena->base, arena->sizeInpages);
-    boolean result = MmFreeGeneralMemory(arena->base);
+    boolean result = MmFreeGeneralMemory(arena->base, arena->size);
     if(result == FALSE) return FALSE;
     arena->size = 0;
     arena->sizeInpages = 0;

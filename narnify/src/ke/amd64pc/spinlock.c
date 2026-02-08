@@ -33,7 +33,7 @@ SpinLock* KeCreateSpinLockHeap(){
 }
 
 boolean KeDeleteSpinLockFromHeap(SpinLock* lock){
-    return MmFreeGeneralMemory(lock);
+    return MmFreeGeneralMemory(lock, sizeof(SpinLock));
 }
 
 void KeAcquireSpinLock(SpinLock* spinLock){

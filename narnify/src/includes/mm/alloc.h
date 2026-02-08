@@ -13,8 +13,7 @@
 NearStatus MmInitGeneralAllocator();
 void* MmAllocateGeneralMemory(u64 allocSize);
 void MmSetAllowFrees(boolean value);
-NearStatus MmFreeGeneralMemory(void* address);
-
+NearStatus MmFreeGeneralMemory(void* address, u64 size);
 
 
 
