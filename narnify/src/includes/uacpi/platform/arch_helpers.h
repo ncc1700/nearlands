@@ -1,7 +1,7 @@
 #pragma once
 
 #ifdef UACPI_OVERRIDE_ARCH_HELPERS
-#include "uacpi_arch_helpers.h>
+#include "uacpi_arch_helpers.h"
 #else
 
 #include <uacpi/platform/atomic.h>

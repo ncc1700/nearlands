@@ -448,6 +448,7 @@ uacpi_status uacpi_namespace_load(void)
         uacpi_error("unable to find DSDT: %s\n", uacpi_status_to_string(ret));
         goto out_fatal_error;
     }
+
     ret = uacpi_table_load_with_cause(tbl.index, UACPI_TABLE_LOAD_CAUSE_INIT);
     if (uacpi_unlikely_error(ret)) {
         trace_table_load_failure(tbl.hdr, UACPI_LOG_ERROR, ret);
@@ -455,6 +456,7 @@ uacpi_status uacpi_namespace_load(void)
     }
     st.load_counter++;
     uacpi_table_unref(&tbl);
+
     for (cur_index = 0;; cur_index = tbl.index + 1) {
         ret = uacpi_table_match(cur_index, match_ssdt_or_psdt, &tbl);
         if (ret != UACPI_STATUS_OK) {

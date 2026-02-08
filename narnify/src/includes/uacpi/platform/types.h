@@ -6,7 +6,7 @@
  */
 
 #ifdef UACPI_OVERRIDE_TYPES
-#include "uacpi_types.h>
+#include "uacpi_types.h"
 #else
 
 #include <stdbool.h>

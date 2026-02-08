@@ -1292,6 +1292,7 @@ static uacpi_status do_load_table(
 {
     struct uacpi_control_method method = { 0 };
     uacpi_status ret;
+
     ret = prepare_table_load(tbl, cause, &method);
     if (uacpi_unlikely_error(ret))
         return ret;
@@ -5327,11 +5328,14 @@ static uacpi_status exec_op(struct execution_context *ctx)
 
     if (ctx->prev_op_ctx)
         prev_op = *op_decode_cursor(ctx->prev_op_ctx);
+
     for (;;) {
         if (uacpi_unlikely_error(ret))
             return ret;
+
         op_ctx = ctx->cur_op_ctx;
         frame = ctx->cur_frame;
+
         if (op_ctx->pc == 0 && ctx->prev_op_ctx) {
             /*
              * Type check the current arg type against what is expected by the
@@ -5343,6 +5347,7 @@ static uacpi_status exec_op(struct execution_context *ctx)
             if (uacpi_unlikely_error(ret))
                 return ret;
         }
+
         op = op_decode_byte(op_ctx);
         trace_pop(op);
 
@@ -5367,6 +5372,7 @@ static uacpi_status exec_op(struct execution_context *ctx)
         } else if (item == UACPI_NULL) {
             item = item_array_last(&op_ctx->items);
         }
+
         switch (op) {
         case UACPI_PARSE_OP_END:
         case UACPI_PARSE_OP_SKIP_WITH_WARN_IF_NULL: {
@@ -6082,9 +6088,11 @@ uacpi_status uacpi_execute_control_method(
 {
     uacpi_status ret = UACPI_STATUS_OK;
     struct execution_context *ctx;
+
     ctx = uacpi_kernel_alloc_zeroed(sizeof(*ctx));
     if (uacpi_unlikely(ctx == UACPI_NULL))
         return UACPI_STATUS_OUT_OF_MEMORY;
+
     if (out_obj != UACPI_NULL) {
         ctx->ret = uacpi_create_object(UACPI_OBJECT_UNINITIALIZED);
         if (uacpi_unlikely(ctx->ret == UACPI_NULL)) {
@@ -6092,38 +6100,44 @@ uacpi_status uacpi_execute_control_method(
             goto out;
         }
     }
+
     ret = prepare_method_call(ctx, scope, method, METHOD_CALL_NATIVE, args);
     if (uacpi_unlikely_error(ret))
         goto out;
+
     for (;;) {
         if (!ctx_has_non_preempted_op(ctx)) {
-            if (ctx->cur_frame == UACPI_NULL){
+            if (ctx->cur_frame == UACPI_NULL)
                 break;
-            }
-            if (maybe_end_block(ctx)){
+
+            if (maybe_end_block(ctx))
                 continue;
-            }
+
             if (!call_frame_has_code(ctx->cur_frame)) {
                 ctx_reload_post_ret(ctx);
                 continue;
             }
+
             ret = get_op(ctx);
-            if (uacpi_unlikely_error(ret)){
+            if (uacpi_unlikely_error(ret))
                 goto handle_method_abort;
-            }
+
             trace_op(ctx->cur_op, OP_TRACE_ACTION_BEGIN);
         }
-        
+
         ret = exec_op(ctx);
         if (uacpi_unlikely_error(ret))
             goto handle_method_abort;
+
         continue;
+
     handle_method_abort:
         uacpi_error("aborting %s due to previous error: %s\n",
                     ctx->cur_frame->method->named_objects_persist ?
                         "table load" : "method invocation",
                     uacpi_status_to_string(ret));
         stack_unwind(ctx);
+
         /*
          * Having a frame here implies that we just aborted a dynamic table
          * load. Signal to the caller that it failed by setting the return
@@ -6137,7 +6151,7 @@ uacpi_status uacpi_execute_control_method(
                 it->obj->integer = 0;
         }
     }
-    uacpi_info("p");
+
 out:
     if (ctx->ret != UACPI_NULL) {
         uacpi_object *ret_obj = UACPI_NULL;

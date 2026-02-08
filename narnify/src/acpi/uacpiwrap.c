@@ -15,7 +15,7 @@
 // currently, we will just directly
 // use the page allocator until
 // I fix it
-
+#define USE_PAGE_ALLOCATOR
 void *uacpi_kernel_map(uacpi_phys_addr addr, uacpi_size len){
     // for(u64 i = 0; i < len; i+=0x1000){
     //     if(MmCheckIfPageIsMapped(MmReturnKernelPageTable(), addr + i) == FALSE){

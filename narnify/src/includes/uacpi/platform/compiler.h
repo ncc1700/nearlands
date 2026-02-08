@@ -6,7 +6,7 @@
  */
 
 #ifdef UACPI_OVERRIDE_COMPILER
-#include "uacpi_compiler.h>
+#include "uacpi_compiler.h"
 #else
 
 #define UACPI_ALIGN(x) __declspec(align(x))

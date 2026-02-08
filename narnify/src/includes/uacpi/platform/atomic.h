@@ -14,7 +14,7 @@
  */
 
 #ifdef UACPI_OVERRIDE_ATOMIC
-#include "uacpi_atomic.h>
+#include "uacpi_atomic.h"
 #else
 
 #include <uacpi/platform/compiler.h>

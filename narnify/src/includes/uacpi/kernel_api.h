@@ -205,8 +205,6 @@ void *uacpi_kernel_alloc_zeroed(uacpi_size size);
  * allocation. Note that in some scenarios this incurs additional cost to
  * calculate the object size.
  */
-#define UACPI_SIZED_FREES
-
 #ifndef UACPI_SIZED_FREES
 void uacpi_kernel_free(void *mem);
 #else

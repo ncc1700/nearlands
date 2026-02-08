@@ -92,8 +92,8 @@ void* MmAllocateSinglePage(){
 void* MmAllocateMultiplePages(u64 amount){
     u64 indexToAlloc = 0;
     boolean shouldAlloc = FALSE;
-    for(u64 i = 0; i < pageMapAmount; i++){
-        if((i + amount) >= pageMapAmount) break;
+    for(u64 i = 0; i <= pageMapAmount - amount; i++){
+        //if((i + amount) >= pageMapAmount) break;
         if(pageMap[i].isFree == TRUE){
             u64 base = i;
             u64 prevAddress = 0;
@@ -126,7 +126,7 @@ void* MmAllocateMultiplePages(u64 amount){
         }
         return (void*)pageMap[indexToAlloc].address;
     }
-    return NULL;
+    return (void*)0x1;
 }
 
 NearStatus MmFreeSinglePage(void* pageAddress){

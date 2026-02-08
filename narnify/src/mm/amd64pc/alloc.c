@@ -179,10 +179,11 @@ NearStatus MmInitGeneralAllocator(){
 
 void* MmAllocateGeneralMemory(u64 allocSize){
     KeAcquireSpinLock(&allocSpinLock);
-    void* mem = ReturnMemoryFromFreedArray(allocSize);
-    if(mem != NULL){
-        goto PASS;
-    }
+    void* mem = NULL;
+    // void* mem = ReturnMemoryFromFreedArray(allocSize);
+    // if(mem != NULL){
+    //     goto PASS;
+    // }
     mem = AllocateFromAvaliableBlock(allocSize);
     if(mem == NULL){
         KeTermPrint(TERM_STATUS_INFO, QSTR("creating new block for kernel heap...."));
