@@ -30,7 +30,7 @@ NearStatus MmInitSystem(BootInfo* info){
     KeTermPrint(TERM_STATUS_INFO, QSTR("setting up the physical memory manager"));
     if(!NR_SUCCESS(status)){
         KeTermPrint(TERM_STATUS_ERROR, QSTR("Couldn't Setup Physical Memory Manager"));
-        return STATUS_PMM_FAIL;
+        return status;
     }
     KeTermPrint(TERM_STATUS_INFO, QSTR("initialized %d pages"), MmReturnPageAmount());
     KeTermPrint(TERM_STATUS_INFO, QSTR("testing the physical memory manager"));
@@ -43,7 +43,7 @@ NearStatus MmInitSystem(BootInfo* info){
     status = MmInitVirtualMemoryManager(info);
     if(!NR_SUCCESS(status)){
         KeTermPrint(TERM_STATUS_ERROR, QSTR("Couldn't Setup the virtual Memory Manager"));
-        return STATUS_VMM_FAIL;
+        return status;
     }
     KeTermPrint(TERM_STATUS_INFO, QSTR("setting up the general memory allocator"));
     status = MmInitGeneralAllocator();

@@ -1,3 +1,5 @@
+
+
 #include "ke/spinlock.h"
 #include "ke/term.h"
 #include "mm/pmm.h"
@@ -7,6 +9,7 @@
 #include <mm/alloc.h>
 #include <qol/qmem.h>
 
+#ifdef USE_HOMEMADE
 static SpinLock allocSpinLock = {0};
 
 #define MEM_SPLIT 16
@@ -225,3 +228,6 @@ NearStatus MmFreeGeneralMemory(void* address, u64 size){
     KeReleaseSpinLock(&allocSpinLock);
     return status;
 }
+
+
+#endif

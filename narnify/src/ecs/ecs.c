@@ -29,7 +29,10 @@ u16 EcsGetNewComponentIndex(){
 u16 EcsCreateNewComponent(u64 size){
     if(componentSizeArr == NULL){
         componentSizeArr = MmAllocateSinglePage();
-        if(componentSizeArr == NULL) return 0;
+        if(componentSizeArr == NULL){
+            KeTermPrint(TERM_STATUS_ERROR, QSTR("couldn't allocate page! expect panic!"));
+            return 0;
+        }
     }
     u64 index = curComponentIndex;
     if(index >= MAX_COMPONENT) return 0;

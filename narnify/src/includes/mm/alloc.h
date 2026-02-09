@@ -9,6 +9,8 @@
 
 #include <types.h>
 
+//#define USE_HOMEMADE
+#define USE_LIBALLOC
 
 NearStatus MmInitGeneralAllocator();
 void* MmAllocateGeneralMemory(u64 allocSize);

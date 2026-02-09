@@ -11,10 +11,10 @@
 #include <bootinfo.h>
 #define PAGE_SIZE 0x1000
 
-#define PAGEMAP_PMM
-//#define BITMAP_PMM
+//#define PAGEMAP_PMM
+#define BITMAP_PMM
 //#define LISTMAP_PMM
-
+//#define BUDDY_PMM
 
 #ifdef PAGEMAP_PMM
 typedef struct _PageMap {
