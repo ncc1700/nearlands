@@ -70,26 +70,8 @@ void KeSystemStartup(BootInfo* info){
     status = AcpiInitSystem();
     if(!NR_SUCCESS(status)) KePanic(status);
     else KeTermPrint(TERM_STATUS_PASS, QSTR("AcpiInitSystem PASS"));
-    // int i = 0;
-    // while(1){
-    //     void* h = MmAllocateGeneralMemory(100);
-    //     KeTermPrint(TERM_STATUS_PASS, QSTR("allocated 100 at 0x%x (currently at %d)"), h, i);
-    //     i+=100;
-    // }
-    // for(int i = 0;; i++){
-    //     void* p = MmAllocateMultiplePages(10);
-    //     if(i % 100 == 0){
-    //         MmFreeMultiplePages(p, 10);
-    //     }
-    // }
-    void* h = MmAllocateGeneralMemory(1000);
-    void* p = MmAllocateGeneralMemory(10000);
-    KeTermPrint(TERM_STATUS_PASS, QSTR("h: 0x%x, p: 0x%x"), h, p);
-    MmFreeGeneralMemory(h, 1000);
-    void* n = MmAllocateGeneralMemory(10);
-    void* l = MmAllocateGeneralMemory(10);
-    KeTermPrint(TERM_STATUS_PASS, QSTR("n: 0x%x, l: 0x%x, p: 0x%x"), n, l, p);
-
+   
+    
     
     //AcpiShutdownSystem();
     KeTermPrint(TERM_STATUS_ERROR, QSTR("WORK IN PROGRESS - come back later!"));

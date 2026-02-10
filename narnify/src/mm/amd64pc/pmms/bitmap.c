@@ -190,7 +190,7 @@ u64 MmReturnPageUsed(){
 }
 
 u64 MmReturnPageAmount(){
-    return pageCount;
+    return usablePageCount;
 }
 
 

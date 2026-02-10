@@ -1,8 +1,8 @@
 #ifndef _LIBALLOC_H
 #define _LIBALLOC_H
 
-
-
+#include <mm/alloc.h>
+#ifdef USE_LIBALLOC
 // If we are told to not define our own size_t, then we
 // skip the define.
 #ifndef _ALLOC_SKIP_DEFINE
@@ -96,4 +96,5 @@ void      free(void *);					//< The standard function.
 
 #endif
 
+#endif
 

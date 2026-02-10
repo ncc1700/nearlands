@@ -1,3 +1,5 @@
+#include <mm/alloc.h>
+#ifdef USE_LIBALLOC
 #include <liballoc/liballoc.h>
 
 /**  Durand's Ridiculously Amazing Super Duper Memory functions.  */
@@ -532,3 +534,5 @@ void*   realloc(void *p, size_t size)
 
 
 
+
+#endif

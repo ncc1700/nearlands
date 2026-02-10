@@ -83,7 +83,7 @@ void IntStackSegmentFaultInterrupt(){
 }
 
 void IntGeneralProtectionInterrupt(){
-    KePanicStr(QSTR("General Protection Error\n"));
+    KePanicStr(QSTR("General Protection Fault\n"));
 }
 
 void IntPageFaultInterrupt(){

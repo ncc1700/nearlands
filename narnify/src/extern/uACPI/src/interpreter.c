@@ -1663,20 +1663,26 @@ static uacpi_status handle_create_field(struct execution_context *ctx)
     uacpi_namespace_node *node;
     uacpi_object *obj, *connection_obj = UACPI_NULL;
     struct field_specific_data field_data = { 0 };
-    uacpi_size i = 1, bit_offset = 0;
-    uacpi_u32 length, pin_offset = 0;
+    uacpi_size i = 1;
+    uacpi_size bit_offset = 0;
+    uacpi_u32 length = 0;
+    uacpi_u32 pin_offset = 0;
 
-    uacpi_u8 raw_value, access_type, lock_rule, update_rule;
-    uacpi_u8 access_attrib = 0, access_length = 0;
-
+    uacpi_u8 raw_value = 0;
+    uacpi_u8 access_type = 0;
+    uacpi_u8 lock_rule = 0;
+    uacpi_u8 update_rule = 0;
+    uacpi_u8 access_attrib = 0;
+    uacpi_u8 access_length = 0;
+    uacpi_info("");
     switch (op_ctx->op->code) {
-    case UACPI_AML_OP_FieldOp:
+    case UACPI_AML_OP_FieldOp:{
         node = item_array_at(&op_ctx->items, i++)->node;
         ret = ensure_is_an_op_region(node, &field_data.region);
         if (uacpi_unlikely_error(ret))
             return ret;
         break;
-
+    }
     case UACPI_AML_OP_BankFieldOp:
         node = item_array_at(&op_ctx->items, i++)->node;
         ret = ensure_is_an_op_region(node, &field_data.region);
@@ -5372,7 +5378,6 @@ static uacpi_status exec_op(struct execution_context *ctx)
         } else if (item == UACPI_NULL) {
             item = item_array_last(&op_ctx->items);
         }
-
         switch (op) {
         case UACPI_PARSE_OP_END:
         case UACPI_PARSE_OP_SKIP_WITH_WARN_IF_NULL: {
@@ -5714,12 +5719,13 @@ static uacpi_status exec_op(struct execution_context *ctx)
         case UACPI_PARSE_OP_INVOKE_HANDLER: {
             uacpi_aml_op code = op_ctx->op->code;
             uacpi_u8 idx;
-
             if (code <= 0xFF)
                 idx = handler_idx_of_op[code];
             else
                 idx = handler_idx_of_ext_op[EXT_OP_IDX(code)];
-
+            //if(idx == 30) continue;
+            // sigma
+            //uacpi_info("idx: %d, ctx: 0x%x", idx, (unsigned long)ctx);
             ret = op_handlers[idx](ctx);
             break;
         }

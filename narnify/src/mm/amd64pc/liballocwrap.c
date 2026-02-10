@@ -3,7 +3,6 @@
 #include "nrstatus.h"
 #include <mm/alloc.h>
 #include <liballoc/liballoc.h>
-#include <stdatomic.h>
 
 /*
 

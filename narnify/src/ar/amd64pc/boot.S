@@ -20,7 +20,7 @@ ArArchitectureEntry:
 
 section .bss
 kstack:
-    resb 256000
+    resb 512000
 kstackend:
 
 section .ldr

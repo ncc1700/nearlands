@@ -9,7 +9,7 @@
 #include <mm/alloc.h>
 #include <qol/qmem.h>
 
-#ifdef USE_HOMEMADE
+#ifdef USE_HOMEMADE_ALLOC
 static SpinLock allocSpinLock = {0};
 
 #define MEM_SPLIT 16
@@ -182,11 +182,10 @@ NearStatus MmInitGeneralAllocator(){
 
 void* MmAllocateGeneralMemory(u64 allocSize){
     KeAcquireSpinLock(&allocSpinLock);
-    void* mem = NULL;
-    // void* mem = ReturnMemoryFromFreedArray(allocSize);
-    // if(mem != NULL){
-    //     goto PASS;
-    // }
+    void* mem = ReturnMemoryFromFreedArray(allocSize);
+    if(mem != NULL){
+        goto PASS;
+    }
     mem = AllocateFromAvaliableBlock(allocSize);
     if(mem == NULL){
         KeTermPrint(TERM_STATUS_INFO, QSTR("creating new block for kernel heap...."));
