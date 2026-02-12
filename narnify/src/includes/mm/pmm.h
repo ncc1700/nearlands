@@ -13,8 +13,6 @@
 
 //#define PAGEMAP_PMM
 #define BITMAP_PMM
-//#define LISTMAP_PMM
-//#define BUDDY_PMM
 
 #ifdef PAGEMAP_PMM
 typedef struct _PageMap {
@@ -22,13 +20,7 @@ typedef struct _PageMap {
     boolean isFree:1;
 } __attribute__((packed)) PageMap;
 #endif
-#ifdef LISTMAP_PMM
-typedef struct _ListMap {
-    u64 address;
-    struct _ListMap* next;
-} ListMap;
-#endif
-// #define BITMAP_PMM
+
 
 
 NearStatus MmInitPhysicalMemoryManager(BootMemoryMap* memMap);

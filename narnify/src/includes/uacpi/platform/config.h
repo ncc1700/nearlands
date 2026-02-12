@@ -65,7 +65,7 @@ UACPI_BUILD_BUG_ON_WITH_MSG(
  * contains the size of the original allocation. Note that this comes with a
  * performance penalty in some cases.
  */
-#define UACPI_SIZED_FREES
+//#define UACPI_SIZED_FREES
 
 
 /*

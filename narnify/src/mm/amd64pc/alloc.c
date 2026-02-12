@@ -28,19 +28,11 @@ typedef struct _BlockHeader {
     u64 split;
 } BlockHeader;
 
-typedef struct _Freed {
-    u64 address;
-    u64 size;
-} Freed;
 
 
 
 static BlockHeader* head = NULL;
 static BlockHeader* tail = NULL;
-
-static Freed* freedArray = NULL;
-static u64 freedCapacity = 0;
-static u64 freedMaxCapacity = 256;
 
 static inline void AddToBlockList(BlockHeader* list){
     list->next = NULL;
@@ -89,7 +81,7 @@ static NearStatus CreateBlock(u64 pageAmount){
 
 static void* AllocateFromAvaliableBlock(u64 size){
     u64 trueAllocSize = ((size + (MEM_SPLIT - 1)) / MEM_SPLIT) * MEM_SPLIT;
-    KeTermPrint(TERM_STATUS_INFO, QSTR("size: %d, trueAllocSize: %d"), size, trueAllocSize);
+    //KeTermPrint(TERM_STATUS_INFO, QSTR("size: %d, trueAllocSize: %d"), size, trueAllocSize);
     BlockHeader* header = head;
 
     while(header != NULL){
@@ -105,90 +97,18 @@ static void* AllocateFromAvaliableBlock(u64 size){
     return NULL;
 }
 
-static NearStatus InitFreedArraySize(){
-    u64 size = freedMaxCapacity * sizeof(Freed);
-    u64 sizeInPages = ((size + 4095) / 4096);
-    freedArray = MmAllocateMultiplePages(sizeInPages);
-    if(freedArray == NULL){
-        return STATUS_OUT_OF_MEMORY;
-    }
-    freedCapacity = 0;
-    return STATUS_SUCCESS;
-}
-
-static NearStatus ExpandFreedArraySize(){
-    u64 size = freedMaxCapacity * sizeof(Freed);
-    u64 oldSizeInPages = ((size + 4095) / 4096);
-
-    freedMaxCapacity = freedMaxCapacity * 2;
-    size = freedMaxCapacity * sizeof(Freed);
-    u64 sizeInPages = ((size + 4095) / 4096);
-
-    freedArray = MmReallocatePages(freedArray, 
-                        oldSizeInPages,
-                        sizeInPages);
-    if(freedArray == NULL){
-        return STATUS_OUT_OF_MEMORY;
-    }
-    return STATUS_SUCCESS;
-}
-
-static void* ReturnMemoryFromFreedArray(u64 size){
-    u64 trueAllocSize = ((size + (MEM_SPLIT - 1)) / MEM_SPLIT) * MEM_SPLIT;
-    for(u64 i = 0; i < freedCapacity; i++){
-        if(freedArray[i].size == trueAllocSize){
-            u64 address = freedArray[i].address;
-            freedArray[i].address = 0;
-            freedArray[i].size = 0;
-            return (void*)address;
-        } else if(freedArray[i].size > trueAllocSize){
-            u64 address = freedArray[i].address;
-            freedArray[i].address += trueAllocSize;
-            freedArray[i].size -= trueAllocSize;
-            return (void*)address; 
-        }
-    }
-    return NULL;
-}
-
-static NearStatus InsertFreedMemoryIntoArray(u64 address, u64 size){
-    u64 trueAllocSize = ((size + (MEM_SPLIT - 1)) / MEM_SPLIT) * MEM_SPLIT;
-    for(u64 i = 0; i < freedCapacity; i++){
-        if(freedArray[i].size == 0 && freedArray[i].address == 0){
-            freedArray[i].address = address;
-            freedArray[i].size = trueAllocSize;
-            return STATUS_SUCCESS;
-        }
-    }
-    if(freedCapacity >= freedMaxCapacity){
-        NearStatus status = ExpandFreedArraySize();
-        if(!NR_SUCCESS(status)){
-            return status;
-        }
-    }
-    freedArray[freedCapacity].address = address;
-    freedArray[freedCapacity].size = trueAllocSize;
-    freedCapacity++;
-    return STATUS_SUCCESS;
-}
 
 NearStatus MmInitGeneralAllocator(){
     allocSpinLock = KeCreateSpinLock();
-    NearStatus status = InitFreedArraySize();
-    if(!NR_SUCCESS(status)) return status;
-    status = CreateBlock(1);
+    NearStatus status = CreateBlock(10);
     return status;
 }
 
 void* MmAllocateGeneralMemory(u64 allocSize){
     KeAcquireSpinLock(&allocSpinLock);
-    void* mem = ReturnMemoryFromFreedArray(allocSize);
-    if(mem != NULL){
-        goto PASS;
-    }
-    mem = AllocateFromAvaliableBlock(allocSize);
+    void* mem = AllocateFromAvaliableBlock(allocSize);
     if(mem == NULL){
-        KeTermPrint(TERM_STATUS_INFO, QSTR("creating new block for kernel heap...."));
+        //KeTermPrint(TERM_STATUS_INFO, QSTR("creating new block for kernel heap...."));
         u64 amountOfPagesForBlock = (((allocSize + sizeof(BlockHeader)) + 4095) / 4096) + 1;
         NearStatus status = CreateBlock(amountOfPagesForBlock);
         if(!NR_SUCCESS(status)){
@@ -217,15 +137,11 @@ void MmSetAllowFrees(boolean value){
 
 
 
-NearStatus MmFreeGeneralMemory(void* address, u64 size){
+NearStatus MmFreeGeneralMemory(void* address){
     KeAcquireSpinLock(&allocSpinLock);
-    if(address == NULL || size == 0){
-        KeReleaseSpinLock(&allocSpinLock);
-        return STATUS_INVALID_ADDRESS;
-    }
-    NearStatus status = InsertFreedMemoryIntoArray((u64)address, size);
+    
     KeReleaseSpinLock(&allocSpinLock);
-    return status;
+    return STATUS_SUCCESS;
 }
 
 

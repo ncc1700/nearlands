@@ -58,8 +58,8 @@ void *uacpi_kernel_alloc_zeroed(uacpi_size size){
     memset(mem, 0, size);
     return mem;
 }
-void uacpi_kernel_free(void *mem, u64 size_hint){
-    boolean result = MmFreeGeneralMemory(mem, size_hint);
+void uacpi_kernel_free(void *mem){
+    boolean result = MmFreeGeneralMemory(mem);
     if(!NR_SUCCESS(result)){
         KeTermPrint(TERM_STATUS_ERROR, QSTR("[ACPI]: failed freeing 0x%x"), 
                                 mem);

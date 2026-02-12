@@ -3,6 +3,7 @@
 #include <ar/serial.h>
 #include <nanoprintf/nprintfimpl.h>
 #include <ke/graphics.h>
+#include <string.h>
 #include <types.h>
 #include <stdarg.h>
 
@@ -34,6 +35,27 @@ void KeTermClear(){
     termCurrentY = 10;
     ArSerialWrite('\n');
 }
+
+// void KeTermMoveTerminalDown(){
+//     // we are going to do ALOT, we won't be calling
+//     // KeGraphicsReturnData a ton so
+//     // save a variable holding the address of graphicsdata
+//     GraphicsData* graphics = KeGraphicsReturnData();
+//     u32* fbBase = (void*)graphics->framebufferBase;
+//     u64 amount = 12;
+//     u64 height = graphics->height;
+//     u64 width = graphics->width;
+//     for(u64 y = 0; y < height - amount; y++){
+//         for(u64 x = 0; x < graphics->pixelsPerScanLine; x++){
+//             u64 bef = (u64)fbBase[(y + amount) * graphics->pixelsPerScanLine + x];
+//             fbBase[y * graphics->pixelsPerScanLine + x] = bef;
+//         }
+//     }
+//     KeGraphicsDrawRect(0, height - (amount + 1), width, amount + 1, 
+//                             colorPalette[PALETTE_BACKGROUND]);
+//     //termCurrentY -= 10;
+//     //memcpy(fbBase, fbBaseMovedUp, size);
+// }
 
 void KeTermTakeOwnershipOfKernelGraphics(){
     KeGraphicsReturnData()->owners = OWNER_DEBUG_TERM;
@@ -72,17 +94,20 @@ void KeTermMoveDown(u32 amount){
 
 
 
+
+
 void KeTermPuts(boolean addNewLine, QString str, u64 color){
+    
     if(KeGraphicsReturnData()->init == 1 && KeGraphicsReturnData()->owners == OWNER_DEBUG_TERM){
+        if(termCurrentY >= KeGraphicsReturnData()->height){
+            KeTermClear();
+        } 
         KeGraphicsDrawString(str, termCurrentX, termCurrentY, 1, color);
     }
     ArPrintToSerial(str);
     if(addNewLine == TRUE){
         termCurrentX = 10;
         termCurrentY += 12;
-        if(termCurrentY >= KeGraphicsReturnData()->height){
-            KeTermClear();
-        }
         ArSerialWrite('\n');
     } else {
         if(KeGraphicsReturnData()->init == 1 && KeGraphicsReturnData()->owners == OWNER_DEBUG_TERM){

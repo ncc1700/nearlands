@@ -147,7 +147,7 @@ NearStatus EcsCreateEntity(Handle* handle, ComponentTypes* components, u64 compo
         EntityFreeList* node = archeType->initial;
         archeType->initial = archeType->initial->next;
         enIndex = node->index;
-        MmFreeGeneralMemory(node, sizeof(EntityFreeList));
+        MmFreeGeneralMemory(node);
     } else {
         enIndex = archeType->index;
         archeType->index++;
