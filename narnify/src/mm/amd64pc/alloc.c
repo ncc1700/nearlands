@@ -52,7 +52,7 @@ static AllocHeader* aTail = NULL;
 
 
 
-static inline NearStatus AddBlockHeader(BlockHeader* header){
+static NearStatus AddBlockHeader(BlockHeader* header){
     if(bHead == NULL){
         bHead = header;
     }
@@ -64,7 +64,7 @@ static inline NearStatus AddBlockHeader(BlockHeader* header){
     return STATUS_SUCCESS;
 }
 
-static inline NearStatus RemoveBlockHeader(BlockHeader* header){
+static NearStatus RemoveBlockHeader(BlockHeader* header){
     BlockHeader* prev = header->prev;
     BlockHeader* next = header->next;
     if(bHead == header){
@@ -80,7 +80,7 @@ static inline NearStatus RemoveBlockHeader(BlockHeader* header){
     return STATUS_SUCCESS;
 }
 
-static inline NearStatus AddAllocHeader(AllocHeader* header){
+static NearStatus AddAllocHeader(AllocHeader* header){
     if(aHead == NULL){
         aHead = header;
     }
@@ -91,7 +91,7 @@ static inline NearStatus AddAllocHeader(AllocHeader* header){
     return STATUS_SUCCESS;
 }
 
-static inline NearStatus RemoveAllocHeader(AllocHeader* header){
+static NearStatus RemoveAllocHeader(AllocHeader* header){
     AllocHeader* prev = header->prev;
     AllocHeader* next = header->next;
     if(aHead == header){
@@ -107,7 +107,7 @@ static inline NearStatus RemoveAllocHeader(AllocHeader* header){
     return STATUS_SUCCESS;
 }
 
-static inline NearStatus CreateBlock(u64 allocSize){
+static NearStatus CreateBlock(u64 allocSize){
     u64 size = SPLIT_SAFE(allocSize);
     u64 headerSize = SPLIT_SAFE(sizeof(BlockHeader));
     u64 sizeInPages = IN_PAGES(size);
@@ -125,7 +125,7 @@ static inline NearStatus CreateBlock(u64 allocSize){
     return STATUS_SUCCESS;
 }
 
-static inline NearStatus DeleteBlockHeader(BlockHeader* header){
+static NearStatus DeleteBlockHeader(BlockHeader* header){
     u64 headerSize = SPLIT_SAFE(sizeof(BlockHeader));
     u64 size = SPLIT_SAFE(header->size + headerSize);
     u64 sizeInPages = IN_PAGES(size);
@@ -139,7 +139,7 @@ static inline NearStatus DeleteBlockHeader(BlockHeader* header){
 }
 
 // carvs reference (the minecraft youtuber)
-static inline void* CarveMemoryFromBlock(BlockHeader* header, u64 size){
+static void* CarveMemoryFromBlock(BlockHeader* header, u64 size){
     void* mem = (void*)(header->base + header->amountUsed);
     header->amountUsed += size;
     return mem;

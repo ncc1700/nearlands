@@ -10,8 +10,6 @@ WIP
 
 [uACPI](https://github.com/uACPI/uACPI) (A portable impl of ACPI)
 
-[liballoc](https://github.com/blanham/liballoc) (this is a library that provides a dynamic memory allocator for your kernel) (for testing against my own allocator)
-
 
 # How to build
 
