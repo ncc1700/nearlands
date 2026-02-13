@@ -159,6 +159,7 @@ static inline void* GetMemoryFromFreeList(u64 allocSize){
             return (void*)(header->base);
         } else if(header->size > size){
             if(size <= aHeaderSize) goto CONTINUE;
+            if(header->size - size <= aHeaderSize) goto CONTINUE;
             BlockHeader* bHeader = header->header;
             header->isFree = FALSE;
             bHeader->allocCounter++;
@@ -184,10 +185,10 @@ static inline void* GetMemoryFromFreeList(u64 allocSize){
 
 static inline void* AllocateFreshMemory(u64 allocSize){
     // TODO: fix this
-    // void* freedMem = GetMemoryFromFreeList(allocSize);
-    // if(freedMem != NULL){
-    //     return freedMem;
-    // }
+    void* freedMem = GetMemoryFromFreeList(allocSize);
+    if(freedMem != NULL){
+        return freedMem;
+    }
     u64 aHeaderSize = SPLIT_SAFE(sizeof(AllocHeader));
     u64 size = SPLIT_SAFE(allocSize + aHeaderSize);
     BlockHeader* header = bHead;
@@ -236,10 +237,7 @@ FAIL:
     return NULL;
 }
 
-void MmSetAllowFrees(boolean value){
-    //allowFrees = value;
-    return;
-}
+
 
 
 

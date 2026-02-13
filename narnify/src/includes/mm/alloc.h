@@ -14,7 +14,6 @@
 //#define USE_LEGACY_ALLOC
 NearStatus MmInitGeneralAllocator();
 void* MmAllocateGeneralMemory(u64 allocSize);
-void MmSetAllowFrees(boolean value);
 NearStatus MmFreeGeneralMemory(void* address);
 
 

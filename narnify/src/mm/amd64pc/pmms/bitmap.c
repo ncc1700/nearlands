@@ -1,6 +1,7 @@
 
 
 #include "bootinfo.h"
+#include "ke/spinlock.h"
 #include "ke/term.h"
 #include "nrstatus.h"
 #include "types.h"
@@ -24,6 +25,7 @@ static u8* bitmap = NULL;
 static BootMemoryMap* bMemMap = NULL;
 
 static u64 pageUsed = 0;
+static SpinLock bitmapLock = {0};
 
 #define SET_BITMAP(bit) (bitmap[bit / 8] |= (1u << (bit % 8)))
 #define CLEAR_BITMAP(bit) (bitmap[bit / 8] &= ~(1u << (bit % 8)))
@@ -123,6 +125,7 @@ NearStatus MmInitPhysicalMemoryManager(BootMemoryMap* memMap){
 }
 
 void* MmAllocateSinglePage(){
+
     for(u64 i = 0; i < pageCount; i++){
         if(GET_BIT_IN_BITMAP(i) == CLEAR){
             void* addr = (void*)(GetAddressFromPageLocation(i));

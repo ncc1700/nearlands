@@ -25,9 +25,7 @@ NearStatus MmInitGeneralAllocator(){
 void* MmAllocateGeneralMemory(u64 allocSize){
     return malloc(allocSize);
 }
-void MmSetAllowFrees(boolean value){
-    return; // not used
-}
+
 NearStatus MmFreeGeneralMemory(void* address){
     free(address);
     return STATUS_SUCCESS;

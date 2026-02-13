@@ -179,9 +179,6 @@ void* MmAllocateGeneralMemory(u64 allocSize){
     return prev;
 }
 
-void MmSetAllowFrees(boolean value){
-    allowFrees = value;
-}
 
 
 
