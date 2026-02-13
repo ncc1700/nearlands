@@ -108,9 +108,8 @@ static inline NearStatus RemoveAllocHeader(AllocHeader* header){
 }
 
 static inline NearStatus CreateBlock(u64 allocSize){
+    u64 size = SPLIT_SAFE(allocSize);
     u64 headerSize = SPLIT_SAFE(sizeof(BlockHeader));
-    u64 size = SPLIT_SAFE(allocSize + headerSize);
-
     u64 sizeInPages = IN_PAGES(size);
     void* mem = MmAllocateMultiplePages(sizeInPages);
     if(mem == NULL){
@@ -146,12 +145,55 @@ static inline void* CarveMemoryFromBlock(BlockHeader* header, u64 size){
     return mem;
 }
 
+static inline void* GetMemoryFromFreeList(u64 allocSize){
+    u64 aHeaderSize = SPLIT_SAFE(sizeof(AllocHeader));
+    u64 size = SPLIT_SAFE(allocSize);
+    AllocHeader* header = aHead;
+    while(header != NULL){
+        if(header->size == size || header->size == (size + aHeaderSize)){
+            //KeTermPrint(TERM_STATUS_INFO, QSTR("[GENALLOC] reusing memory"));
+            BlockHeader* bHeader = header->header;
+            header->isFree = FALSE;
+            bHeader->allocCounter++;
+            RemoveAllocHeader(header);
+            return (void*)(header->base);
+        } else if(header->size > size){
+            if(size <= aHeaderSize) goto CONTINUE;
+            BlockHeader* bHeader = header->header;
+            header->isFree = FALSE;
+            bHeader->allocCounter++;
+            u64 oldSize = header->size;
+            header->size = size;
+            RemoveAllocHeader(header);
+            void* whatToReturn = (void*)(header->base);
+            void* memAfter = (void*)(header->base + size);
+            AllocHeader* newHeader = memAfter;
+            memAfter = (void*)((u64)memAfter + aHeaderSize);
+            newHeader->size = SPLIT_SAFE((oldSize - size) - aHeaderSize);
+            newHeader->base = (u64)memAfter;
+            newHeader->isFree = TRUE;
+            newHeader->header = bHeader;
+            AddAllocHeader(newHeader);
+            return whatToReturn;
+        }
+        CONTINUE:
+        header = header->next;
+    }
+    return NULL;
+}
+
 static inline void* AllocateFreshMemory(u64 allocSize){
+    // TODO: fix this
+    // void* freedMem = GetMemoryFromFreeList(allocSize);
+    // if(freedMem != NULL){
+    //     return freedMem;
+    // }
     u64 aHeaderSize = SPLIT_SAFE(sizeof(AllocHeader));
     u64 size = SPLIT_SAFE(allocSize + aHeaderSize);
     BlockHeader* header = bHead;
     while(header != NULL){
-        u64 remaining = header->size - header->amountUsed;
+        i64 remaining = header->size - header->amountUsed;
+        if(remaining <= 0) remaining = 0;
         if(remaining >= size){
             void* mem = CarveMemoryFromBlock(header, size);
             AllocHeader* aHeader = mem;
@@ -162,11 +204,12 @@ static inline void* AllocateFreshMemory(u64 allocSize){
             aHeader->header = header;
             header->allocCounter++;
             return mem;
-        }
+        } 
         header = header->next;
     }
     return NULL; // no valid blocks left =(
 }
+
 
 NearStatus MmInitGeneralAllocator(){
     allocSpinLock = KeCreateSpinLock();
@@ -182,12 +225,13 @@ void* MmAllocateGeneralMemory(u64 allocSize){
         if(!NR_SUCCESS(status)){
             goto FAIL;
         }
-    }
+    } else goto PASS;
     mem = AllocateFreshMemory(allocSize);
 PASS:
     KeReleaseSpinLock(&allocSpinLock);
     return mem;
 FAIL:
+    KeTermPrint(TERM_STATUS_ERROR, QSTR("it failed??"));
     KeReleaseSpinLock(&allocSpinLock);
     return NULL;
 }
@@ -200,10 +244,44 @@ void MmSetAllowFrees(boolean value){
 
 
 NearStatus MmFreeGeneralMemory(void* address){
+    NearStatus status = STATUS_SUCCESS;
     KeAcquireSpinLock(&allocSpinLock);
-    
+    if(address == NULL) {
+        status = STATUS_INVALID_ADDRESS;
+        goto EXIT;
+    }
+    u64 aHeaderSize = SPLIT_SAFE(sizeof(AllocHeader));
+    AllocHeader* aHeader = (AllocHeader*)((u64)address - aHeaderSize);
+    if(aHeader->isFree == TRUE){
+        KeTermPrint(TERM_STATUS_ERROR, QSTR("[GENALLOC] someone tried to double free!!"));
+        status = STATUS_ACCESS_DENIED;
+        goto EXIT;
+    }
+    BlockHeader* bHeader = aHeader->header;
+    bHeader->allocCounter--;
+    if(bHeader->allocCounter <= 0){
+        // not so optimized
+        // TODO: optimize this WAY more
+        // maybe group allocheaders
+        // via their blockheaders
+        AllocHeader* aHeaderL = aHead;
+        while(aHeaderL != NULL){
+            if(aHeaderL->header == bHeader){
+                AllocHeader* header = aHeaderL;
+                aHeaderL = aHeaderL->next;
+                RemoveAllocHeader(header);
+                continue;
+            }
+            aHeaderL = aHeaderL->next;
+        }
+        DeleteBlockHeader(bHeader);
+    } else {
+        aHeader->isFree = TRUE;
+        AddAllocHeader(aHeader);
+    }
+EXIT:
     KeReleaseSpinLock(&allocSpinLock);
-    return STATUS_SUCCESS;
+    return status;
 }
 
 
