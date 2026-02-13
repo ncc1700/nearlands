@@ -36,7 +36,6 @@ static u64 pageUsed = 0;
 #define INCREMENT_PAGE_USAGE() if(pageUsed < pageCount) pageUsed++;
 #define DECREMENT_PAGE_USAGE() if(pageUsed > 0) pageUsed--;
 
-#define IN_PAGES(x) ((x + (PAGE_SIZE - 1)) / PAGE_SIZE)
 
 static u64 GetPageLocationFromAddress(u64 address){
     u64 trueAddressOffset = address;

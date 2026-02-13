@@ -8,8 +8,7 @@
 
     I wrote this in like 30m, its also very unsafe 
 
-    ill replace this with a bitmap allocator in the future but
-    for now it works =)
+    PLEASE use the bitmap allocator instead, unless you can't
 
 
 */

@@ -9,7 +9,9 @@
 
 #include <types.h>
 #include <bootinfo.h>
+
 #define PAGE_SIZE 0x1000
+#define IN_PAGES(x) ((x + (PAGE_SIZE - 1)) / PAGE_SIZE)
 
 //#define PAGEMAP_PMM
 #define BITMAP_PMM

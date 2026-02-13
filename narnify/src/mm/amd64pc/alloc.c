@@ -8,6 +8,7 @@
 #include "types.h"
 #include <mm/alloc.h>
 #include <qol/qmem.h>
+#include <stddef.h>
 
 #ifdef USE_HOMEMADE_ALLOC
 static SpinLock allocSpinLock = {0};
@@ -15,88 +16,157 @@ static SpinLock allocSpinLock = {0};
 #define MEM_SPLIT 16
 
 
+#define IN_SPLIT(x) (((x) + (MEM_SPLIT - 1)) / MEM_SPLIT)
+#define SPLIT_SAFE(x) ((((x) + (MEM_SPLIT - 1)) / MEM_SPLIT) * MEM_SPLIT)
+
+// yes, they're the same thing
+// I seperated them just for
+// sanity later on
+
 
 typedef struct _BlockHeader {
+    u64 base;
+    u64 size;
+    u64 amountUsed;
+    i64 allocCounter;
     struct _BlockHeader* next;
     struct _BlockHeader* prev;
-    struct _BlockHeader* header;
-    Arena* arena;
-    u64 base;
-    u64 cur; 
-    u64 size;
-    u64 curSize;
-    u64 split;
 } BlockHeader;
 
+typedef struct _AllocHeader {
+    BlockHeader* header;
+    u64 base;
+    u64 size;
+    struct _AllocHeader* next;
+    struct _AllocHeader* prev;
+    boolean isFree;
+} AllocHeader;
 
 
 
-static BlockHeader* head = NULL;
-static BlockHeader* tail = NULL;
+static BlockHeader* bHead = NULL;
+static BlockHeader* bTail = NULL;
 
-static inline void AddToBlockList(BlockHeader* list){
-    list->next = NULL;
-    list->prev = tail;
-    if(tail != NULL) tail->next = list;
-    tail = list;
-    if(head == NULL){
-        head = list;
-    } 
+static AllocHeader* aHead = NULL;
+static AllocHeader* aTail = NULL;
+
+
+
+static inline NearStatus AddBlockHeader(BlockHeader* header){
+    if(bHead == NULL){
+        bHead = header;
+    }
+    header->prev = bTail;
+    
+    if(bTail != NULL) bTail->next = header;
+    bTail = header;
+    header->next = NULL;
+    return STATUS_SUCCESS;
 }
 
-static inline void RemoveFromBlockList(BlockHeader* list){
-    if(list == head){
-        head = list->next;
+static inline NearStatus RemoveBlockHeader(BlockHeader* header){
+    BlockHeader* prev = header->prev;
+    BlockHeader* next = header->next;
+    if(bHead == header){
+        bHead = next;
     }
-    if(list == tail){
-        tail = list->prev;
+    if(bTail == header){
+        bTail = prev;
     }
-    BlockHeader* prev = list->prev;
-    BlockHeader* next = list->next;
-    
     if(prev != NULL) prev->next = next;
     if(next != NULL) next->prev = prev;
-    list->prev = NULL;
-    list->next = NULL;
+    header->prev = NULL;
+    header->next = NULL;
+    return STATUS_SUCCESS;
 }
 
-static NearStatus CreateBlock(u64 pageAmount){
-    void* mem = MmAllocateMultiplePages(pageAmount);
+static inline NearStatus AddAllocHeader(AllocHeader* header){
+    if(aHead == NULL){
+        aHead = header;
+    }
+    header->prev = aTail;
+    if(aTail != NULL) aTail->next = header;
+    aTail = header;
+    header->next = NULL;
+    return STATUS_SUCCESS;
+}
+
+static inline NearStatus RemoveAllocHeader(AllocHeader* header){
+    AllocHeader* prev = header->prev;
+    AllocHeader* next = header->next;
+    if(aHead == header){
+        aHead = next;
+    }
+    if(aTail == header){
+        aTail = prev;
+    }
+    if(prev != NULL) prev->next = next;
+    if(next != NULL) next->prev = prev;
+    header->prev = NULL;
+    header->next = NULL;
+    return STATUS_SUCCESS;
+}
+
+static inline NearStatus CreateBlock(u64 allocSize){
+    u64 headerSize = SPLIT_SAFE(sizeof(BlockHeader));
+    u64 size = SPLIT_SAFE(allocSize + headerSize);
+
+    u64 sizeInPages = IN_PAGES(size);
+    void* mem = MmAllocateMultiplePages(sizeInPages);
     if(mem == NULL){
         return STATUS_OUT_OF_MEMORY;
     }
     BlockHeader* header = (BlockHeader*)mem;
-    u64 base = (u64)mem + sizeof(BlockHeader);
-    u64 size = (pageAmount * PAGE_SIZE) - sizeof(BlockHeader);
-    header->base = base;
-    header->cur = header->base;
-    header->curSize = 0;
-    header->size = size;
-    header->split = MEM_SPLIT;
-    header->next = NULL;
-    header->prev = NULL;
-    AddToBlockList(header);
+    mem = (void*)((u64)mem + headerSize);
+    header->size = size - headerSize;
+    header->base = (u64)mem;
+    header->amountUsed = 0;
+    header->allocCounter = 0;
+    AddBlockHeader(header);
     return STATUS_SUCCESS;
 }
 
-static void* AllocateFromAvaliableBlock(u64 size){
-    u64 trueAllocSize = ((size + (MEM_SPLIT - 1)) / MEM_SPLIT) * MEM_SPLIT;
-    //KeTermPrint(TERM_STATUS_INFO, QSTR("size: %d, trueAllocSize: %d"), size, trueAllocSize);
-    BlockHeader* header = head;
+static inline NearStatus DeleteBlockHeader(BlockHeader* header){
+    u64 headerSize = SPLIT_SAFE(sizeof(BlockHeader));
+    u64 size = SPLIT_SAFE(header->size + headerSize);
+    u64 sizeInPages = IN_PAGES(size);
+    NearStatus status = RemoveBlockHeader(header);
+    if(!NR_SUCCESS(status)){
+        return status;
+    }
+    void* mem = (void*)(header->base - headerSize);
+    status = MmFreeMultiplePages(mem, sizeInPages);
+    return status;
+}
 
+// carvs reference (the minecraft youtuber)
+static inline void* CarveMemoryFromBlock(BlockHeader* header, u64 size){
+    void* mem = (void*)(header->base + header->amountUsed);
+    header->amountUsed += size;
+    return mem;
+}
+
+static inline void* AllocateFreshMemory(u64 allocSize){
+    u64 aHeaderSize = SPLIT_SAFE(sizeof(AllocHeader));
+    u64 size = SPLIT_SAFE(allocSize + aHeaderSize);
+    BlockHeader* header = bHead;
     while(header != NULL){
-        u64 sizeRemaining = header->size - header->curSize;
-        if(sizeRemaining >= trueAllocSize){
-            header->curSize += trueAllocSize;
-            u64 base = header->cur;
-            header->cur += trueAllocSize;
-            return (void*)base;
+        u64 remaining = header->size - header->amountUsed;
+        if(remaining >= size){
+            void* mem = CarveMemoryFromBlock(header, size);
+            AllocHeader* aHeader = mem;
+            mem = (void*)((u64)mem + aHeaderSize);
+            aHeader->size = size - aHeaderSize;
+            aHeader->base = (u64)mem;
+            aHeader->isFree = FALSE;
+            aHeader->header = header;
+            header->allocCounter++;
+            return mem;
         }
         header = header->next;
     }
-    return NULL;
+    return NULL; // no valid blocks left =(
 }
-
 
 NearStatus MmInitGeneralAllocator(){
     allocSpinLock = KeCreateSpinLock();
@@ -106,22 +176,14 @@ NearStatus MmInitGeneralAllocator(){
 
 void* MmAllocateGeneralMemory(u64 allocSize){
     KeAcquireSpinLock(&allocSpinLock);
-    void* mem = AllocateFromAvaliableBlock(allocSize);
+    void* mem = AllocateFreshMemory(allocSize);
     if(mem == NULL){
-        //KeTermPrint(TERM_STATUS_INFO, QSTR("creating new block for kernel heap...."));
-        u64 amountOfPagesForBlock = (((allocSize + sizeof(BlockHeader)) + 4095) / 4096) + 1;
-        NearStatus status = CreateBlock(amountOfPagesForBlock);
+        NearStatus status = CreateBlock(allocSize + PAGE_SIZE);
         if(!NR_SUCCESS(status)){
-            KeTermPrint(TERM_STATUS_INFO, QSTR("couldn't create new block!"));
             goto FAIL;
         }
     }
-    // we try again, mimicks life =)
-    mem = AllocateFromAvaliableBlock(allocSize);
-    if(mem == NULL){
-        KeTermPrint(TERM_STATUS_INFO, QSTR("couldn't find new block AGAIN"));
-        goto FAIL;
-    }
+    mem = AllocateFreshMemory(allocSize);
 PASS:
     KeReleaseSpinLock(&allocSpinLock);
     return mem;

@@ -185,7 +185,7 @@ void MmSetAllowFrees(boolean value){
 
 
 
-NearStatus MmFreeGeneralMemory(void* address, u64 size){
+NearStatus MmFreeGeneralMemory(void* address){
     KeAcquireSpinLock(&allocSpinLock);
     NearStatus result = FreeMemory(address);
     if(!NR_SUCCESS(result)) return result;
