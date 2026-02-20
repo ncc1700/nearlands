@@ -4,6 +4,7 @@
 #include "uacpi/event.h"
 #include "uacpi/sleep.h"
 #include "uacpi/status.h"
+#include "uacpi/tables.h"
 #include <ke/panic.h>
 #include <uacpi/uacpi.h>
 #include <acpi/acpi.h>
@@ -50,3 +51,4 @@ void AcpiRebootSystem(){
     // shouldn't go here
     KePanic(STATUS_REBOOT_FAILED);
 }
+

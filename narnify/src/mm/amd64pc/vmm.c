@@ -7,7 +7,7 @@
 
 static PageTable kernPTable = {NULL};
 
-
+extern u64 ArRdmsr(u64 id);
 
 
 #ifdef PAGEMAP_PMM
@@ -132,6 +132,11 @@ NearStatus MmInitVirtualMemoryManager(BootInfo* info){
         MmMapPage(&kernPTable, KeGraphicsReturnData()->framebufferBase + i, 
                      KeGraphicsReturnData()->framebufferBase + i, PG_READ_WRITE);
     }
+    u64 apicBase = ArRdmsr(0x1B);
+    u64 lapicBase = apicBase & 0xFFFFF000;
+    for(u64 i = 0; i <= PAGE_SIZE; i+=PAGE_SIZE){
+        MmMapPage(&kernPTable, lapicBase, lapicBase + i, PG_READ_WRITE);
+    }
     #ifdef PAGEMAP_PMM
     PageMap* pageMap = MmReturnPageMap();
     u64 base = (u64)(pageMap);
@@ -142,6 +147,7 @@ NearStatus MmInitVirtualMemoryManager(BootInfo* info){
         if(!NR_SUCCESS(result)) return result;
     }
     #endif
+
     MmUpdateCr3((u64)kernPTable.pml4);
     return STATUS_SUCCESS;
 }

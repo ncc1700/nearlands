@@ -5,6 +5,7 @@
 #include "ke/panic.h"
 #include "ke/spinlock.h"
 #include "ke/term.h"
+#include "ki/ki.h"
 #include "mm/alloc.h"
 #include "mm/pmm.h"
 #include <ecs/ecs.h>
@@ -70,7 +71,12 @@ void KeSystemStartup(BootInfo* info){
     status = AcpiInitSystem();
     if(!NR_SUCCESS(status)) KePanic(status);
     else KeTermPrint(TERM_STATUS_PASS, QSTR("AcpiInitSystem PASS"));
-   
+    
+    KeTermPrint(TERM_STATUS_IMPINFO, QSTR("Calling KiInitSystem"));
+    status = KiInitSystem();
+    if(!NR_SUCCESS(status)) KePanic(status);
+    else KeTermPrint(TERM_STATUS_PASS, QSTR("KiInitSystem PASS"));
+
     
     
     //AcpiShutdownSystem();

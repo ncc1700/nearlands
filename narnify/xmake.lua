@@ -1,7 +1,5 @@
 
 
-
-
 target("narnify-amd64pc")
     set_targetdir("../output/SYSTEM")
     set_filename("narnify.sys")
@@ -9,7 +7,7 @@ target("narnify-amd64pc")
     add_files("src/*.c", "src/extern/**/*.c")
     add_files("src/ke/*.c", "src/ke/amd64pc/*.c")
     add_files("src/acpi/*.c", "src/acpi/amd64pc/*.c")
-
+    add_files("src/ki/amd64pc/*.c", "src/ki/amd64pc/**/*.c")
     add_files("src/qol/*.c", "src/qol/**/*.c")
     add_files("src/ecs/*.c", "src/ecs/**/*.c")
     add_files("src/ar/amd64pc/*.c", "src/ar/amd64pc/**/*.c", 
@@ -29,3 +27,4 @@ toolchain("clang-amd64pc")
     set_toolset("ld", "lld-link")
     set_toolset("as", "nasm")
 toolchain_end()
+
